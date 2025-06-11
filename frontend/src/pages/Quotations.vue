@@ -41,7 +41,8 @@
       (selections) => viewControls.updateSelections(selections)
     "
   />
-  <div
+  <!-- Center button to add new quotation -->
+  <!-- <div
     v-else-if="quotations.data"
     class="flex h-full items-center justify-center"
   >
@@ -54,7 +55,7 @@
         <template #prefix><FeatherIcon name="plus" class="h-4" /></template>
       </Button>
     </div>
-  </div>
+  </div> -->
 
   <QuickEntryModal
     v-if="showQuickEntryModal"
@@ -74,7 +75,7 @@ import ViewControls from '@/components/ViewControls.vue'
 import { getMeta } from '@/stores/meta'
 import { formatDate, timeAgo } from '@/utils'
 import { call } from 'frappe-ui'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue' // onMounted, onUnmounted add kiya
 import QuotationsListView from '@/components/ListViews/QuotationsListView.vue'
 import QuotationIcon from '@/components/Icons/QuotationIcon.vue'
 
@@ -93,6 +94,35 @@ const loadMore = ref(1)
 const triggerResize = ref(1)
 const updatedPageCount = ref(20)
 const viewControls = ref(null)
+
+// Auto refresh 
+let autoRefreshTimer = null
+const refreshQuotations = async () => {
+  try {
+    // console.log("Quotations data update kar rahe hain...")
+    if (viewControls.value && typeof viewControls.value.refresh === 'function') {
+      await viewControls.value.refresh()
+    }
+  } catch (error) {
+    console.error("Auto refresh error:", error)
+  }
+}
+
+onMounted(() => {
+  autoRefreshTimer = setInterval(() => {
+    if (quotations.value?.data && document.visibilityState === 'visible') {
+      refreshQuotations()
+    }
+  }, 2000) 
+})
+//cleanup
+onUnmounted(() => {
+  if (autoRefreshTimer) {
+    clearInterval(autoRefreshTimer)
+    autoRefreshTimer = null
+    // console.log("Auto refresh timer stopped")
+  }
+})
 
 const rows = computed(() => {
   if (
@@ -144,5 +174,4 @@ const rows = computed(() => {
     return _rows
   })
 })
-
 </script>

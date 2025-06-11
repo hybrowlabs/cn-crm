@@ -8,12 +8,14 @@
       </Breadcrumbs>
     </template>
   </LayoutHeader>
+  
   <div v-if="quotations.doc" ref="parentRef" class="flex h-full bg-gray-200 justify-center p-9">
     <div class="bg-white w-full h-full max-w-[210mm] max-h-[297mm] aspect-[210/297] shadow-xl"
-         v-html="quotations.doc.name"
+         v-html="printHtml"
     >
     </div>
   </div>
+  
   <ErrorPage
       v-else-if="errorTitle"
       :errorTitle="errorTitle"
@@ -48,12 +50,14 @@ const router = useRouter()
 
 const errorTitle = ref('')
 const errorMessage = ref('')
+const printHtml = ref('')
+
 const quotations = createDocumentResource({
   doctype: 'Quotation',
   name: props.quotationId,
   cache: ['quotation', props.quotationId],
   fields: ['*'],
-  auto: false, // Add this since you're manually fetching
+  auto: false,
   onSuccess: () => {
     errorTitle.value = ''
     errorMessage.value = ''
@@ -61,7 +65,7 @@ const quotations = createDocumentResource({
   onError: (err) => {
     if (err.messages?.[0]) {
       errorTitle.value = __('Not permitted')
-      errorMessage.value = __(err.messages[0]) // Fixed: removed ?. since you already checked above
+      errorMessage.value = __(err.messages[0])
     } else {
       router.push({name: 'Quotations'})
     }
@@ -72,44 +76,62 @@ const fcrmSettings = createResource({
   url: 'frappe.client.get',
   params: {doctype: 'FCRM Settings', name: 'FCRM Settings'},
   cache: ['fcrmSettings'],
-  auto: false, // Add this since you're manually fetching
+  auto: false,
   onSuccess: (data) => {
-    console.log({data})
-    quotations.print_format = data.quotation_print_format
+    quotations.print_format = data.quotation_print_format || 'Standard'
   },
+  onError: () => {
+    quotations.print_format = 'Standard'
+  }
 });
 
 const printView = createResource({
   url: 'frappe.www.printview.get_html_and_style',
-  auto: false, // Don't auto-fetch
+  auto: false,
   onSuccess: (data) => {
-    console.log('Print view data:', data)
-    // Handle the print view response
+    printHtml.value = data.html
   },
+  onError: (err) => {
+    errorTitle.value = __('Print Error')
+    errorMessage.value = __('Failed to load print preview')
+  }
 })
 
 onMounted(async () => {
   try {
-    // Wait for both APIs to complete
     await Promise.all([
-      quotations.get(),
+      quotations.reload(),
       fcrmSettings.fetch()
     ])
+    
+    if (!quotations.doc) {
+      throw new Error('Quotation document not loaded')
+    }
 
-    // Now fetch printView with the correct params
-    printView.update({
-      params: {
-        doc: quotations.doc,
-        print_format: quotations.print_format,
-      }
-    })
+    //Clear previous params to avoid sending incorrect `doc` object
+    printView.params = {}
+
+    // Prepare correct params
+    const printParams = {
+      doctype: 'Quotation',
+      name: props.quotationId,
+      print_format: quotations.print_format || 'Standard',
+    }
+
+    //Apply new params and fetch
+    printView.update({ params: printParams })
+    console.log('printView params:', printView.params)
 
     await printView.fetch()
 
   } catch (error) {
     console.error('API call failed:', error)
+    errorTitle.value = __('Loading Error')
+    errorMessage.value = __('Failed to load quotation data')
   }
 });
+
+
 const breadcrumbs = computed(() => {
   let items = [{label: __('Quotations'), route: {name: 'Quotations'}}]
 
@@ -161,6 +183,4 @@ const tabs = [
     icon: h(DealsIcon, {class: 'h-4 w-4'}),
   }
 ]
-
-
 </script>
