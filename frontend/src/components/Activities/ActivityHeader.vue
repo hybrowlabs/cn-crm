@@ -73,7 +73,8 @@
         <span>{{ __('New Message') }}</span>
       </Button>
     </div>
-    <Dropdown v-else :options="defaultActions" @click.stop>
+    <!-- removed new button  -->
+    <!-- <Dropdown v-else :options="defaultActions" @click.stop>
       <template v-slot="{ open }">
         <Button variant="solid" class="flex items-center gap-1">
           <template #prefix>
@@ -88,7 +89,7 @@
           </template>
         </Button>
       </template>
-    </Dropdown>
+    </Dropdown> -->
   </div>
 </template>
 <script setup>
