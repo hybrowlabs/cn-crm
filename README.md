@@ -6,7 +6,7 @@
 
 <h1>Frappe CRM</h1>
 
-**Simplify Sales, Amplify Relationships**
+**Simplify Sales, Amplify Relationships **
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/frappe/crm)](https://github.com/frappe/crm/releases)
 
