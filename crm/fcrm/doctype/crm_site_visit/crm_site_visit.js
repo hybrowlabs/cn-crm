@@ -577,29 +577,3 @@ function show_post_checkout_options(frm) {
         __('Submit Later')
     );
 }
-
-// Add custom CSS for mobile interface
-frappe.ready(function () {
-    $('head').append(`
-        <style>
-            .mobile-site-visit-form .form-section {
-                margin-bottom: 15px;
-            }
-            .mobile-site-visit-form .frappe-control {
-                margin-bottom: 10px;
-            }
-            .mobile-quick-action {
-                font-size: 16px !important;
-                padding: 12px !important;
-            }
-            .highlight-field {
-                background-color: #fff3cd !important;
-                border-left: 4px solid #ffc107;
-                padding-left: 10px;
-            }
-            .bold-field .control-label {
-                font-weight: bold !important;
-            }
-        </style>
-    `);
-});
