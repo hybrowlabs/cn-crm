@@ -53,8 +53,7 @@ class CRMSiteVisit(Document):
                     self.city = ref_doc.city
                 if ref_doc.get('state') and not self.state:
                     self.state = ref_doc.state
-                if ref_doc.get('organization') and not self.organization:
-                    self.organization = ref_doc.organization
+                
 
             elif self.reference_type == 'CRM Deal':
                 if not self.reference_title:
@@ -63,14 +62,11 @@ class CRMSiteVisit(Document):
                     self.potential_value = ref_doc.deal_value
                 if ref_doc.get('probability') and not self.probability_percentage:
                     self.probability_percentage = ref_doc.probability
-                if ref_doc.get('organization') and not self.organization:
-                    self.organization = ref_doc.organization
+                
 
             elif self.reference_type == 'Customer':
                 if not self.reference_title:
                     self.reference_title = ref_doc.get('customer_name') or 'Unknown'
-                if ref_doc.get('customer_name') and not self.organization:
-                    self.organization = ref_doc.customer_name
 
         except Exception as e:
             frappe.log_error(f"Failed to populate reference details for {self.name}: {str(e)}")
@@ -163,8 +159,28 @@ class CRMSiteVisit(Document):
     def sync_calendar_event(self):
         """Create or update calendar event for this visit"""
         try:
-            from crm.api.site_visit_calendar import create_calendar_event_for_visit
-            create_calendar_event_for_visit(self)
+            # First check if we already have a calendar_event reference
+            if self.calendar_event:
+                # Update existing event
+                from crm.api.site_visit_calendar import update_calendar_event
+                update_calendar_event(self.calendar_event, self)
+            else:
+                # Check if event exists by custom reference fields
+                existing_event = frappe.db.get_value('Event', 
+                    {'custom_reference_type': 'CRM Site Visit', 'custom_reference_name': self.name}, 
+                    'name'
+                )
+                
+                if existing_event:
+                    # Update the calendar_event field and update the event
+                    self.db_set('calendar_event', existing_event)
+                    from crm.api.site_visit_calendar import update_calendar_event
+                    update_calendar_event(existing_event, self)
+                else:
+                    # Create new event
+                    from crm.api.site_visit_calendar import create_calendar_event_for_visit
+                    create_calendar_event_for_visit(self)
+                
         except Exception as e:
             frappe.log_error(f"Calendar sync failed for {self.name}: {str(e)}")
     
@@ -377,14 +393,16 @@ class CRMSiteVisit(Document):
     def on_update(self):
         """Actions after document update"""
         # Only create follow-up activities for submitted documents
-        # Draft documents should wait until submission
         if (self.follow_up_required and self.follow_up_date and
                 self.status == 'Completed' and self.docstatus == 1):
             self.create_follow_up_activity()
         
-        # Create or update calendar event
-        if self.sync_with_calendar:
+        # Create or update calendar event - only if sync is enabled AND we don't already have an event
+        if self.sync_with_calendar and not self.calendar_event:
             self.sync_calendar_event()
+        elif self.sync_with_calendar and self.calendar_event:
+            # Just update timing if we already have an event
+            self.update_calendar_event_timing()
         
         # Update event on check-in/check-out
         if self.check_in_time or self.check_out_time:

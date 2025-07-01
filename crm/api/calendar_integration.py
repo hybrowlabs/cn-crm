@@ -8,9 +8,9 @@ from frappe import _
 def update_visit_from_calendar_event(doc, method):
     """Update site visit when calendar event is modified"""
     
-    if doc.reference_type == 'CRM Site Visit' and doc.reference_name:
+    if doc.custom_reference_type == 'CRM Site Visit' and doc.custom_reference_name:
         try:
-            visit = frappe.get_doc('CRM Site Visit', doc.reference_name)
+            visit = frappe.get_doc('CRM Site Visit', doc.custom_reference_name)
             
             # Update visit timing based on event
             if doc.starts_on and not visit.planned_start_time:
@@ -32,9 +32,9 @@ def update_visit_from_calendar_event(doc, method):
 def delete_visit_calendar_event_link(doc, method):
     """Remove calendar event link when event is deleted"""
     
-    if doc.reference_type == 'CRM Site Visit' and doc.reference_name:
+    if doc.custom_reference_type == 'CRM Site Visit' and doc.custom_reference_name:
         try:
-            frappe.db.set_value('CRM Site Visit', doc.reference_name, 'calendar_event', None)
+            frappe.db.set_value('CRM Site Visit', doc.custom_reference_name, 'calendar_event', None)
             frappe.db.commit()
         except Exception as e:
             frappe.log_error(f"Failed to remove calendar event link: {str(e)}")
@@ -78,7 +78,7 @@ def get_calendar_events_for_visits(from_date=None, to_date=None, sales_person=No
     """Get calendar events related to site visits"""
     
     filters = {
-        'reference_type': 'CRM Site Visit'
+        'custom_reference_type': 'CRM Site Visit'
     }
     
     if from_date:
@@ -89,15 +89,15 @@ def get_calendar_events_for_visits(from_date=None, to_date=None, sales_person=No
     events = frappe.get_all('Event',
         filters=filters,
         fields=[
-            'name', 'subject', 'starts_on', 'ends_on', 'reference_name',
+            'name', 'subject', 'starts_on', 'ends_on', 'custom_reference_name',
             'color', 'description', 'event_type'
         ]
     )
     
     # Get visit details for each event
     for event in events:
-        if event.reference_name:
-            visit = frappe.get_value('CRM Site Visit', event.reference_name, 
+        if event.custom_reference_name:
+            visit = frappe.get_value('CRM Site Visit', event.custom_reference_name, 
                 ['status', 'sales_person', 'reference_title', 'visit_type'], 
                 as_dict=True
             )

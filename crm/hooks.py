@@ -132,6 +132,7 @@ before_uninstall = "crm.uninstall.before_uninstall"
 override_doctype_class = {
 	"Contact": "crm.overrides.contact.CustomContact",
 	"Email Template": "crm.overrides.email_template.CustomEmailTemplate",
+	"Quotation": "crm.overrides.quotations.CustomQuotation",
 }
 
 # Document Events
@@ -193,10 +194,6 @@ doc_events = {
 scheduler_events = {
 	"daily": [
 		"crm.fcrm.doctype.crm_site_visit.crm_site_visit.send_visit_reminders",
-		"crm.api.site_visit_analytics.cleanup_old_analytics_cache"
-	],
-	"hourly": [
-		"crm.api.mobile_interface.sync_mobile_dashboard_cache"
 	],
 }
 

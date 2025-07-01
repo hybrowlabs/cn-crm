@@ -10,13 +10,13 @@ def create_calendar_event_for_visit(doc, method=None):
     """Create or update calendar event when site visit is saved"""
     
     if doc.status in ['Cancelled']:
-        # Delete event if visit is cancelled
+        # Delete event if visit is cancelled    
         delete_calendar_event_for_visit(doc.name)
         return
     
     # Check if event already exists
     existing_event = frappe.db.get_value('Event', 
-        {'reference_type': 'CRM Site Visit', 'reference_name': doc.name}, 
+        {'custom_reference_type': 'CRM Site Visit', 'custom_reference_name': doc.name}, 
         'name'
     )
     
@@ -67,8 +67,8 @@ def create_new_calendar_event(visit_doc):
             'all_day': 0,
             'event_type': 'Private',
             'color': color,
-            'reference_type': 'CRM Site Visit',
-            'reference_name': visit_doc.name,
+            'custom_reference_type': 'CRM Site Visit',
+            'custom_reference_name': visit_doc.name,
             'event_participants': [
                 {
                     'reference_doctype': 'User',
@@ -152,7 +152,7 @@ def delete_calendar_event_for_visit(visit_name):
     
     try:
         event_name = frappe.db.get_value('Event', 
-            {'reference_type': 'CRM Site Visit', 'reference_name': visit_name}, 
+            {'custom_reference_type': 'CRM Site Visit', 'custom_reference_name': visit_name}, 
             'name'
         )
         
@@ -236,7 +236,7 @@ def sync_visit_with_calendar_event(visit_name):
         visit_doc = frappe.get_doc('CRM Site Visit', visit_name)
         
         existing_event = frappe.db.get_value('Event', 
-            {'reference_type': 'CRM Site Visit', 'reference_name': visit_name}, 
+            {'custom_reference_type': 'CRM Site Visit', 'custom_reference_name': visit_name}, 
             'name'
         )
         
@@ -256,7 +256,7 @@ def on_visit_checkin_checkout(visit_doc):
     """Update calendar event when check-in/check-out happens"""
     
     event_name = frappe.db.get_value('Event', 
-        {'reference_type': 'CRM Site Visit', 'reference_name': visit_doc.name}, 
+        {'custom_reference_type': 'CRM Site Visit', 'custom_reference_name': visit_doc.name}, 
         'name'
     )
     
