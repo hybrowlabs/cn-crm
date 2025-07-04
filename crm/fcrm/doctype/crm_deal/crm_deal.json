@@ -11,11 +11,16 @@
   "naming_series",
   "organization",
   "next_step",
-  "probability",
   "column_break_ijan",
   "status",
-  "close_date",
   "deal_owner",
+  "lost_reason",
+  "lost_notes",
+  "section_break_jgpm",
+  "probability",
+  "deal_value",
+  "column_break_kpxa",
+  "close_date",
   "contacts_tab",
   "contacts",
   "contact",
@@ -381,12 +386,39 @@
      "fieldtype": "Autocomplete",
      "label": "Organization GSTIN",
      "reqd": 1
+  },
+  {
+   "fieldname": "section_break_jgpm",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "deal_value",
+   "fieldtype": "Currency",
+   "label": "Deal Value",
+   "options": "currency"
+  },
+  {
+   "fieldname": "column_break_kpxa",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "lost_reason",
+   "fieldtype": "Link",
+   "label": "Lost Reason",
+   "mandatory_depends_on": "eval: doc.status == \"Lost\"",
+   "options": "CRM Lost Reason"
+  },
+  {
+   "fieldname": "lost_notes",
+   "fieldtype": "Text",
+   "label": "Lost Notes",
+   "mandatory_depends_on": "eval: doc.lost_reason == \"Other\""
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
-  "modified": "2025-06-21 16:50:52.087557",
+ "modified": "2025-07-02 11:07:50.192089",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Deal",

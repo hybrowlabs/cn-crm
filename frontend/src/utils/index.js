@@ -1,9 +1,10 @@
+import LucideCheck from '~icons/lucide/check'
 import TaskStatusIcon from '@/components/Icons/TaskStatusIcon.vue'
 import TaskPriorityIcon from '@/components/Icons/TaskPriorityIcon.vue'
 import { usersStore } from '@/stores/users'
 import { gemoji } from 'gemoji'
 import { getMeta } from '@/stores/meta'
-import { toast, dayjsLocal, dayjs, getConfig } from 'frappe-ui'
+import { toast, dayjsLocal, dayjs, getConfig, FeatherIcon } from 'frappe-ui'
 import { h } from 'vue'
 
 export function formatTime(seconds) {
@@ -84,13 +85,34 @@ export function prettyDate(date, mini = false) {
   let nowDatetime = dayjs().tz(localTimezone || systemTimezone)
   let diff = nowDatetime.diff(date, 'seconds')
 
-  let dayDiff = Math.floor(diff / 86400)
+  let dayDiff = diff / 86400
 
-  if (isNaN(dayDiff) || dayDiff < 0) return ''
+  if (isNaN(dayDiff)) return ''
 
   if (mini) {
     // Return short format of time difference
-    if (dayDiff == 0) {
+    if (dayDiff < 0) {
+      if (Math.abs(dayDiff) < 1) {
+        if (Math.abs(diff) < 60) {
+          return __('now')
+        } else if (Math.abs(diff) < 3600) {
+          return __('in {0} m', [Math.floor(Math.abs(diff) / 60)])
+        } else if (Math.abs(diff) < 86400) {
+          return __('in {0} h', [Math.floor(Math.abs(diff) / 3600)])
+        }
+      }
+      if (Math.abs(dayDiff) >= 1 && Math.abs(dayDiff) < 1.5) {
+        return __('tomorrow')
+      } else if (Math.abs(dayDiff) < 7) {
+        return __('in {0} d', [Math.floor(Math.abs(dayDiff))])
+      } else if (Math.abs(dayDiff) < 31) {
+        return __('in {0} w', [Math.floor(Math.abs(dayDiff) / 7)])
+      } else if (Math.abs(dayDiff) < 365) {
+        return __('in {0} M', [Math.floor(Math.abs(dayDiff) / 30)])
+      } else {
+        return __('in {0} y', [Math.floor(Math.abs(dayDiff) / 365)])
+      }
+    } else if (dayDiff >= 0 && dayDiff < 1) {
       if (diff < 60) {
         return __('now')
       } else if (diff < 3600) {
@@ -99,6 +121,7 @@ export function prettyDate(date, mini = false) {
         return __('{0} h', [Math.floor(diff / 3600)])
       }
     } else {
+      dayDiff = Math.floor(dayDiff)
       if (dayDiff < 7) {
         return __('{0} d', [dayDiff])
       } else if (dayDiff < 31) {
@@ -111,7 +134,34 @@ export function prettyDate(date, mini = false) {
     }
   } else {
     // Return long format of time difference
-    if (dayDiff == 0) {
+    if (dayDiff < 0) {
+      if (Math.abs(dayDiff) < 1) {
+        if (Math.abs(diff) < 60) {
+          return __('just now')
+        } else if (Math.abs(diff) < 120) {
+          return __('in 1 minute')
+        } else if (Math.abs(diff) < 3600) {
+          return __('in {0} minutes', [Math.floor(Math.abs(diff) / 60)])
+        } else if (Math.abs(diff) < 7200) {
+          return __('in 1 hour')
+        } else if (Math.abs(diff) < 86400) {
+          return __('in {0} hours', [Math.floor(Math.abs(diff) / 3600)])
+        }
+      }
+      if (Math.abs(dayDiff) >= 1 && Math.abs(dayDiff) < 1.5) {
+        return __('tomorrow')
+      } else if (Math.abs(dayDiff) < 7) {
+        return __('in {0} days', [Math.floor(Math.abs(dayDiff))])
+      } else if (Math.abs(dayDiff) < 31) {
+        return __('in {0} weeks', [Math.floor(Math.abs(dayDiff) / 7)])
+      } else if (Math.abs(dayDiff) < 365) {
+        return __('in {0} months', [Math.floor(Math.abs(dayDiff) / 30)])
+      } else if (Math.abs(dayDiff) < 730) {
+        return __('in 1 year')
+      } else {
+        return __('in {0} years', [Math.floor(Math.abs(dayDiff) / 365)])
+      }
+    } else if (dayDiff >= 0 && dayDiff < 1) {
       if (diff < 60) {
         return __('just now')
       } else if (diff < 120) {
@@ -124,6 +174,7 @@ export function prettyDate(date, mini = false) {
         return __('{0} hours ago', [Math.floor(diff / 3600)])
       }
     } else {
+      dayDiff = Math.floor(dayDiff)
       if (dayDiff == 1) {
         return __('yesterday')
       } else if (dayDiff < 7) {
@@ -211,10 +262,9 @@ export function validateEmail(email) {
   return regExp.test(email)
 }
 
-export function setupAssignees(doc) {
+export function parseAssignees(assignees) {
   let { getUser } = usersStore()
-  let assignees = doc.data?._assign || []
-  doc.data._assignedTo = assignees.map((user) => ({
+  return assignees.map((user) => ({
     name: user,
     image: getUser(user).user_image,
     label: getUser(user).full_name,
@@ -395,6 +445,13 @@ export function isImage(extention) {
   )
 }
 
+export function validateIsImageFile(file) {
+  const extn = file.name.split('.').pop().toLowerCase()
+  if (!isImage(extn)) {
+    return __('Only image files are allowed')
+  }
+}
+
 export function getRandom(len = 4) {
   let text = ''
   const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
@@ -410,4 +467,67 @@ export function runSequentially(functions) {
   return functions.reduce((promise, fn) => {
     return promise.then(() => fn())
   }, Promise.resolve())
+}
+
+export function DropdownOption({
+  active,
+  option,
+  theme,
+  icon,
+  onClick,
+  selected,
+}) {
+  return h(
+    'button',
+    {
+      class: [
+        active ? 'bg-surface-gray-2' : 'text-ink-gray-8',
+        'group flex w-full justify-between items-center rounded-md px-2 py-2 text-sm',
+        theme == 'danger' ? 'text-ink-red-3 hover:bg-ink-red-1' : '',
+      ],
+      onClick: !selected ? onClick : null,
+    },
+    [
+      h('div', { class: 'flex gap-2' }, [
+        icon
+          ? h(FeatherIcon, {
+              name: icon,
+              class: ['h-4 w-4 shrink-0'],
+              'aria-hidden': true,
+            })
+          : null,
+        h('span', { class: 'whitespace-nowrap' }, option),
+      ]),
+      selected
+        ? h(LucideCheck, {
+            class: ['h-4 w-4 shrink-0 text-ink-gray-7'],
+            'aria-hidden': true,
+          })
+        : null,
+    ],
+  )
+}
+
+export function TemplateOption({ active, option, theme, icon, onClick }) {
+  return h(
+    'button',
+    {
+      class: [
+        active ? 'bg-surface-gray-2 text-ink-gray-8' : 'text-ink-gray-7',
+        'group flex w-full gap-2 items-center rounded-md px-2 py-2 text-sm',
+        theme == 'danger' ? 'text-ink-red-3 hover:bg-ink-red-1' : '',
+      ],
+      onClick: onClick,
+    },
+    [
+      icon
+        ? h(FeatherIcon, {
+            name: icon,
+            class: ['h-4 w-4 shrink-0'],
+            'aria-hidden': true,
+          })
+        : null,
+      h('span', { class: 'whitespace-nowrap' }, option),
+    ],
+  )
 }

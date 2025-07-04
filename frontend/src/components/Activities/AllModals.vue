@@ -16,8 +16,10 @@
     @after="redirect('notes')"
   />
   <CallLogModal
+    v-if="showCallLogModal"
     v-model="showCallLogModal"
-    v-model:callLog="callLog"
+    :data="callLog"
+    :referenceDoc="referenceDoc"
     :options="{ afterInsert: () => activities.reload() }"
   />
 </template>
@@ -86,15 +88,15 @@ function showNote(n) {
 // Call Logs
 const showCallLogModal = ref(false)
 const callLog = ref({})
+const referenceDoc = ref({})
 
 function createCallLog() {
   let doctype = props.doctype
   let docname = props.doc.data?.name
+  referenceDoc.value = { ...props.doc.data }
   callLog.value = {
-    data: {
-      reference_doctype: doctype,
-      reference_docname: docname,
-    },
+    reference_doctype: doctype,
+    reference_docname: docname,
   }
   showCallLogModal.value = true
 }

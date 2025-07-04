@@ -12,18 +12,33 @@
         v-if="lead.data._customActions?.length"
         :actions="lead.data._customActions"
       />
+      <CustomActions
+        v-if="document.actions?.length"
+        :actions="document.actions"
+      />
       <AssignTo
-        v-model="lead.data._assignedTo"
-        :data="lead.data"
+        v-model="assignees.data"
+        :data="document.doc"
         doctype="CRM Lead"
       />
       <Dropdown
-        :options="statusOptions('lead', updateField, lead.data._customStatuses)"
+        v-if="document.doc"
+        :options="
+          statusOptions(
+            'lead',
+            document.statuses?.length
+              ? document.statuses
+              : lead.data._customStatuses,
+            triggerStatusChange,
+          )
+        "
       >
         <template #default="{ open }">
-          <Button :label="lead.data.status">
+          <Button :label="document.doc.status">
             <template #prefix>
-              <IndicatorIcon :class="getLeadStatus(lead.data.status).color" />
+              <IndicatorIcon
+                :class="getLeadStatus(document.doc.status).color"
+              />
             </template>
             <template #suffix>
               <FeatherIcon
@@ -51,6 +66,7 @@
           v-model:reload="reload"
           v-model:tabIndex="tabIndex"
           v-model="lead"
+          @afterSave="reloadAssignees"
         />
       </template>
     </Tabs>
@@ -63,7 +79,7 @@
       </div>
       <FileUploader
         @success="(file) => updateField('image', file.file_url)"
-        :validateFile="validateFile"
+        :validateFile="validateIsImageFile"
       >
         <template #default="{ openFileSelector, error }">
           <div class="flex items-center justify-start gap-5 border-b p-5">
@@ -119,7 +135,6 @@
                 <Tooltip v-if="callEnabled" :text="__('Make a call')">
                   <div>
                     <Button
-                      class="h-7 w-7"
                       @click="
                         () =>
                           lead.data.mobile_no
@@ -127,42 +142,48 @@
                             : toast.error(__('No phone number set'))
                       "
                     >
-                      <PhoneIcon class="h-4 w-4" />
+                      <template #icon>
+                        <PhoneIcon />
+                      </template>
                     </Button>
                   </div>
                 </Tooltip>
                 <Tooltip :text="__('Send an email')">
                   <div>
-                    <Button class="h-7 w-7">
-                      <Email2Icon
-                        class="h-4 w-4"
-                        @click="
-                          lead.data.email
-                            ? openEmailBox()
-                            : toast.error(__('No email set'))
-                        "
-                      />
+                    <Button
+                      @click="
+                        lead.data.email
+                          ? openEmailBox()
+                          : toast.error(__('No email set'))
+                      "
+                    >
+                      <template #icon>
+                        <Email2Icon />
+                      </template>
                     </Button>
                   </div>
                 </Tooltip>
                 <Tooltip :text="__('Go to website')">
                   <div>
-                    <Button class="h-7 w-7">
-                      <LinkIcon
-                        class="h-4 w-4"
-                        @click="
-                          lead.data.website
-                            ? openWebsite(lead.data.website)
-                            : toast.error(__('No website set'))
-                        "
-                      />
+                    <Button
+                      @click="
+                        lead.data.website
+                          ? openWebsite(lead.data.website)
+                          : toast.error(__('No website set'))
+                      "
+                    >
+                      <template #icon>
+                        <LinkIcon />
+                      </template>
                     </Button>
                   </div>
                 </Tooltip>
                 <Tooltip :text="__('Attach a file')">
                   <div>
-                    <Button class="h-7 w-7" @click="showFilesUploader = true">
-                      <AttachmentIcon class="h-4 w-4" />
+                    <Button @click="showFilesUploader = true">
+                      <template #icon>
+                        <AttachmentIcon />
+                      </template>
                     </Button>
                   </div>
                 </Tooltip>
@@ -186,6 +207,7 @@
           doctype="CRM Lead"
           :docname="lead.data.name"
           @reload="sections.reload"
+          @afterFieldChange="reloadAssignees"
         />
       </div>
     </Resizer>
@@ -195,109 +217,10 @@
     :errorTitle="errorTitle"
     :errorMessage="errorMessage"
   />
-  <Dialog
+  <ConvertToDealModal
+    v-if="showConvertToDealModal"
     v-model="showConvertToDealModal"
-    :options="{
-      size: 'xl',
-      actions: [
-        {
-          label: __('Convert'),
-          variant: 'solid',
-          onClick: convertToDeal,
-        },
-      ],
-    }"
-  >
-    <template #body-header>
-      <div class="mb-6 flex items-center justify-between">
-        <div>
-          <h3 class="text-2xl font-semibold leading-6 text-ink-gray-9">
-            {{ __('Convert to Deal') }}
-          </h3>
-        </div>
-        <div class="flex items-center gap-1">
-          <Button
-            v-if="isManager() && !isMobileView"
-            variant="ghost"
-            class="w-7"
-            @click="openQuickEntryModal"
-          >
-            <EditIcon class="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            class="w-7"
-            @click="showConvertToDealModal = false"
-          >
-            <FeatherIcon name="x" class="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    </template>
-    <template #body-content>
-      <div class="mb-4 flex items-center gap-2 text-ink-gray-5">
-        <OrganizationsIcon class="h-4 w-4" />
-        <label class="block text-base">{{ __('Organization') }}</label>
-      </div>
-      <div class="ml-6 text-ink-gray-9">
-        <div class="flex items-center justify-between text-base">
-          <div>{{ __('Choose Existing') }}</div>
-          <Switch v-model="existingOrganizationChecked" />
-        </div>
-        <Link
-          v-if="existingOrganizationChecked"
-          class="form-control mt-2.5"
-          size="md"
-          :value="existingOrganization"
-          doctype="CRM Organization"
-          @change="(data) => (existingOrganization = data)"
-        />
-        <div v-else class="mt-2.5 text-base">
-          {{
-            __(
-              'New quotations will be created based on the data in details section',
-            )
-          }}
-        </div>
-      </div>
-
-      <div class="mb-4 mt-6 flex items-center gap-2 text-ink-gray-5">
-        <ContactsIcon class="h-4 w-4" />
-        <label class="block text-base">{{ __('Contact') }}</label>
-      </div>
-      <div class="ml-6 text-ink-gray-9">
-        <div class="flex items-center justify-between text-base">
-          <div>{{ __('Choose Existing') }}</div>
-          <Switch v-model="existingContactChecked" />
-        </div>
-        <Link
-          v-if="existingContactChecked"
-          class="form-control mt-2.5"
-          size="md"
-          :value="existingContact"
-          doctype="Contact"
-          @change="(data) => (existingContact = data)"
-        />
-        <div v-else class="mt-2.5 text-base">
-          {{ __("New contact will be created based on the person's details") }}
-        </div>
-      </div>
-
-      <div v-if="dealTabs.data?.length" class="h-px w-full border-t my-6" />
-
-      <FieldLayout
-        v-if="dealTabs.data?.length"
-        :tabs="dealTabs.data"
-        :data="deal"
-        doctype="CRM Deal"
-      />
-    </template>
-  </Dialog>
-  <QuickEntryModal
-    v-if="showQuickEntryModal"
-    v-model="showQuickEntryModal"
-    doctype="CRM Deal"
-    :onlyRequired="true"
+    :lead="lead.data"
   />
   <FilesUploader
     v-if="lead.data?.name"
@@ -310,6 +233,13 @@
         changeTabTo('attachments')
       }
     "
+  />
+  <DeleteLinkedDocModal
+    v-if="showDeleteLinkedDocModal"
+    v-model="showDeleteLinkedDocModal"
+    :doctype="'CRM Lead'"
+    :docname="props.leadId"
+    name="Leads"
   />
 </template>
 <script setup>
@@ -328,40 +258,28 @@ import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import CameraIcon from '@/components/Icons/CameraIcon.vue'
 import LinkIcon from '@/components/Icons/LinkIcon.vue'
-import OrganizationsIcon from '@/components/Icons/OrganizationsIcon.vue'
-import ContactsIcon from '@/components/Icons/ContactsIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
-import EditIcon from '@/components/Icons/EditIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import AssignTo from '@/components/AssignTo.vue'
 import FilesUploader from '@/components/FilesUploader/FilesUploader.vue'
-import Link from '@/components/Controls/Link.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
-import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
-import QuickEntryModal from '@/components/Modals/QuickEntryModal.vue'
 import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
+import ConvertToDealModal from '@/components/Modals/ConvertToDealModal.vue'
 import {
   openWebsite,
-  setupAssignees,
   setupCustomizations,
   copyToClipboard,
+  validateIsImageFile,
 } from '@/utils'
 import { getView } from '@/utils/view'
 import { getSettings } from '@/stores/settings'
-import { sessionStore } from '@/stores/session'
-import { usersStore } from '@/stores/users'
 import { globalStore } from '@/stores/global'
 import { statusesStore } from '@/stores/statuses'
 import { getMeta } from '@/stores/meta'
 import { useDocument } from '@/data/document'
-import {
-  whatsappEnabled,
-  callEnabled,
-  isMobileView,
-} from '@/composables/settings'
-import { capture } from '@/telemetry'
+import { whatsappEnabled, callEnabled } from '@/composables/settings'
 import {
   createResource,
   FileUploader,
@@ -369,25 +287,19 @@ import {
   Tooltip,
   Avatar,
   Tabs,
-  Switch,
   Breadcrumbs,
   call,
   usePageMeta,
   toast,
 } from 'frappe-ui'
-import { useOnboarding } from 'frappe-ui/frappe'
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useActiveTabManager } from '@/composables/useActiveTabManager'
 
 const { brand } = getSettings()
-const { user } = sessionStore()
-const { isManager } = usersStore()
 const { $dialog, $socket, makeCall } = globalStore()
-const { statusOptions, getLeadStatus, getDealStatus } = statusesStore()
+const { statusOptions, getLeadStatus } = statusesStore()
 const { doctypeMeta } = getMeta('CRM Lead')
-
-const { updateOnboardingStep } = useOnboarding('frappecrm')
 
 const route = useRoute()
 const router = useRouter()
@@ -401,6 +313,18 @@ const props = defineProps({
 
 const errorTitle = ref('')
 const errorMessage = ref('')
+const showDeleteLinkedDocModal = ref(false)
+const showConvertToDealModal = ref(false)
+
+const { triggerOnChange, assignees, document } = useDocument(
+  'CRM Lead',
+  props.leadId,
+)
+
+async function triggerStatusChange(value) {
+  await triggerOnChange('status', value)
+  document.save.submit()
+}
 
 const lead = createResource({
   url: 'crm.fcrm.doctype.crm_lead.api.get_lead',
@@ -409,7 +333,6 @@ const lead = createResource({
   onSuccess: (data) => {
     errorTitle.value = ''
     errorMessage.value = ''
-    setupAssignees(lead)
     setupCustomizations(lead, {
       doc: data,
       $dialog,
@@ -578,13 +501,6 @@ watch(tabs, (value) => {
   }
 })
 
-function validateFile(file) {
-  let extn = file.name.split('.').pop().toLowerCase()
-  if (!['png', 'jpg', 'jpeg'].includes(extn)) {
-    return __('Only PNG and JPG images are allowed')
-  }
-}
-
 const sections = createResource({
   url: 'crm.fcrm.doctype.crm_fields_layout.crm_fields_layout.get_sidepanel_sections',
   cache: ['sidePanelSections', 'CRM Lead'],
@@ -607,112 +523,23 @@ async function deleteLead(name) {
   router.push({ name: 'Leads' })
 }
 
-// Convert to Deal
-const showConvertToDealModal = ref(false)
-const existingContactChecked = ref(false)
-const existingOrganizationChecked = ref(false)
-
-const existingContact = ref('')
-const existingOrganization = ref('')
-
-const { triggerConvertToDeal } = useDocument('CRM Lead', props.leadId)
-
-async function convertToDeal() {
-  if (existingContactChecked.value && !existingContact.value) {
-    toast.error(__('Please select an existing contact'))
-    return
-  }
-
-  if (existingOrganizationChecked.value && !existingOrganization.value) {
-    toast.error(__('Please select an existing quotations'))
-    return
-  }
-
-  if (!existingContactChecked.value && existingContact.value) {
-    existingContact.value = ''
-  }
-
-  if (!existingOrganizationChecked.value && existingOrganization.value) {
-    existingOrganization.value = ''
-  }
-
-  await triggerConvertToDeal?.(
-    lead.data,
-    deal,
-    () => (showConvertToDealModal.value = false),
-  )
-
-  let _deal = await call('crm.fcrm.doctype.crm_lead.crm_lead.convert_to_deal', {
-    lead: lead.data.name,
-    deal,
-    existing_contact: existingContact.value,
-    existing_organization: existingOrganization.value,
-  }).catch((err) => {
-    toast.error(__('Error converting to deal: {0}', [err.messages?.[0]]))
-  })
-  if (_deal) {
-    showConvertToDealModal.value = false
-    existingContactChecked.value = false
-    existingOrganizationChecked.value = false
-    existingContact.value = ''
-    existingOrganization.value = ''
-    updateOnboardingStep('convert_lead_to_deal', true, false, () => {
-      localStorage.setItem('firstDeal' + user, _deal)
-    })
-    capture('convert_lead_to_deal')
-    router.push({ name: 'Deal', params: { dealId: _deal } })
-  }
+async function deleteLeadWithModal(name) {
+  showDeleteLinkedDocModal.value = true
 }
 
 const activities = ref(null)
 
 function openEmailBox() {
-  activities.value.emailBox.show = true
+  let currentTab = tabs.value[tabIndex.value]
+  if (!['Emails', 'Comments', 'Activities'].includes(currentTab.name)) {
+    activities.value.changeTabTo('emails')
+  }
+  nextTick(() => (activities.value.emailBox.show = true))
 }
 
-const deal = reactive({})
-
-const dealStatuses = computed(() => {
-  let statuses = statusOptions('deal')
-  if (!deal.status) {
-    deal.status = statuses[0].value
+function reloadAssignees(data) {
+  if (data?.hasOwnProperty('lead_owner')) {
+    assignees.reload()
   }
-  return statuses
-})
-
-const dealTabs = createResource({
-  url: 'crm.fcrm.doctype.crm_fields_layout.crm_fields_layout.get_fields_layout',
-  cache: ['RequiredFields', 'CRM Deal'],
-  params: { doctype: 'CRM Deal', type: 'Required Fields' },
-  auto: true,
-  transform: (_tabs) => {
-    let hasFields = false
-    let parsedTabs = _tabs?.forEach((tab) => {
-      tab.sections?.forEach((section) => {
-        section.columns?.forEach((column) => {
-          column.fields?.forEach((field) => {
-            hasFields = true
-            if (field.fieldname == 'status') {
-              field.fieldtype = 'Select'
-              field.options = dealStatuses.value
-              field.prefix = getDealStatus(deal.status).color
-            }
-
-            if (field.fieldtype === 'Table') {
-              deal[field.fieldname] = []
-            }
-          })
-        })
-      })
-    })
-    return hasFields ? parsedTabs : []
-  },
-})
-
-const showQuickEntryModal = ref(false)
-
-function openQuickEntryModal() {
-  showQuickEntryModal.value = true
-  showConvertToDealModal.value = false
 }
 </script>

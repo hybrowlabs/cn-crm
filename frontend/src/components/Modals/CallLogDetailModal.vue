@@ -34,15 +34,19 @@
               </template>
             </Dropdown>
             <Button
-              v-if="isManager() && !isMobileView"
+              v-if="!isMobileView"
               variant="ghost"
               class="w-7"
               @click="openCallLogModal"
             >
-              <EditIcon class="h-4 w-4" />
+              <template #icon>
+                <EditIcon />
+              </template>
             </Button>
             <Button variant="ghost" class="w-7" @click="show = false">
-              <FeatherIcon name="x" class="h-4 w-4" />
+              <template #icon>
+                <FeatherIcon name="x" class="size-4" />
+              </template>
             </Button>
           </div>
         </div>
@@ -170,14 +174,12 @@ import NoteModal from '@/components/Modals/NoteModal.vue'
 import TaskModal from '@/components/Modals/TaskModal.vue'
 import FadedScrollableDiv from '@/components/FadedScrollableDiv.vue'
 import { getCallLogDetail } from '@/utils/callLog'
-import { usersStore } from '@/stores/users'
 import { isMobileView } from '@/composables/settings'
 import { useDocument } from '@/data/document'
 import { FeatherIcon, Dropdown, Avatar, Tooltip, call } from 'frappe-ui'
 import { ref, computed, h, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
-const { isManager } = usersStore()
 const router = useRouter()
 
 const show = defineModel()

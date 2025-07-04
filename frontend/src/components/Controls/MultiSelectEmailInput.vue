@@ -70,7 +70,7 @@
                       {{
                         fetchContacts
                           ? __('No results found')
-                          : __('Type an email address to add')
+                          : __('Type an email address to invite')
                       }}
                     </div>
                     <ComboboxOption
@@ -156,6 +156,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  existingEmails: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const values = defineModel()
@@ -205,6 +209,14 @@ const filterOptions = createResource({
         value: email,
       }
     })
+
+    // Filter out existing emails
+    if (props.existingEmails?.length) {
+      allData = allData.filter((option) => {
+        return !props.existingEmails.includes(option.value)
+      })
+    }
+
     return allData
   },
 })
