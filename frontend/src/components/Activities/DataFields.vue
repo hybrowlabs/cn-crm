@@ -16,7 +16,9 @@
         v-if="isManager() && !isMobileView"
         @click="showDataFieldsModal = true"
       >
-        <EditIcon class="h-4 w-4" />
+        <template #icon>
+          <EditIcon />
+        </template>
       </Button>
       <Button
         label="Save"
@@ -29,7 +31,7 @@
   </div>
   <div
     v-if="document.get.loading"
-    class="flex flex-1 flex-col items-center justify-center gap-3 text-xl font-medium text-gray-500"
+    class="flex flex-1 flex-col items-center justify-center gap-3 text-xl font-medium text-ink-gray-6"
   >
     <LoadingIndicator class="h-6 w-6" />
     <span>{{ __('Loading...') }}</span>
@@ -64,7 +66,7 @@ import LoadingIndicator from '@/components/Icons/LoadingIndicator.vue'
 import { usersStore } from '@/stores/users'
 import { useDocument } from '@/data/document'
 import { isMobileView } from '@/composables/settings'
-import { ref, watch } from 'vue'
+import { ref, watch, getCurrentInstance } from 'vue'
 
 const props = defineProps({
   doctype: {
@@ -76,7 +78,13 @@ const props = defineProps({
     required: true,
   },
 })
+
+const emit = defineEmits(['beforeSave', 'afterSave'])
+
 const { isManager } = usersStore()
+
+const instance = getCurrentInstance()
+const attrs = instance?.vnode?.props ?? {}
 
 const showDataFieldsModal = ref(false)
 
@@ -90,7 +98,27 @@ const tabs = createResource({
 })
 
 function saveChanges() {
-  document.save.submit()
+  if (!document.isDirty) return
+
+  const updatedDoc = { ...document.doc }
+  const oldDoc = { ...document.originalDoc }
+
+  const changes = Object.keys(updatedDoc).reduce((acc, key) => {
+    if (JSON.stringify(updatedDoc[key]) !== JSON.stringify(oldDoc[key])) {
+      acc[key] = updatedDoc[key]
+    }
+    return acc
+  }, {})
+
+  const hasListener = attrs['onBeforeSave'] !== undefined
+
+  if (hasListener) {
+    emit('beforeSave', changes)
+  } else {
+    document.save.submit(null, {
+      onSuccess: () => emit('afterSave', changes),
+    })
+  }
 }
 
 watch(

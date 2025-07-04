@@ -9,6 +9,7 @@
   "restore_defaults",
   "quotation_section",
   "quotation_print_format",
+  "enable_forecasting",
   "branding_tab",
   "brand_name",
   "brand_logo",
@@ -37,7 +38,7 @@
   {
    "fieldname": "defaults_tab",
    "fieldtype": "Tab Break",
-   "label": "Defaults"
+   "label": "Settings"
   },
   {
    "fieldname": "branding_tab",
@@ -65,6 +66,13 @@
    "fieldname": "favicon",
    "fieldtype": "Attach",
    "label": "Favicon"
+  },
+  {
+   "default": "0",
+   "description": "It will make deal's \"Close Date\" & \"Deal Value\" mandatory to get accurate forecasting insights",
+   "fieldname": "enable_forecasting",
+   "fieldtype": "Check",
+   "label": "Enable Forecasting"
   },
   {
    "fieldname": "quotation_section",
@@ -123,7 +131,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-06-12 14:44:09.674099",
+ "modified": "2025-07-01 13:20:48.757603",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "FCRM Settings",

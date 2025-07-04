@@ -147,7 +147,6 @@ import CommentIcon from '@/components/Icons/CommentIcon.vue'
 import EmailIcon from '@/components/Icons/EmailIcon.vue'
 import StepsIcon from '@/components/Icons/StepsIcon.vue'
 import Section from '@/components/Section.vue'
-import Email2Icon from '@/components/Icons/Email2Icon.vue'
 import PinIcon from '@/components/Icons/PinIcon.vue'
 import UserDropdown from '@/components/UserDropdown.vue'
 import SquareAsterisk from '@/components/Icons/SquareAsterisk.vue'
@@ -167,11 +166,15 @@ import SidebarLink from '@/components/SidebarLink.vue'
 import Notifications from '@/components/Notifications.vue'
 import Settings from '@/components/Settings/Settings.vue'
 import { viewsStore } from '@/stores/views'
-import { notificationsStore, unreadNotificationsCount } from '@/stores/notifications'
+import {
+  unreadNotificationsCount,
+  notificationsStore,
+} from '@/stores/notifications'
 import { usersStore } from '@/stores/users'
 import { sessionStore } from '@/stores/session'
-import { activeSettingsPage, showSettings } from '@/composables/settings'
-import { call, FeatherIcon } from 'frappe-ui'
+import { showSettings, activeSettingsPage } from '@/composables/settings'
+import { showChangePasswordModal } from '@/composables/modals'
+import { FeatherIcon, call } from 'frappe-ui'
 import {
   GettingStartedBanner,
   HelpModal,
@@ -180,12 +183,17 @@ import {
   showHelpModal,
   SignupBanner,
   TrialBanner,
-  useOnboarding
+  HelpModal,
+  GettingStartedBanner,
+  useOnboarding,
+  showHelpModal,
+  minimize,
+  IntermediateStepModal,
 } from 'frappe-ui/frappe'
 import { capture } from '@/telemetry'
 import router from '@/router'
 import { useStorage } from '@vueuse/core'
-import { computed, h, markRaw, onMounted, reactive, ref } from 'vue'
+import { ref, reactive, computed, h, markRaw, onMounted } from 'vue'
 import DashboardIcon from '@/components/Icons/DashboardIcon.vue'
 import QuotationIcon from '@/components/Icons/QuotationIcon.vue'
 
@@ -253,11 +261,6 @@ const links = [
     label: 'Call Logs',
     icon: PhoneIcon,
     to: 'Call Logs',
-  },
-  {
-    label: 'Email Templates',
-    icon: Email2Icon,
-    to: 'Email Templates',
   },
 ]
 
@@ -353,8 +356,7 @@ const steps = reactive([
     completed: false,
     onClick: () => {
       minimize.value = true
-      showSettings.value = true
-      activeSettingsPage.value = 'Profile'
+      showChangePasswordModal.value = true
     },
   },
   {
@@ -375,7 +377,7 @@ const steps = reactive([
     onClick: () => {
       minimize.value = true
       showSettings.value = true
-      activeSettingsPage.value = 'Invite Members'
+      activeSettingsPage.value = 'Invite User'
     },
     condition: () => isManager(),
   },
@@ -553,7 +555,7 @@ const articles = ref([
       { name: 'profile', title: __('Profile') },
       { name: 'custom-branding', title: __('Custom branding') },
       { name: 'home-actions', title: __('Home actions') },
-      { name: 'invite-members', title: __('Invite members') },
+      { name: 'invite-users', title: __('Invite users') },
     ],
   },
   {
