@@ -13,7 +13,7 @@
         :actions="visit.data._customActions"
       />
       <AssignTo
-        v-model="visit.data._assignedTo"
+        v-model="assignees.data"
         :data="visit.data"
         doctype="CRM Site Visit"
       />
@@ -179,7 +179,6 @@ import FilesUploader from '@/components/FilesUploader/FilesUploader.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import {
-  setupAssignees,
   setupCustomizations,
   copyToClipboard,
 } from '@/utils'
@@ -205,11 +204,15 @@ import {
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useActiveTabManager } from '@/composables/useActiveTabManager'
+import { useDocument } from '@/data/document'
+
 
 const { brand } = getSettings()
 const { $dialog, $socket, makeCall } = globalStore()
 const { statusOptions } = statusesStore()
 const { doctypeMeta } = getMeta('CRM Site Visit')
+
+console.log(statusOptions)
 
 const route = useRoute()
 const router = useRouter()
@@ -224,6 +227,7 @@ const props = defineProps({
 const errorTitle = ref('')
 const errorMessage = ref('')
 
+const {assignees} = useDocument('CRM Site Visit', props.visitId)
 
 const visit = createResource({
   url: 'crm.fcrm.doctype.crm_site_visit.api.get_visit',
@@ -234,7 +238,6 @@ const visit = createResource({
     console.log("Visit data fetched successfully:", data);
     errorTitle.value = ''
     errorMessage.value = ''
-    setupAssignees(visit)
     setupCustomizations(visit, {
       doc: data,
       $dialog,

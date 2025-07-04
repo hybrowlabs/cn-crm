@@ -183,12 +183,7 @@ import {
   showHelpModal,
   SignupBanner,
   TrialBanner,
-  HelpModal,
-  GettingStartedBanner,
   useOnboarding,
-  showHelpModal,
-  minimize,
-  IntermediateStepModal,
 } from 'frappe-ui/frappe'
 import { capture } from '@/telemetry'
 import router from '@/router'

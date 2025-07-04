@@ -23,7 +23,7 @@
     </header>
   </LayoutHeader>
   <div v-if="visit.data" class="flex h-12 items-center justify-between gap-2 border-b px-3 py-2.5">
-    <AssignTo v-model="visit.data._assignedTo" :data="visit.data" doctype="CRM Site Visit" />
+    <AssignTo v-model="assignees.data" :data="visit.data" doctype="CRM Site Visit" />
     <div class="flex items-center gap-2">
       <CustomActions v-if="visit.data._customActions?.length" :actions="visit.data._customActions" />
       <!-- Check-in/Check-out buttons -->
@@ -118,7 +118,7 @@ import Activities from '@/components/Activities/Activities.vue'
 import AssignTo from '@/components/AssignTo.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import CustomActions from '@/components/CustomActions.vue'
-import { setupAssignees, setupCustomizations } from '@/utils'
+import { setupCustomizations } from '@/utils'
 import { getView } from '@/utils/view'
 import { getSettings } from '@/stores/settings'
 import { globalStore } from '@/stores/global'
@@ -138,6 +138,8 @@ import {
 } from 'frappe-ui'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useDocument } from '@/data/document'
+
 
 const { brand } = getSettings()
 const { $dialog, $socket, makeCall } = globalStore()
@@ -154,13 +156,14 @@ const props = defineProps({
   },
 })
 
+const {assignees} = useDocument('CRM Site Visit', props.visitId)
+
 const visit = createResource({
   url: 'crm.fcrm.doctype.crm_site_visit.api.get_visit',
   params: { name: props.visitId },
   cache: ['visit', props.visitId],
   auto: true,
   onSuccess: (data) => {
-    setupAssignees(visit)
     setupCustomizations(visit, {
       doc: data,
       $dialog,
