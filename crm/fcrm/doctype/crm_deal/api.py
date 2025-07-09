@@ -77,3 +77,16 @@ def get_linked_quotations(args):
 	# 	quotation["customer"] = frappe.bold(quotation["customer"])
 
 	return quotations
+
+# crm/fcrm/doctype/crm_deal/api.py
+
+@frappe.whitelist()
+def get_deal_visits(dealId):
+    return frappe.get_all(
+        "CRM Site Visit",
+        filters={
+            "reference_type": "CRM Deal",
+            "reference_name": dealId
+        },
+        fields=["*"]
+    )

@@ -169,6 +169,31 @@
               </div>
               <ErrorMessage :message="__(error)" />
             </div>
+
+            <div v-if="tabs[tabIndex].name === 'Visits'">
+              <div v-if="visits.loading" class="p-4 text-gray-500">
+                Loading visits...
+              </div>
+              <div v-else-if="lead.linked_visits?.length">
+                <ul>
+                  <li
+                    v-for="visit in lead.linked_visits"
+                    :key="visit.name"
+                    class="p-2 border-b"
+                  >
+                    <div class="font-semibold">{{ visit.visit_date }}</div>
+                    <div class="text-sm text-gray-600">{{ visit.status }}</div>
+                    <div class="text-sm">
+                      {{ visit.visit_type }} ({{ visit.priority }})
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
+              <div v-else class="p-4 text-gray-400">
+                No visits found for this deal.
+              </div>
+            </div>
           </div>
         </template>
       </FileUploader>
@@ -332,6 +357,7 @@ import OrganizationsIcon from '@/components/Icons/OrganizationsIcon.vue'
 import ContactsIcon from '@/components/Icons/ContactsIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import EditIcon from '@/components/Icons/EditIcon.vue'
+import VisitsIcon from '@/components/Icons/VisitsIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import AssignTo from '@/components/AssignTo.vue'
@@ -433,9 +459,33 @@ const lead = createResource({
   },
 })
 
+console.log('Before Lead ID:', props.leadId)
+
+const visits = createResource({
+  url: 'crm.fcrm.doctype.crm_lead.api.get_lead_visits',
+  params: { leadId: props.leadId },
+  cache: ['lead', 'visits', props.leadId],
+  onSuccess: (data) => {
+    errorTitle.value = ''
+    errorMessage.value = ''
+    lead.linked_visits = data
+  },
+  onError: (err) => {
+    if (err.messages?.[0]) {
+      errorTitle.value = __('Not permitted')
+      errorMessage.value = __(err.messages?.[0])
+    } else {
+      router.push({ name: 'Leads' })
+    }
+  },
+})
+
+console.log('After Lead ID:', props.leadId)
+
 onMounted(() => {
   if (lead.data) return
   lead.fetch()
+  visits.fetch()
 })
 
 const reload = ref(false)
@@ -534,6 +584,11 @@ const tabs = computed(() => {
       name: 'Data',
       label: __('Data'),
       icon: DetailsIcon,
+    },
+    {
+      name: 'Visits',
+      label: __('Visits'),
+      icon: VisitsIcon,
     },
     {
       name: 'Calls',

@@ -47,6 +47,7 @@
           v-model:tabIndex="tabIndex"
           v-model="deal"
         />
+
       </template>
     </Tabs>
     <Resizer side="right" class="flex flex-col justify-between border-l">
@@ -67,6 +68,7 @@
             />
           </div>
         </Tooltip>
+
         <div class="flex flex-col gap-2.5 truncate text-ink-gray-9">
           <Tooltip :text="organization.data?.name || __('Set an quotations')">
             <div class="truncate text-2xl font-medium">
@@ -118,6 +120,33 @@
             </Tooltip>
           </div>
         </div>
+
+        <div v-if="tabs[tabIndex].name === 'Visits'">
+          <div v-if="visits.loading" class="p-4 text-gray-500">
+            Loading visits...
+          </div>
+          <div v-else-if="deal.linked_visits?.length">
+            <ul>
+              <li
+                v-for="visit in deal.linked_visits"
+                :key="visit.name"
+                class="p-2 border-b"
+              >
+                <div class="font-semibold">{{ visit.visit_date }}</div>
+                <div class="text-sm text-gray-600">{{ visit.status }}</div>
+                <div class="text-sm">
+                  {{ visit.visit_type }} ({{ visit.priority }})
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div v-else class="p-4 text-gray-400">
+            No visits found for this deal.
+          </div>
+        </div>
+
+
       </div>
       <SLASection
         v-if="deal.data.sla_status"
@@ -319,6 +348,7 @@ import LinkIcon from '@/components/Icons/LinkIcon.vue'
 import ArrowUpRightIcon from '@/components/Icons/ArrowUpRightIcon.vue'
 import SuccessIcon from '@/components/Icons/SuccessIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
+import VisitsIcon from '@/components/Icons/VisitsIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import OrganizationModal from '@/components/Modals/OrganizationModal.vue'
@@ -334,7 +364,7 @@ import {
   openWebsite,
   setupAssignees,
   setupCustomizations,
-  copyToClipboard
+  copyToClipboard,
 } from '@/utils'
 import { getView } from '@/utils/view'
 import { getSettings } from '@/stores/settings'
@@ -351,7 +381,7 @@ import {
   Breadcrumbs,
   call,
   usePageMeta,
-  toast
+  toast,
 } from 'frappe-ui'
 import { useOnboarding } from 'frappe-ui/frappe'
 import { ref, computed, h, onMounted, onBeforeUnmount } from 'vue'
@@ -372,8 +402,8 @@ const router = useRouter()
 const props = defineProps({
   dealId: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
 })
 
 const errorTitle = ref('')
@@ -389,7 +419,7 @@ const deal = createResource({
 
     if (data.organization) {
       organization.update({
-        params: { doctype: 'CRM Organization', name: data.organization }
+        params: { doctype: 'CRM Organization', name: data.organization },
       })
       organization.fetch()
     }
@@ -407,9 +437,9 @@ const deal = createResource({
       resource: {
         deal,
         dealContacts,
-        sections
+        sections,
       },
-      call
+      call,
     })
   },
   onError: (err) => {
@@ -419,7 +449,7 @@ const deal = createResource({
     } else {
       router.push({ name: 'Deals' })
     }
-  }
+  },
 })
 
 const quotations = createResource({
@@ -430,7 +460,6 @@ const quotations = createResource({
     errorTitle.value = ''
     errorMessage.value = ''
     deal.linked_quotations = data
-
   },
   onError: (err) => {
     if (err.messages?.[0]) {
@@ -439,16 +468,39 @@ const quotations = createResource({
     } else {
       router.push({ name: 'Deals' })
     }
-  }
+  },
 })
 
-setTimeout(() =>
-    console.log('returned quotations', [...deal.linked_quotations.map(q => ({...q}))])
-  , 1000);
+const visits = createResource({
+  url: 'crm.fcrm.doctype.crm_deal.api.get_deal_visits',
+  params: { dealId: props.dealId },
+  cache: ['deal', 'visits', props.dealId],
+  onSuccess: (data) => {
+    errorTitle.value = ''
+    errorMessage.value = ''
+    deal.linked_visits = data
+  },
+  onError: (err) => {
+    if (err.messages?.[0]) {
+      errorTitle.value = __('Not permitted')
+      errorMessage.value = __(err.messages?.[0])
+    } else {
+      router.push({ name: 'Deals' })
+    }
+  },
+})
+
+setTimeout(
+  () =>
+    console.log('returned quotations', [
+      ...deal.linked_quotations.map((q) => ({ ...q })),
+    ]),
+  1000,
+)
 
 const organization = createResource({
   url: 'frappe.client.get',
-  onSuccess: (data) => (deal.data._organizationObj = data)
+  onSuccess: (data) => (deal.data._organizationObj = data),
 })
 
 onMounted(() => {
@@ -462,6 +514,7 @@ onMounted(() => {
   }
   deal.fetch()
   quotations.fetch()
+  visits.fetch()
 })
 
 onBeforeUnmount(() => {
@@ -484,7 +537,7 @@ function updateDeal(fieldname, value, callback) {
       doctype: 'CRM Deal',
       name: props.dealId,
       fieldname,
-      value
+      value,
     },
     auto: true,
     onSuccess: () => {
@@ -495,7 +548,7 @@ function updateDeal(fieldname, value, callback) {
     },
     onError: (err) => {
       toast.error(__('Error updating deal: {0}', [err.messages?.[0]]))
-    }
+    },
   })
 }
 
@@ -520,15 +573,15 @@ const breadcrumbs = computed(() => {
         route: {
           name: 'Deals',
           params: { viewType: route.query.viewType },
-          query: { view: route.query.view }
-        }
+          query: { view: route.query.view },
+        },
       })
     }
   }
 
   items.push({
     label: title.value,
-    route: { name: 'Deal', params: { dealId: deal.data.name } }
+    route: { name: 'Deal', params: { dealId: deal.data.name } },
   })
   return items
 })
@@ -541,7 +594,7 @@ const title = computed(() => {
 usePageMeta(() => {
   return {
     title: title.value,
-    icon: brand.favicon
+    icon: brand.favicon,
   }
 })
 
@@ -550,54 +603,59 @@ const tabs = computed(() => {
     {
       name: 'Activity',
       label: __('Activity'),
-      icon: ActivityIcon
+      icon: ActivityIcon,
     },
     {
       name: 'Emails',
       label: __('Emails'),
-      icon: EmailIcon
+      icon: EmailIcon,
     },
     {
       name: 'Comments',
       label: __('Comments'),
-      icon: CommentIcon
+      icon: CommentIcon,
     },
     {
       name: 'Data',
       label: __('Data'),
-      icon: DetailsIcon
+      icon: DetailsIcon,
+    },
+    {
+      name: 'Visits',
+      label: __('Visits'),
+      icon: VisitsIcon,
     },
     {
       name: 'Quotations',
       label: __('Quotations'),
-      icon: DetailsIcon
+      icon: DetailsIcon,
     },
     {
       name: 'Calls',
       label: __('Calls'),
-      icon: PhoneIcon
+      icon: PhoneIcon,
     },
     {
       name: 'Tasks',
       label: __('Tasks'),
-      icon: TaskIcon
+      icon: TaskIcon,
     },
     {
       name: 'Notes',
       label: __('Notes'),
-      icon: NoteIcon
+      icon: NoteIcon,
     },
     {
       name: 'Attachments',
       label: __('Attachments'),
-      icon: AttachmentIcon
+      icon: AttachmentIcon,
     },
     {
       name: 'WhatsApp',
       label: __('WhatsApp'),
       icon: WhatsAppIcon,
-      condition: () => whatsappEnabled.value
-    }
+      condition: () => whatsappEnabled.value,
+    },
   ]
   return tabOptions.filter((tab) => (tab.condition ? tab.condition() : true))
 })
@@ -607,7 +665,7 @@ const sections = createResource({
   url: 'crm.fcrm.doctype.crm_fields_layout.crm_fields_layout.get_sidepanel_sections',
   cache: ['sidePanelSections', 'CRM Deal'],
   params: { doctype: 'CRM Deal' },
-  transform: (data) => getParsedSections(data)
+  transform: (data) => getParsedSections(data),
 })
 
 if (!sections.data) sections.fetch()
@@ -625,7 +683,7 @@ function getParsedSections(_sections) {
         field.link = (org) =>
           router.push({
             name: 'Organization',
-            params: { organizationId: org }
+            params: { organizationId: org },
           })
       }
     })
@@ -641,15 +699,15 @@ function contactOptions(contact) {
     {
       label: __('Remove'),
       icon: 'trash-2',
-      onClick: () => removeContact(contact.name)
-    }
+      onClick: () => removeContact(contact.name),
+    },
   ]
 
   if (!contact.is_primary) {
     options.push({
       label: __('Set as Primary Contact'),
       icon: h(SuccessIcon, { class: 'h-4 w-4' }),
-      onClick: () => setPrimaryContact(contact.name)
+      onClick: () => setPrimaryContact(contact.name),
     })
   }
 
@@ -664,7 +722,7 @@ async function addContact(contact) {
 
   let d = await call('crm.fcrm.doctype.crm_deal.crm_deal.add_contact', {
     deal: props.dealId,
-    contact
+    contact,
   })
   if (d) {
     dealContacts.reload()
@@ -675,7 +733,7 @@ async function addContact(contact) {
 async function removeContact(contact) {
   let d = await call('crm.fcrm.doctype.crm_deal.crm_deal.remove_contact', {
     deal: props.dealId,
-    contact
+    contact,
   })
   if (d) {
     dealContacts.reload()
@@ -686,7 +744,7 @@ async function removeContact(contact) {
 async function setPrimaryContact(contact) {
   let d = await call('crm.fcrm.doctype.crm_deal.crm_deal.set_primary_contact', {
     deal: props.dealId,
-    contact
+    contact,
   })
   if (d) {
     dealContacts.reload()
@@ -703,7 +761,7 @@ const dealContacts = createResource({
       contact.opened = false
     })
     return data
-  }
+  },
 })
 
 if (!dealContacts.data) dealContacts.fetch()
@@ -739,7 +797,7 @@ function updateField(name, value, callback) {
 async function deleteDeal(name) {
   await call('frappe.client.delete', {
     doctype: 'CRM Deal',
-    name
+    name,
   })
   router.push({ name: 'Deals' })
 }
