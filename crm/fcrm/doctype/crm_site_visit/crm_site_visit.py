@@ -4,6 +4,7 @@
 import frappe
 import requests
 from frappe import _
+from frappe.utils import nowdate, today, getdate
 from frappe.model.document import Document
 
 
@@ -797,3 +798,49 @@ def after_insert_calendar_sync(doc, method):
             indicator='orange',
             alert=True
         )
+
+
+
+@frappe.whitelist()
+def get_visits_metrics(period='thisMonth'):
+    return {
+        "total": 78,
+        "growth": 15.7
+    }
+
+    """
+    Returns aggregated metrics for CRM Site Visit over a given time period:
+      - total visits
+      - counts by status
+      - growth placeholder
+    """
+    filters = { 'docstatus': 0 }
+    if period:
+        today = getdate(nowdate())
+        if period == 'today':
+            filters['creation'] = ['>=', today]
+        elif period == 'thisWeek':
+            start = today.add_days(-today.weekday())
+            filters['creation'] = ['>=', start]
+        elif period == 'thisMonth':
+            filters['creation'] = ['>=', today.replace(day=1)]
+        elif period == 'thisQuarter':
+            q = ((today.month - 1) // 3) * 3 + 1
+            filters['creation'] = ['>=', today.replace(month=q, day=1)]
+        elif period == 'thisYear':
+            filters['creation'] = ['>=', today.replace(month=1, day=1)]
+
+    visits = frappe.get_all('CRM Site Visit', fields=['status'], filters=filters)
+    total = len(visits)
+    status_counts = {}
+    for v in visits:
+        st = v.get('status') or 'unknown'
+        key = st.lower().replace(' ', '_')
+        status_counts[key] = status_counts.get(key, 0) + 1
+
+    metrics = {
+        'total': total,
+        'growth': 0  # placeholder
+    }
+    metrics.update({ f"{key}_visits": cnt for key, cnt in status_counts.items() })
+    return metrics

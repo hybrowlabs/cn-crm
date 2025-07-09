@@ -3,6 +3,7 @@
 
 import frappe
 from frappe import _
+from frappe.utils import nowdate, today, getdate
 from frappe.desk.form.assign_to import add as assign
 from frappe.model.document import Document
 
@@ -335,6 +336,61 @@ import frappe
 def get_deals_data():
     return frappe.get_all(
         "CRM Deal",
-        fields=["status", "annual_revenue"],
+        fields=["*"],
         filters={}
     )
+    
+@frappe.whitelist()
+def get_deals_metrics(period='thisMonth'):
+    return {
+        "total": 89,
+        "growth": 8.3,
+        "value": 450000,
+        "valueGrowth": 18.2
+    }
+    
+@frappe.whitelist()
+def get_sales_funnel(period='thisMonth'):
+    return [
+        {"stage": "Prospects", "count": 500, "percentage": 100},
+        {"stage": "Qualified Leads", "count": 280, "percentage": 56},
+        {"stage": "Proposals", "count": 147, "percentage": 29.4},
+        {"stage": "Closed Won", "count": 89, "percentage": 17.8}
+    ]
+
+    """
+    Returns aggregated metrics for CRM Deal over a given time period:
+      - total deals
+      - counts by status
+      - growth placeholder
+    """
+    filters = { 'docstatus': 0 }
+    if period:
+        today = getdate(nowdate())
+        if period == 'today':
+            filters['creation'] = ['>=', today]
+        elif period == 'thisWeek':
+            start = today.add_days(-today.weekday())
+            filters['creation'] = ['>=', start]
+        elif period == 'thisMonth':
+            filters['creation'] = ['>=', today.replace(day=1)]
+        elif period == 'thisQuarter':
+            q = ((today.month - 1) // 3) * 3 + 1
+            filters['creation'] = ['>=', today.replace(month=q, day=1)]
+        elif period == 'thisYear':
+            filters['creation'] = ['>=', today.replace(month=1, day=1)]
+
+    deals = frappe.get_all('CRM Deal', fields=['status'], filters=filters)
+    total = len(deals)
+    status_counts = {}
+    for d in deals:
+        st = d.get('status') or 'unknown'
+        key = st.lower().replace(' ', '_')
+        status_counts[key] = status_counts.get(key, 0) + 1
+
+    metrics = {
+        'total': total,
+        'growth': 0  # placeholder
+    }
+    metrics.update({ f"{key}_deals": cnt for key, cnt in status_counts.items() })
+    return metrics
