@@ -12,7 +12,6 @@ from crm.fcrm.doctype.crm_status_change_log.crm_status_change_log import (
 	add_status_change_log,
 )
 
-
 class CRMLead(Document):
 	def before_validate(self):
 		self.set_sla()
@@ -422,6 +421,24 @@ def convert_to_deal(lead, doc=None, deal=None, existing_contact=None, existing_o
 def get_leads_data():
     return frappe.get_all(
         "CRM Lead",
-        fields=["status", "annual_revenue"],
+        fields=["*"],
         filters={}
     )
+    
+    
+@frappe.whitelist()
+def get_leads_metrics(period='thisMonth'):
+    return {
+        "total": 150,
+        "growth": 12.5,
+        "new_leads": 45,
+        "qualified_leads": 67
+    }
+    
+@frappe.whitelist()
+def get_lead_sources_chart(period='thisMonth'):
+    return {
+        "labels": ["Website", "Referrals", "Social Media", "Email", "Direct"],
+        "data": [35, 25, 20, 12, 8],
+        "colors": ["#1565C0", "#388E3C", "#F57C00", "#7B1FA2", "#D32F2F"]
+    }
