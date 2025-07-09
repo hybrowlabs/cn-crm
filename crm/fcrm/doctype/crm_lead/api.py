@@ -15,3 +15,14 @@ def get_lead(name):
 	lead["_form_script"] = get_form_script("CRM Lead")
 	lead["_assign"] = get_assigned_users("CRM Lead", lead.name)
 	return lead
+
+@frappe.whitelist()
+def get_lead_visits(leadId):
+    return frappe.get_all(
+        "CRM Site Visit",
+        filters={
+            "reference_type": "CRM Lead",
+            "reference_name": leadId
+        },
+        fields=["*"]
+    )
