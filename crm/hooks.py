@@ -1,5 +1,5 @@
-app_name = "crm"
-app_title = "Frappe CRM"
+app_name = "cn_crm"
+app_title = "Chatnext CRM"
 app_publisher = "Frappe Technologies Pvt. Ltd."
 app_description = "Kick-ass Open Source CRM"
 app_email = "shariq@frappe.io"
