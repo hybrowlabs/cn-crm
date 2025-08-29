@@ -382,6 +382,19 @@
         :rows="doc.linked_quotations"
       />
     </div>
+    <div v-else-if="title == 'Visits'" class="h-full flex flex-col px-3 sm:px-10">
+      <VisitListView
+        :columns="[
+          { label: __('Visit'), key: 'name', type: 'Data' },
+          { label: __('Date'), key: 'visit_date', type: 'Date' },
+          { label: __('Type'), key: 'visit_type', type: 'Data' },
+          { label: __('Status'), key: 'status', type: 'Data' },
+          { label: __('Sales Person'), key: 'sales_person', type: 'Data' },
+        ]"
+        :rows="doc.linked_visits || []"
+        :options="{ selectable: false, showTooltip: false, resizeColumn: true }"
+      />
+    </div>
     
     <div
       v-else
@@ -447,6 +460,7 @@
     v-model="all_activities"
     :doctype="doctype"
     :doc="doc"
+    @reloadVisits="$emit('reloadVisits')"
   />
   <FilesUploader
     v-if="doc.data?.name"
@@ -516,6 +530,7 @@ import {
 } from 'vue'
 import { useRoute } from 'vue-router'
 import QuotationsListView from '@/components/ListViews/QuotationsListView.vue'
+import VisitListView from '@/components/ListViews/VisitListView.vue'
 
 const { makeCall, $socket } = globalStore()
 const { getUser } = usersStore()
@@ -531,7 +546,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['beforeSave', 'afterSave'])
+const emit = defineEmits(['beforeSave', 'afterSave', 'reloadVisits'])
 
 const route = useRoute()
 

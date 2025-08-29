@@ -74,6 +74,16 @@
       </Button>
     </div>
     <div v-else-if="title == 'Quotations'"></div>
+    <Button
+      v-else-if="title == 'Visits'"
+      variant="solid"
+      @click="modalRef.showVisit()"
+    >
+      <template #prefix>
+        <FeatherIcon name="plus" class="h-4 w-4" />
+      </template>
+      <span>{{ __('New Visit') }}</span>
+    </Button>
     <Dropdown v-else :options="defaultActions" @click.stop>
       <template v-slot="{ open }">
         <Button variant="solid" class="flex items-center gap-1">
@@ -101,6 +111,7 @@ import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
+import VisitsIcon from '@/components/Icons/VisitsIcon.vue'
 import { globalStore } from '@/stores/global'
 import { whatsappEnabled, callEnabled } from '@/composables/settings'
 import { Dropdown } from 'frappe-ui'
@@ -158,6 +169,11 @@ const defaultActions = computed(() => {
       icon: h(AttachmentIcon, { class: 'h-4 w-4' }),
       label: __('Upload Attachment'),
       onClick: () => (showFilesUploader.value = true),
+    },
+    {
+      icon: h(VisitsIcon, { class: 'h-4 w-4' }),
+      label: __('New Visit'),
+      onClick: () => props.modalRef.showVisit(),
     },
     {
       icon: h(WhatsAppIcon, { class: 'h-4 w-4' }),

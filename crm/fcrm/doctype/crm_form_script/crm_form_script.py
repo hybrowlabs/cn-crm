@@ -22,9 +22,28 @@ class CRMFormScript(Document):
 				self.enabled = enabled_value
 			else:
 				frappe.throw(_("You need to be in developer mode to edit a Standard Form Script"))
+	
+	def on_update(self):
+		self.clear_cache()
+	
+	def on_trash(self):
+		self.clear_cache()
+	
+	def clear_cache(self):
+		"""Clear cache for this form script"""
+		cache_key = f"form_script:{self.dt}:{self.view}"
+		frappe.cache().delete_value(cache_key)
 
 def get_form_script(dt, view="Form"):
 	"""Returns the form script for the given doctype"""
+	# Create cache key
+	cache_key = f"form_script:{dt}:{view}"
+	
+	# Try to get from cache first
+	cached_result = frappe.cache().get_value(cache_key)
+	if cached_result is not None:
+		return cached_result
+	
 	FormScript = frappe.qb.DocType("CRM Form Script")
 	query = (
 		frappe.qb.from_(FormScript)
@@ -35,7 +54,11 @@ def get_form_script(dt, view="Form"):
 	)
 
 	doc = query.run(as_dict=True)
+	result = None
 	if doc:
-		return [d.script for d in doc] if len(doc) > 1 else doc[0].script
-	else:
-		return None
+		result = [d.script for d in doc] if len(doc) > 1 else doc[0].script
+	
+	# Cache the result for 10 minutes (600 seconds)
+	frappe.cache().set_value(cache_key, result, expires_in_sec=600)
+	
+	return result

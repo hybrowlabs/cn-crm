@@ -63,6 +63,7 @@
           v-model="deal"
           @beforeSave="beforeStatusChange"
           @afterSave="reloadAssignees"
+          @reloadVisits="reloadVisits"
         />
       </template>
     </Tabs>
@@ -349,6 +350,7 @@ import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
+import VisitsIcon from '@/components/Icons/VisitsIcon.vue'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import LinkIcon from '@/components/Icons/LinkIcon.vue'
 import ArrowUpRightIcon from '@/components/Icons/ArrowUpRightIcon.vue'
@@ -476,9 +478,24 @@ const quotations = createResource({
   }
 })
 
-setTimeout(() =>
-    console.log('returned quotations', [...deal.linked_quotations.map(q => ({...q}))])
-  , 1000);
+const visits = createResource({
+  url: 'crm.fcrm.doctype.crm_deal.api.get_deal_visits',
+  params: { name: props.dealId },
+  cache: ['deal', 'visits', props.dealId],
+  onSuccess: (data) => {
+    errorTitle.value = ''
+    errorMessage.value = ''
+    deal.data.linked_visits = data
+  },
+  onError: (err) => {
+    if (err.messages?.[0]) {
+      errorTitle.value = __('Not permitted')
+      errorMessage.value = __(err.messages?.[0])
+    } else {
+      router.push({ name: 'Deals' })
+    }
+  }
+})
 
 const organization = createResource({
   url: 'frappe.client.get',
@@ -496,6 +513,7 @@ onMounted(() => {
   }
   deal.fetch()
   quotations.fetch()
+  visits.fetch()
 })
 
 onBeforeUnmount(() => {
@@ -609,6 +627,11 @@ const tabs = computed(() => {
       name: 'Quotations',
       label: __('Quotations'),
       icon: DetailsIcon
+    },
+    {
+      name: 'Visits',
+      label: __('Visits'),
+      icon: VisitsIcon
     },
     {
       name: 'Calls',
@@ -831,5 +854,9 @@ function reloadAssignees(data) {
   if (data?.hasOwnProperty('deal_owner')) {
     assignees.reload()
   }
+}
+
+function reloadVisits() {
+  visits.reload()
 }
 </script>

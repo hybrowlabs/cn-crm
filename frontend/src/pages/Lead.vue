@@ -67,6 +67,7 @@
           v-model:tabIndex="tabIndex"
           v-model="lead"
           @afterSave="reloadAssignees"
+          @reloadVisits="reloadVisits"
         />
       </template>
     </Tabs>
@@ -255,6 +256,7 @@ import PhoneIcon from '@/components/Icons/PhoneIcon.vue'
 import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
+import VisitsIcon from '@/components/Icons/VisitsIcon.vue'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import CameraIcon from '@/components/Icons/CameraIcon.vue'
 import LinkIcon from '@/components/Icons/LinkIcon.vue'
@@ -326,6 +328,23 @@ async function triggerStatusChange(value) {
   document.save.submit()
 }
 
+const visits = createResource({
+  url: 'crm.fcrm.doctype.crm_lead.api.get_lead_visits',
+  params: { name: props.leadId },
+  cache: ['lead', 'visits', props.leadId],
+  onSuccess: (data) => {
+    errorTitle.value = ''
+    errorMessage.value = ''
+    lead.data.linked_visits = data
+  },
+  onError: (err) => {
+    if (err.messages?.[0]) {
+      errorTitle.value = __('Not permitted')
+      errorMessage.value = __(err.messages?.[0])
+    }
+  },
+})
+
 const lead = createResource({
   url: 'crm.fcrm.doctype.crm_lead.api.get_lead',
   params: { name: props.leadId },
@@ -359,6 +378,7 @@ const lead = createResource({
 onMounted(() => {
   if (lead.data) return
   lead.fetch()
+  visits.fetch()
 })
 
 const reload = ref(false)
@@ -459,6 +479,11 @@ const tabs = computed(() => {
       icon: DetailsIcon,
     },
     {
+      name: 'Visits',
+      label: __('Visits'),
+      icon: VisitsIcon,
+    },
+    {
       name: 'Calls',
       label: __('Calls'),
       icon: PhoneIcon,
@@ -541,5 +566,9 @@ function reloadAssignees(data) {
   if (data?.hasOwnProperty('lead_owner')) {
     assignees.reload()
   }
+}
+
+function reloadVisits() {
+  visits.reload()
 }
 </script>

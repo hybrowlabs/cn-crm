@@ -22,11 +22,17 @@
     :referenceDoc="referenceDoc"
     :options="{ afterInsert: () => activities.reload() }"
   />
+  <VisitModal
+    v-model="showVisitModal"
+    :defaults="visit"
+    :options="{ afterInsert: () => { activities.reload(); emit('reloadVisits'); redirect('visits'); } }"
+  />
 </template>
 <script setup>
 import TaskModal from '@/components/Modals/TaskModal.vue'
 import NoteModal from '@/components/Modals/NoteModal.vue'
 import CallLogModal from '@/components/Modals/CallLogModal.vue'
+import VisitModal from '@/components/Modals/VisitModal.vue'
 import { call } from 'frappe-ui'
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -34,6 +40,8 @@ import { useRoute, useRouter } from 'vue-router'
 const props = defineProps({
   doctype: String,
 })
+
+const emit = defineEmits(['reloadVisits'])
 
 const activities = defineModel()
 const doc = defineModel('doc')
@@ -90,6 +98,10 @@ const showCallLogModal = ref(false)
 const callLog = ref({})
 const referenceDoc = ref({})
 
+// Visits
+const showVisitModal = ref(false)
+const visit = ref({})
+
 function createCallLog() {
   let doctype = props.doctype
   let docname = props.doc.data?.name
@@ -99,6 +111,20 @@ function createCallLog() {
     reference_docname: docname,
   }
   showCallLogModal.value = true
+}
+
+function showVisit() {
+  let doctype = props.doctype
+  let docname = doc.value.data?.name
+  visit.value = {
+    reference_type: doctype,
+    reference_name: docname,
+    visit_date: new Date().toISOString().split('T')[0],
+    visit_type: 'Initial Meeting',
+    status: 'Planned',
+    priority: 'Medium'
+  }
+  showVisitModal.value = true
 }
 
 // common
@@ -120,5 +146,6 @@ defineExpose({
   updateTaskStatus,
   showNote,
   createCallLog,
+  showVisit,
 })
 </script>
