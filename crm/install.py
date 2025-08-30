@@ -23,6 +23,7 @@ def after_install(force=False):
 	add_default_lost_reasons()
 	add_standard_dropdown_items()
 	add_default_scripts()
+	add_default_spanco_views()
 	frappe.db.commit()
 
 
@@ -411,3 +412,93 @@ def add_default_scripts():
 	for doctype in ["CRM Lead", "CRM Deal"]:
 		create_product_details_script(doctype)
 	create_forecasting_script()
+
+
+def add_default_spanco_views():
+	"""Create default SPANCO views for the sales pipeline."""
+	
+	# Define SPANCO views with their configurations
+	spanco_views = {
+		"Suspects": {
+			"label": "Suspects",
+			"dt": "CRM Lead",
+			"filters": '{"status": "New"}',
+			"route_name": "LeadList",
+		},
+		"Prospects": {
+			"label": "Prospects", 
+			"dt": "CRM Lead",
+			"filters": '{"status": ["in", ["Contacted", "Nurture", "Qualified"]]}',
+			"route_name": "LeadList",
+		},
+		"Analysis": {
+			"label": "Analysis",
+			"dt": "CRM Deal", 
+			"filters": '{"status": ["in", ["Qualification", "Demo/Making"]]}',
+			"route_name": "DealList",
+		},
+		"Negotiation": {
+			"label": "Negotiation",
+			"dt": "CRM Deal",
+			"filters": '{"status": ["in", ["Proposal/Quotation", "Negotiation"]]}',
+			"route_name": "DealList",
+		},
+		"Commitment": {
+			"label": "Commitment",
+			"dt": "CRM Deal",
+			"filters": '{"status": "Ready to Close"}',
+			"route_name": "DealList",
+		},
+		"Order": {
+			"label": "Order",
+			"dt": "CRM Deal",
+			"filters": '{"status": "Won"}',
+			"route_name": "DealList",
+		}
+	}
+
+	view_ids = {}
+	
+	# Create each SPANCO view if it doesn't exist
+	for view_name, config in spanco_views.items():
+		# Check if view already exists
+		existing_view = frappe.db.get_value(
+			"CRM View Settings", 
+			{"label": config["label"], "dt": config["dt"]},
+			"name"
+		)
+		
+		if existing_view:
+			view_ids[view_name.lower()] = existing_view
+			continue
+			
+		# Create new view
+		doc = frappe.new_doc("CRM View Settings")
+		doc.label = config["label"]
+		doc.dt = config["dt"]
+		doc.type = "list"
+		doc.route_name = config["route_name"]
+		doc.filters = config["filters"]
+		doc.is_standard = 1
+		doc.public = 1
+		doc.insert()
+		
+		view_ids[view_name.lower()] = doc.name
+
+	# Update FCRM Settings with the view references
+	fcrm_settings = frappe.get_single("FCRM Settings")
+	
+	if view_ids.get("suspects"):
+		fcrm_settings.suspects = view_ids["suspects"]
+	if view_ids.get("prospects"):
+		fcrm_settings.prospects = view_ids["prospects"] 
+	if view_ids.get("analysis"):
+		fcrm_settings.analysis = view_ids["analysis"]
+	if view_ids.get("negotiation"):
+		fcrm_settings.negotiation = view_ids["negotiation"]
+	if view_ids.get("commitment"):
+		fcrm_settings.closed = view_ids["commitment"]
+	if view_ids.get("order"):
+		fcrm_settings.order = view_ids["order"]
+		
+	fcrm_settings.save()
