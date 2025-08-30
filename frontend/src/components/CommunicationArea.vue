@@ -96,6 +96,7 @@ import { capture } from '@/telemetry'
 import { usersStore } from '@/stores/users'
 import { useStorage } from '@vueuse/core'
 import { call, createResource } from 'frappe-ui'
+import { handleApiError } from '@/utils/errorHandler'
 import { useOnboarding } from 'frappe-ui/frappe'
 import { ref, watch, computed } from 'vue'
 
@@ -191,58 +192,78 @@ async function sendMail() {
   if (attachments.value.length) {
     capture('email_attachments_added')
   }
-  await call('frappe.core.doctype.communication.email.make', {
-    recipients: recipients.join(', '),
-    attachments: attachments.value.map((x) => x.name),
-    cc: cc.join(', '),
-    bcc: bcc.join(', '),
-    subject: subject,
-    content: newEmail.value,
-    doctype: props.doctype,
-    name: doc.value.data.name,
-    send_email: 1,
-    sender: getUser().email,
-    sender_full_name: getUser()?.full_name || undefined,
-  })
+  try {
+    await call('frappe.core.doctype.communication.email.make', {
+      recipients: recipients.join(', '),
+      attachments: attachments.value.map((x) => x.name),
+      cc: cc.join(', '),
+      bcc: bcc.join(', '),
+      subject: subject,
+      content: newEmail.value,
+      doctype: props.doctype,
+      name: doc.value.data.name,
+      send_email: 1,
+      sender: getUser().email,
+      sender_full_name: getUser()?.full_name || undefined,
+    })
+  } catch (error) {
+    handleApiError(error, { context: 'Send Email' })
+    throw error
+  }
 }
 
 async function sendComment() {
-  let comment = await call('frappe.desk.form.utils.add_comment', {
-    reference_doctype: props.doctype,
-    reference_name: doc.value.data.name,
-    content: newComment.value,
-    comment_email: getUser().email,
-    comment_by: getUser()?.full_name || undefined,
-  })
-  if (comment && attachments.value.length) {
-    capture('comment_attachments_added')
-    await call('crm.api.comment.add_attachments', {
-      name: comment.name,
-      attachments: attachments.value.map((x) => x.name),
+  try {
+    let comment = await call('frappe.desk.form.utils.add_comment', {
+      reference_doctype: props.doctype,
+      reference_name: doc.value.data.name,
+      content: newComment.value,
+      comment_email: getUser().email,
+      comment_by: getUser()?.full_name || undefined,
     })
+    if (comment && attachments.value.length) {
+      capture('comment_attachments_added')
+      await call('crm.api.comment.add_attachments', {
+        name: comment.name,
+        attachments: attachments.value.map((x) => x.name),
+      })
+    }
+  } catch (error) {
+    handleApiError(error, { context: 'Add Comment' })
+    throw error
   }
 }
 
 async function submitEmail() {
   if (emailEmpty.value) return
-  showEmailBox.value = false
-  await sendMail()
-  newEmail.value = ''
-  reload.value = true
-  emit('scroll')
-  capture('email_sent', { doctype: props.doctype })
-  updateOnboardingStep('send_first_email')
+  try {
+    await sendMail()
+    showEmailBox.value = false
+    newEmail.value = ''
+    reload.value = true
+    emit('scroll')
+    capture('email_sent', { doctype: props.doctype })
+    updateOnboardingStep('send_first_email')
+  } catch (error) {
+    // Error already handled by sendMail, just keep the UI state
+    console.error('Email send failed:', error)
+  }
 }
 
 async function submitComment() {
   if (commentEmpty.value) return
-  showCommentBox.value = false
-  await sendComment()
-  newComment.value = ''
-  reload.value = true
-  emit('scroll')
-  capture('comment_sent', { doctype: props.doctype })
-  updateOnboardingStep('add_first_comment')
+  try {
+    await sendComment()
+    showCommentBox.value = false
+    newComment.value = ''
+    reload.value = true
+    emit('scroll')
+    capture('comment_sent', { doctype: props.doctype })
+    updateOnboardingStep('add_first_comment')
+  } catch (error) {
+    // Error already handled by sendComment, just keep the UI state
+    console.error('Comment send failed:', error)
+  }
 }
 
 function toggleEmailBox() {

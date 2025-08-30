@@ -187,6 +187,7 @@ import { getSettings } from '@/stores/settings'
 import { globalStore } from '@/stores/global'
 import { statusesStore } from '@/stores/statuses'
 import { getMeta } from '@/stores/meta'
+import { handleResourceError } from '@/utils/errorHandler'
 import { callEnabled } from '@/composables/settings'
 import {
   createResource,
@@ -292,7 +293,8 @@ function updateVisit(fieldname, value, callback) {
       callback?.()
     },
     onError: (err) => {
-      toast.error(err.messages?.[0] || __('Error updating visit'))
+      // Use enhanced error handler for comprehensive error processing
+      handleResourceError(err, 'update visit')
     },
   })
 }

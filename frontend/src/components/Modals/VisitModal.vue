@@ -1,11 +1,11 @@
 <template>
-  <Dialog v-model="show" :options="{ size: 'xl' }">
+  <Dialog v-model="show" :options="{ size: '3xl' }">
     <template #body>
       <div class="bg-surface-modal px-4 pb-6 pt-5 sm:px-6">
         <div class="mb-5 flex items-center justify-between">
           <div>
             <h3 class="text-2xl font-semibold leading-6 text-ink-gray-9">
-              {{ __('New Site Visit') }}
+              {{ __('Create Site Visit') }}
             </h3>
           </div>
           <div class="flex items-center gap-1">
@@ -15,28 +15,33 @@
               class="w-7"
               @click="openQuickEntryModal"
             >
-              <EditIcon class="h-4 w-4" />
+              <template #icon>
+                <EditIcon />
+              </template>
             </Button>
             <Button variant="ghost" class="w-7" @click="show = false">
-              <FeatherIcon name="x" class="h-4 w-4" />
+              <template #icon>
+                <FeatherIcon name="x" class="size-4" />
+              </template>
             </Button>
           </div>
         </div>
-        <FieldLayout
-          v-if="tabs.data?.length"
-          :tabs="tabs.data"
-          :data="_visit"
-          doctype="CRM Site Visit"
-        />
-        <ErrorMessage class="mt-4" v-if="error" :message="__(error)" />
+        <div>
+          <FieldLayout 
+            v-if="tabs.data" 
+            :tabs="tabs.data" 
+            :data="visit.doc" 
+            doctype="CRM Site Visit"
+          />
+          <ErrorMessage class="mt-4" v-if="error" :message="__(error)" />
+        </div>
       </div>
       <div class="px-4 pb-7 pt-4 sm:px-6">
-        <div class="space-y-2">
+        <div class="flex flex-row-reverse gap-2">
           <Button
-            class="w-full"
             variant="solid"
             :label="__('Create')"
-            :loading="loading"
+            :loading="isVisitCreating"
             @click="createVisit"
           />
         </div>
@@ -46,92 +51,70 @@
 </template>
 
 <script setup>
-import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
 import EditIcon from '@/components/Icons/EditIcon.vue'
+import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
 import { usersStore } from '@/stores/users'
+import { statusesStore } from '@/stores/statuses'
 import { isMobileView } from '@/composables/settings'
+import { showQuickEntryModal, quickEntryProps } from '@/composables/modals'
+import { useDocument } from '@/data/document'
 import { capture } from '@/telemetry'
-import { call, createResource } from 'frappe-ui'
-import { ref, nextTick, watch, computed, onMounted } from 'vue'
+import { handleResourceError } from '@/utils/errorHandler'
+import { createResource } from 'frappe-ui'
+import { computed, ref, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
   defaults: Object,
-  options: {
-    type: Object,
-    default: {
-      redirect: true,
-      afterInsert: () => {},
-    },
-  },
 })
 
 const { getUser, isManager } = usersStore()
+const { statusOptions } = statusesStore()
 
-const router = useRouter()
 const show = defineModel()
+const router = useRouter()
 const error = ref(null)
-const loading = ref(false)
+const isVisitCreating = ref(false)
 
-let _visit = ref({
-  visit_date: new Date().toISOString().split('T')[0],
-  visit_type: 'Initial Meeting',
-  status: 'Planned',
-  sales_person: '',
-  reference_doctype: '',
-  reference_name: '',
-  visit_to: '',
-  contact_person: '',
-  contact_email: '',
-  contact_phone: '',
-  address_line_1: '',
-  city: '',
-  state: '',
-  country: '',
-  visit_purpose: '',
-  priority: 'Medium',
+const { document: visit, triggerOnBeforeCreate } = useDocument('CRM Site Visit')
+
+const visitStatuses = computed(() => {
+  let statuses = [
+    { label: 'Planned', value: 'Planned', color: 'blue' },
+    { label: 'In Progress', value: 'In Progress', color: 'orange' },
+    { label: 'Completed', value: 'Completed', color: 'green' },
+    { label: 'Cancelled', value: 'Cancelled', color: 'red' },
+    { label: 'Postponed', value: 'Postponed', color: 'gray' },
+  ]
+  
+  if (!visit.doc.status) {
+    visit.doc.status = statuses[0]?.value
+  }
+  return statuses
 })
 
-const visitStatuses = computed(() => [
-  { label: 'Planned', value: 'Planned' },
-  { label: 'In Progress', value: 'In Progress' },
-  { label: 'Completed', value: 'Completed' },
-  { label: 'Cancelled', value: 'Cancelled' },
+const visitTypes = computed(() => [
+  { label: 'Initial Meeting', value: 'Initial Meeting' },
+  { label: 'Demo/Presentation', value: 'Demo/Presentation' },
+  { label: 'Negotiation', value: 'Negotiation' },
+  { label: 'Contract Signing', value: 'Contract Signing' },
+  { label: 'Follow-up', value: 'Follow-up' },
+  { label: 'Support', value: 'Support' },
+  { label: 'Other', value: 'Other' },
 ])
 
-async function createVisit() {
-  loading.value = true
-  error.value = null
+const priorityOptions = computed(() => [
+  { label: 'Low', value: 'Low' },
+  { label: 'Medium', value: 'Medium' },
+  { label: 'High', value: 'High' },
+  { label: 'Urgent', value: 'Urgent' },
+])
 
-  try {
-    const doc = await call('frappe.client.insert', {
-      doc: {
-        doctype: 'CRM Site Visit',
-        ..._visit.value,
-      },
-    })
-    
-    if (doc.name) {
-      capture('visit_created')
-      handleVisitUpdate(doc)
-    }
-  } catch (err) {
-    error.value = err.messages?.join('\n') || err.message
-  } finally {
-    loading.value = false
-  }
-}
-
-function handleVisitUpdate(doc) {
-  if (doc.name && props.options.redirect) {
-    router.push({
-      name: 'Visit',
-      params: { visitId: doc.name },
-    })
-  }
-  show.value = false
-  props.options.afterInsert && props.options.afterInsert(doc)
-}
+const referenceTypes = computed(() => [
+  { label: 'CRM Lead', value: 'CRM Lead' },
+  { label: 'CRM Deal', value: 'CRM Deal' },
+  { label: 'Customer', value: 'Customer' },
+])
 
 const tabs = createResource({
   url: 'crm.fcrm.doctype.crm_fields_layout.crm_fields_layout.get_fields_layout',
@@ -146,11 +129,26 @@ const tabs = createResource({
             if (field.fieldname == 'status') {
               field.fieldtype = 'Select'
               field.options = visitStatuses.value
-              field.prefix = 'blue'
+              field.prefix = getStatusColor(visit.doc.status)
+            }
+
+            if (field.fieldname == 'visit_type') {
+              field.fieldtype = 'Select'
+              field.options = visitTypes.value
+            }
+
+            if (field.fieldname == 'priority') {
+              field.fieldtype = 'Select'
+              field.options = priorityOptions.value
+            }
+
+            if (field.fieldname == 'reference_type') {
+              field.fieldtype = 'Select'
+              field.options = referenceTypes.value
             }
 
             if (field.fieldtype === 'Table') {
-              _visit.value[field.fieldname] = []
+              visit.doc[field.fieldname] = []
             }
           })
         })
@@ -159,36 +157,147 @@ const tabs = createResource({
   },
 })
 
-watch(
-  () => show.value,
-  (value) => {
-    if (!value) return
-    nextTick(() => {
-      _visit.value = { 
-        visit_date: new Date().toISOString().split('T')[0],
-        visit_type: 'Initial Meeting',
-        status: 'Planned',
-        sales_person: getUser().name,
-        priority: 'Medium',
-        ...props.defaults 
-      }
-    })
-  },
-)
+function getStatusColor(status) {
+  const statusObj = visitStatuses.value.find(s => s.value === status)
+  return statusObj?.color || 'gray'
+}
 
-const showQuickEntryModal = defineModel('quickEntry')
+async function createVisit() {
+  // Set current date if not provided
+  if (!visit.doc.visit_date) {
+    visit.doc.visit_date = new Date().toISOString().split('T')[0]
+  }
+
+  // Set current user as sales person if not provided
+  if (!visit.doc.sales_person) {
+    visit.doc.sales_person = getUser().name
+  }
+
+  await triggerOnBeforeCreate?.()
+
+  createResource({
+    url: 'frappe.client.insert',
+    params: {
+      doc: {
+        doctype: 'CRM Site Visit',
+        ...visit.doc,
+      },
+    },
+    auto: true,
+    validate() {
+      error.value = null
+
+      // Required field validation
+      if (!visit.doc.visit_date) {
+        error.value = __('Visit Date is required')
+        return error.value
+      }
+
+      if (!visit.doc.visit_type) {
+        error.value = __('Visit Type is required')
+        return error.value
+      }
+
+      if (!visit.doc.reference_type || !visit.doc.reference_name) {
+        error.value = __('Reference (Lead/Deal/Customer) is required')
+        return error.value
+      }
+
+      if (!visit.doc.sales_person) {
+        error.value = __('Sales Person is required')
+        return error.value
+      }
+
+      if (!visit.doc.visit_purpose) {
+        error.value = __('Visit Purpose is required')
+        return error.value
+      }
+
+      // Phone number validation
+      if (visit.doc.contact_phone && isNaN(visit.doc.contact_phone.replace(/[-+() ]/g, ''))) {
+        error.value = __('Contact Phone should be a valid number')
+        return error.value
+      }
+
+      // Email validation
+      if (visit.doc.contact_email && !visit.doc.contact_email.includes('@')) {
+        error.value = __('Invalid Email')
+        return error.value
+      }
+
+      // Status validation
+      if (!visit.doc.status) {
+        error.value = __('Status is required')
+        return error.value
+      }
+
+      // Potential value validation (if provided)
+      if (visit.doc.potential_value && isNaN(visit.doc.potential_value)) {
+        error.value = __('Potential Value should be a number')
+        return error.value
+      }
+
+      // Probability percentage validation (if provided)
+      if (visit.doc.probability_percentage && (visit.doc.probability_percentage < 0 || visit.doc.probability_percentage > 100)) {
+        error.value = __('Success Probability should be between 0 and 100')
+        return error.value
+      }
+
+      isVisitCreating.value = true
+    },
+    onSuccess(data) {
+      capture('site_visit_created')
+      isVisitCreating.value = false
+      show.value = false
+      router.push({ name: 'Visit', params: { visitId: data.name } })
+    },
+    onError(err) {
+      isVisitCreating.value = false
+      
+      // Use global error handler for comprehensive error processing
+      handleResourceError(err, 'create site visit')
+      
+      // Still set local error for component display
+      if (err._server_messages || err.exception || err.exc_type) {
+        // Global handler will show toast, just set a simple message for component
+        error.value = 'Please check the error message above and try again'
+      } else if (err.messages && Array.isArray(err.messages)) {
+        error.value = err.messages.join('\n')
+      } else if (err.message) {
+        error.value = err.message
+      } else {
+        error.value = 'Failed to create site visit'
+      }
+    },
+  })
+}
 
 function openQuickEntryModal() {
   showQuickEntryModal.value = true
+  quickEntryProps.value = { doctype: 'CRM Site Visit' }
   nextTick(() => (show.value = false))
 }
 
 onMounted(() => {
-  if (!_visit.value.sales_person) {
-    _visit.value.sales_person = getUser().name
+  // Set default values
+  visit.doc = {
+    visit_date: new Date().toISOString().split('T')[0],
+    visit_type: 'Initial Meeting',
+    status: 'Planned',
+    priority: 'Medium',
   }
-  if (!_visit.value.status && visitStatuses.value[0]?.value) {
-    _visit.value.status = visitStatuses.value[0].value
+  
+  // Apply any passed defaults
+  Object.assign(visit.doc, props.defaults)
+
+  // Set default sales person
+  if (!visit.doc.sales_person) {
+    visit.doc.sales_person = getUser().name
+  }
+
+  // Set default status
+  if (!visit.doc.status && visitStatuses.value[0]?.value) {
+    visit.doc.status = visitStatuses.value[0].value
   }
 })
 </script>

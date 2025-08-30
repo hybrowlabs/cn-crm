@@ -4,13 +4,15 @@ from pypika import Criterion
 
 @frappe.whitelist()
 def get_views(doctype):
-	View = frappe.qb.DocType("CRM View Settings")
-	query = (
-		frappe.qb.from_(View)
-		.select("*")
-		.where(Criterion.any([View.user == "", View.user == frappe.session.user]))
-	)
+	filters = [
+		["user", "in", ["", None, frappe.session.user]]
+	]
 	if doctype:
-		query = query.where(View.dt == doctype)
-	views = query.run(as_dict=True)
+		filters.append(["dt", "=", doctype])
+	
+	views = frappe.get_all(
+		"CRM View Settings",
+		filters=filters,
+		fields="*"
+	)
 	return views

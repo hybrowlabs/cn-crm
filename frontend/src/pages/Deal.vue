@@ -485,7 +485,7 @@ const visits = createResource({
   onSuccess: (data) => {
     errorTitle.value = ''
     errorMessage.value = ''
-    deal.data.linked_visits = data
+    deal.linked_visits = data
   },
   onError: (err) => {
     if (err.messages?.[0]) {

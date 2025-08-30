@@ -3,6 +3,7 @@ import './index.css'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { createDialog } from './utils/dialogs'
+import { setupGlobalErrorHandler, handleVueError } from './utils/errorHandler'
 import { initSocket } from './socket'
 import router from './router'
 import translationPlugin from './translation'
@@ -53,6 +54,10 @@ for (let key in globalComponents) {
 }
 
 app.config.globalProperties.$dialog = createDialog
+
+// Setup global error handling
+app.config.errorHandler = handleVueError
+setupGlobalErrorHandler()
 
 let socket
 if (import.meta.env.DEV) {
