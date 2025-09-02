@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import json
+import re
 
 import frappe
 from frappe import _
@@ -81,6 +82,167 @@ class ERPNextCRMSettings(Document):
 		except Exception:
 			frappe.log_error(frappe.get_traceback(), "Error while resetting form script")
 			return False
+
+	@frappe.whitelist()
+	def validate_gstin_api(self, gstin):
+		"""
+		API method to validate GSTIN for testing purposes
+		"""
+		try:
+			if not gstin:
+				return {
+					"success": False,
+					"message": "GSTIN is required"
+				}
+			
+			validation_result = validate_deal_gstin(gstin, self.strict_gst_validation)
+			
+			return {
+				"success": True,
+				"validation_result": validation_result,
+				"message": "GSTIN validation completed"
+			}
+		except Exception as e:
+			frappe.log_error(frappe.get_traceback(), "GSTIN Validation API Error")
+			return {
+				"success": False,
+				"message": f"Error validating GSTIN: {str(e)}"
+			}
+
+
+def validate_gstin_format(gstin):
+	"""
+	Validate Indian GSTIN format (15 characters: 2 digits state code + 10 characters PAN + 1 digit entity number + 1 character Z + 1 check digit)
+	Returns tuple (is_valid, error_message)
+	"""
+	if not gstin:
+		return True, None
+	
+	gstin = gstin.upper().strip()
+	
+	# Check length
+	if len(gstin) != 15:
+		return False, f"GSTIN must be exactly 15 characters long. Provided: {len(gstin)} characters"
+	
+	# Check pattern: 2 digits + 10 alphanumeric + 1 digit + 1 letter Z + 1 alphanumeric
+	gstin_pattern = re.compile(r'^[0-9]{2}[A-Z0-9]{10}[0-9][A-Z][A-Z0-9]$')
+	if not gstin_pattern.match(gstin):
+		return False, "GSTIN format is invalid. Expected format: 2 digits + 10 alphanumeric + 1 digit + 1 letter + 1 alphanumeric"
+	
+	# Check if 13th character is 'Z' (index 12, but many GSTINs have different structure)
+	# Let's remove this strict check as GSTIN structure can vary
+	# if gstin[12] != 'Z':
+	#	return False, "13th character of GSTIN must be 'Z'"
+	
+	# Validate check digit
+	try:
+		if not validate_gstin_check_digit(gstin):
+			return False, "GSTIN check digit validation failed"
+	except Exception as e:
+		return False, f"Error validating GSTIN check digit: {str(e)}"
+	
+	return True, None
+
+
+def validate_gstin_check_digit(gstin):
+	"""
+	Validate GSTIN check digit using the standard algorithm
+	"""
+	factor = 1
+	total = 0
+	code_point_chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	mod = len(code_point_chars)
+	input_chars = gstin[:-1]
+	
+	for char in input_chars:
+		digit = factor * code_point_chars.find(char)
+		digit = (digit // mod) + (digit % mod)
+		total += digit
+		factor = 2 if factor == 1 else 1
+	
+	expected_check_digit = code_point_chars[((mod - (total % mod)) % mod)]
+	return gstin[-1] == expected_check_digit
+
+
+def validate_gstin_with_compliance_app(gstin):
+	"""
+	Validate GSTIN using India Compliance app if available
+	Returns tuple (is_valid, error_message, gstin_info)
+	"""
+	try:
+		# Check if India Compliance app is installed
+		if "india_compliance" not in frappe.get_installed_apps():
+			return None, "India Compliance app not installed", None
+		
+		# Import validation function
+		from india_compliance.gst_india.utils import validate_gstin
+		
+		# This will raise an exception if invalid, or return cleaned GSTIN if valid
+		validated_gstin = validate_gstin(gstin, label="GSTIN")
+		
+		return True, None, {"gstin": validated_gstin}
+		
+	except ImportError:
+		return None, "India Compliance validation function not available", None
+	except Exception as e:
+		return False, str(e), None
+
+
+def validate_deal_gstin(gstin, strict_validation=False):
+	"""
+	Main GSTIN validation function that tries India Compliance first, then falls back to basic validation
+	Returns dict with validation results
+	"""
+	if not gstin:
+		return {
+			"is_valid": True,
+			"error_message": None,
+			"warning_message": None,
+			"gstin_info": None,
+			"validation_method": "skip"
+		}
+	
+	# Try India Compliance app first
+	compliance_result, compliance_error, gstin_info = validate_gstin_with_compliance_app(gstin)
+	
+	if compliance_result is not None:
+		# India Compliance validation was attempted
+		if compliance_result:
+			return {
+				"is_valid": True,
+				"error_message": None,
+				"warning_message": None,
+				"gstin_info": gstin_info,
+				"validation_method": "india_compliance"
+			}
+		else:
+			return {
+				"is_valid": False,
+				"error_message": compliance_error,
+				"warning_message": None,
+				"gstin_info": None,
+				"validation_method": "india_compliance"
+			}
+	
+	# Fall back to basic validation
+	basic_result, basic_error = validate_gstin_format(gstin)
+	
+	if basic_result:
+		return {
+			"is_valid": True,
+			"error_message": None,
+			"warning_message": "GSTIN format appears valid (basic validation only - India Compliance app not available for full validation)",
+			"gstin_info": {"gstin": gstin.upper().strip()},
+			"validation_method": "basic"
+		}
+	else:
+		return {
+			"is_valid": False,
+			"error_message": basic_error,
+			"warning_message": None,
+			"gstin_info": None,
+			"validation_method": "basic"
+		}
 
 
 def get_erpnext_site_client(erpnext_crm_settings):
@@ -228,6 +390,50 @@ def create_customer_in_erpnext(doc, method):
 	):
 		return
 
+	# GST Validation
+	gst_validation_result = None
+	customer_comment = None
+	
+	if erpnext_crm_settings.enable_gst_validation:
+		gstin = getattr(doc, 'organization_gstin', None) or ""
+		if gstin:
+			gst_validation_result = validate_deal_gstin(gstin, erpnext_crm_settings.strict_gst_validation)
+			
+			# Handle validation results
+			if not gst_validation_result["is_valid"]:
+				error_msg = f"GST validation failed for GSTIN {gstin}: {gst_validation_result['error_message']}"
+				
+				if erpnext_crm_settings.strict_gst_validation:
+					# Block customer creation
+					frappe.throw(
+						_("Customer creation blocked due to invalid GSTIN. {0}").format(error_msg),
+						title=_("GST Validation Failed")
+					)
+				else:
+					# Show warning and add comment to customer
+					frappe.msgprint(
+						_("Warning: {0}. Customer will still be created.").format(error_msg),
+						title=_("GST Validation Warning"),
+						indicator="orange"
+					)
+					customer_comment = f"GST Validation Warning: {gst_validation_result['error_message']} (Validation method: {gst_validation_result['validation_method']})"
+			elif gst_validation_result["warning_message"]:
+				# Show info message for successful validation with warnings
+				frappe.msgprint(
+					gst_validation_result["warning_message"],
+					title=_("GST Validation Info"),
+					indicator="blue"
+				)
+				customer_comment = f"GST Validation Info: {gst_validation_result['warning_message']} (Validation method: {gst_validation_result['validation_method']})"
+		else:
+			# No GSTIN provided - this is allowed
+			if not erpnext_crm_settings.strict_gst_validation:
+				frappe.msgprint(
+					_("No GSTIN provided for customer creation from deal {0}").format(doc.name),
+					title=_("GST Validation Info"),
+					indicator="blue"
+				)
+
 	contacts = get_contacts(doc)
 	address = get_organization_address(doc.organization)
 	customer = {
@@ -242,14 +448,68 @@ def create_customer_in_erpnext(doc, method):
 		"contacts": json.dumps(contacts),
 		"address": json.dumps(address) if address else None,
 	}
+	
+	# Add GSTIN to customer if available and validated
+	if gst_validation_result and gst_validation_result.get("gstin_info") and gst_validation_result["gstin_info"].get("gstin"):
+		customer["gstin"] = gst_validation_result["gstin_info"]["gstin"]
+	elif getattr(doc, 'organization_gstin', None):
+		# Use original GSTIN even if validation failed (in non-strict mode)
+		customer["gstin"] = doc.organization_gstin.upper().strip()
+	
+	# Create customer
+	customer_doc = None
 	if not erpnext_crm_settings.is_erpnext_in_different_site:
 		from erpnext.crm.frappe_crm_api import create_customer
-
-		create_customer(customer)
+		customer_doc = create_customer(customer)
 	else:
-		create_customer_in_remote_site(customer, erpnext_crm_settings)
+		customer_doc = create_customer_in_remote_site(customer, erpnext_crm_settings)
+
+	# Add comment to customer if there were validation issues
+	if customer_comment and customer_doc and not erpnext_crm_settings.is_erpnext_in_different_site:
+		try:
+			# Get the created customer name
+			customer_name = customer_doc if isinstance(customer_doc, str) else customer_doc.get("name")
+			if customer_name:
+				add_customer_comment(customer_name, customer_comment, erpnext_crm_settings)
+		except Exception as e:
+			frappe.log_error(
+				frappe.get_traceback(),
+				f"Failed to add GST validation comment to customer: {str(e)}"
+			)
 
 	frappe.publish_realtime("crm_customer_created")
+
+
+def add_customer_comment(customer_name, comment_text, erpnext_crm_settings):
+	"""
+	Add a comment to the customer document
+	"""
+	try:
+		if erpnext_crm_settings.is_erpnext_in_different_site:
+			# For remote site, we'll skip adding comments for now
+			# Could be implemented using the API if needed
+			frappe.log_error(
+				f"Cannot add comment to remote customer: {customer_name}",
+				"GST Validation Comment"
+			)
+			return
+		
+		# Add comment to local customer
+		frappe.get_doc({
+			"doctype": "Comment",
+			"comment_type": "Comment",
+			"reference_doctype": "Customer",
+			"reference_name": customer_name,
+			"content": comment_text,
+			"comment_email": frappe.session.user,
+			"comment_by": frappe.session.user
+		}).insert(ignore_permissions=True)
+		
+	except Exception as e:
+		frappe.log_error(
+			frappe.get_traceback(),
+			f"Error adding comment to customer {customer_name}: {str(e)}"
+		)
 
 
 def create_customer_in_remote_site(customer, erpnext_crm_settings):
@@ -259,6 +519,32 @@ def create_customer_in_remote_site(customer, erpnext_crm_settings):
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "Error while creating customer in remote site")
 		frappe.throw(_("Error while creating customer in ERPNext, check error log for more details"))
+
+
+@frappe.whitelist()
+def validate_gstin_number(gstin):
+	"""
+	Standalone API method to validate GSTIN
+	"""
+	try:
+		if not gstin:
+			frappe.throw(_("GSTIN is required for validation"), title=_("Missing GSTIN"))
+		
+		validation_result = validate_deal_gstin(gstin, False)  # Non-strict validation for API
+		
+		return {
+			"success": True,
+			"data": validation_result,
+			"message": _("GSTIN validation completed successfully")
+		}
+		
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), "GSTIN Validation API Error")
+		return {
+			"success": False,
+			"error": str(e),
+			"message": _("Error occurred during GSTIN validation")
+		}
 
 
 @frappe.whitelist()

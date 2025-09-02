@@ -423,37 +423,37 @@ def add_default_spanco_views():
 			"label": "Suspects",
 			"dt": "CRM Lead",
 			"filters": '{"status": "New"}',
-			"route_name": "LeadList",
+			"route_name": "Leads",
 		},
 		"Prospects": {
 			"label": "Prospects", 
 			"dt": "CRM Lead",
 			"filters": '{"status": ["in", ["Contacted", "Nurture", "Qualified"]]}',
-			"route_name": "LeadList",
+			"route_name": "Leads",
 		},
 		"Analysis": {
 			"label": "Analysis",
 			"dt": "CRM Deal", 
 			"filters": '{"status": ["in", ["Qualification", "Demo/Making"]]}',
-			"route_name": "DealList",
+			"route_name": "Deals",
 		},
 		"Negotiation": {
 			"label": "Negotiation",
 			"dt": "CRM Deal",
 			"filters": '{"status": ["in", ["Proposal/Quotation", "Negotiation"]]}',
-			"route_name": "DealList",
+			"route_name": "Deals",
 		},
 		"Commitment": {
 			"label": "Commitment",
 			"dt": "CRM Deal",
 			"filters": '{"status": "Ready to Close"}',
-			"route_name": "DealList",
+			"route_name": "Deals",
 		},
 		"Order": {
 			"label": "Order",
 			"dt": "CRM Deal",
 			"filters": '{"status": "Won"}',
-			"route_name": "DealList",
+			"route_name": "Deals",
 		}
 	}
 

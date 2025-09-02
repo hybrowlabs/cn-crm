@@ -69,6 +69,7 @@ def after_migrate():
 	sync_table("dropdown_items", "standard_dropdown_items")
 
 
+
 def sync_table(key, hook):
 	crm_settings = FCRMSettings("FCRM Settings")
 	existing_items = {d.name1: d for d in crm_settings.get(key)}

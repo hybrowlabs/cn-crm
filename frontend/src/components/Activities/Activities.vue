@@ -459,7 +459,7 @@
     ref="modalRef"
     v-model="all_activities"
     :doctype="doctype"
-    :doc="doc"
+    v-model:doc="doc"
     @reloadVisits="$emit('reloadVisits')"
   />
   <FilesUploader

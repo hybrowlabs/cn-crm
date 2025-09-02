@@ -422,6 +422,6 @@ def convert_to_deal(lead, doc=None, deal=None, existing_contact=None, existing_o
 def get_leads_data():
     return frappe.get_all(
         "CRM Lead",
-        fields=["status", "annual_revenue"],
+        fields=["status", "annual_revenue", "converted"],
         filters={}
     )

@@ -17,7 +17,11 @@
   "section_break_jnbn",
   "create_customer_on_status_change",
   "column_break_kbhw",
-  "deal_status"
+  "deal_status",
+  "section_break_gst",
+  "enable_gst_validation",
+  "column_break_gst",
+  "strict_gst_validation"
  ],
  "fields": [
   {
@@ -97,6 +101,33 @@
    "label": "Deal Status",
    "mandatory_depends_on": "create_customer_on_status_change",
    "options": "CRM Deal Status"
+  },
+  {
+   "depends_on": "eval:doc.enabled && doc.create_customer_on_status_change",
+   "fieldname": "section_break_gst",
+   "fieldtype": "Section Break",
+   "label": "GST Validation Settings"
+  },
+  {
+   "default": "1",
+   "depends_on": "eval:doc.enabled && doc.create_customer_on_status_change",
+   "description": "Enable GST validation when creating customers from deals",
+   "fieldname": "enable_gst_validation",
+   "fieldtype": "Check",
+   "label": "Enable GST Validation"
+  },
+  {
+   "depends_on": "eval:doc.enabled && doc.create_customer_on_status_change",
+   "fieldname": "column_break_gst",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.enabled && doc.create_customer_on_status_change && doc.enable_gst_validation",
+   "description": "If enabled, customer creation will be blocked if GST validation fails. Otherwise, only a warning will be shown.",
+   "fieldname": "strict_gst_validation",
+   "fieldtype": "Check",
+   "label": "Strict GST Validation"
   }
  ],
  "index_web_pages_for_search": 1,

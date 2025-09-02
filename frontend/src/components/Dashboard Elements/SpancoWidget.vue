@@ -534,8 +534,9 @@ const spancoData = computed(() => {
 
   // You can change 'annual_revenue' to any numeric field you want to sum for valuation
   const suspects = leads.filter((l) => l.status === 'New')
+  console.log(leads)
   const prospects = leads.filter((l) =>
-    ['Contacted', 'Nurture', 'Qualified'].includes(l.status),
+    ['Contacted', 'Nurture', 'Qualified'].includes(l.status) && !l.converted,
   )
   const analysis = deals.filter((d) =>
     ['Qualification', 'Demo/Making'].includes(d.status),

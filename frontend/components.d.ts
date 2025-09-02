@@ -85,6 +85,7 @@ declare module 'vue' {
     EditEmailTemplate: typeof import('./src/components/Settings/EmailTemplate/EditEmailTemplate.vue')['default']
     EditIcon: typeof import('./src/components/Icons/EditIcon.vue')['default']
     EditValueModal: typeof import('./src/components/Modals/EditValueModal.vue')['default']
+    EditVisitModal: typeof import('./src/components/Modals/EditVisitModal.vue')['default']
     Email2Icon: typeof import('./src/components/Icons/Email2Icon.vue')['default']
     EmailAccountCard: typeof import('./src/components/Settings/EmailAccountCard.vue')['default']
     EmailAccountList: typeof import('./src/components/Settings/EmailAccountList.vue')['default']

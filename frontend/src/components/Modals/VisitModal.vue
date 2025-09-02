@@ -5,8 +5,11 @@
         <div class="mb-5 flex items-center justify-between">
           <div>
             <h3 class="text-2xl font-semibold leading-6 text-ink-gray-9">
-              {{ __('Create Site Visit') }}
+              {{ isEditMode ? __('Edit Site Visit') : __('Create Site Visit') }}
             </h3>
+            <p v-if="isEditMode && visitId" class="mt-1 text-sm text-ink-gray-6">
+              {{ visitId }}
+            </p>
           </div>
           <div class="flex items-center gap-1">
             <Button
@@ -27,12 +30,22 @@
           </div>
         </div>
         <div>
-          <FieldLayout 
-            v-if="tabs.data" 
-            :tabs="tabs.data" 
-            :data="visit.doc" 
-            doctype="CRM Site Visit"
-          />
+          <div v-if="tabs.loading" class="py-8 text-center">
+            <span class="text-gray-600">Loading form...</span>
+          </div>
+          <div v-else-if="tabs.error" class="py-8 text-center text-red-600">
+            Error loading form: {{ tabs.error }}
+          </div>
+          <div v-else-if="tabs.data">
+            <FieldLayout 
+              :tabs="tabs.data" 
+              :data="visit.doc" 
+              doctype="CRM Site Visit"
+            />
+          </div>
+          <div v-else class="py-8 text-center text-gray-600">
+            No form data available
+          </div>
           <ErrorMessage class="mt-4" v-if="error" :message="__(error)" />
         </div>
       </div>
@@ -40,9 +53,9 @@
         <div class="flex flex-row-reverse gap-2">
           <Button
             variant="solid"
-            :label="__('Create')"
+            :label="isEditMode ? __('Save Changes') : __('Create')"
             :loading="isVisitCreating"
-            @click="createVisit"
+            @click="isEditMode ? saveChanges() : createVisit()"
           />
         </div>
       </div>
@@ -61,12 +74,16 @@ import { useDocument } from '@/data/document'
 import { capture } from '@/telemetry'
 import { handleResourceError } from '@/utils/errorHandler'
 import { createResource } from 'frappe-ui'
-import { computed, ref, onMounted, nextTick } from 'vue'
+import { computed, ref, onMounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
   defaults: Object,
+  visitId: String,
+  visitData: Object,
 })
+
+const emit = defineEmits(['updated'])
 
 const { getUser, isManager } = usersStore()
 const { statusOptions } = statusesStore()
@@ -75,6 +92,10 @@ const show = defineModel()
 const router = useRouter()
 const error = ref(null)
 const isVisitCreating = ref(false)
+
+// Determine if this is edit mode
+const isEditMode = computed(() => !!props.visitId)
+const originalDoc = ref({})
 
 const { document: visit, triggerOnBeforeCreate } = useDocument('CRM Site Visit')
 
@@ -122,37 +143,88 @@ const tabs = createResource({
   params: { doctype: 'CRM Site Visit', type: 'Quick Entry' },
   auto: true,
   transform: (_tabs) => {
-    return _tabs.forEach((tab) => {
-      tab.sections.forEach((section) => {
-        section.columns.forEach((column) => {
-          column.fields.forEach((field) => {
-            if (field.fieldname == 'status') {
-              field.fieldtype = 'Select'
-              field.options = visitStatuses.value
-              field.prefix = getStatusColor(visit.doc.status)
-            }
+    if (!_tabs || !Array.isArray(_tabs)) {
+      return _tabs
+    }
+    
+    
+    // Return the transformed tabs array (fix: forEach was returning undefined)
+    return _tabs.map((tab) => {
+      return {
+        ...tab,
+        sections: tab.sections.map((section) => ({
+          ...section,
+          columns: section.columns.map((column) => ({
+            ...column,
+            fields: column.fields.map((field) => {
+              const transformedField = { ...field }
+              
+              if (field.fieldname == 'status') {
+                transformedField.fieldtype = 'Select'
+                transformedField.options = visitStatuses.value
+                transformedField.prefix = getStatusColor(visit.doc.status)
+              }
 
-            if (field.fieldname == 'visit_type') {
-              field.fieldtype = 'Select'
-              field.options = visitTypes.value
-            }
+              if (field.fieldname == 'visit_type') {
+                transformedField.fieldtype = 'Select'
+                transformedField.options = visitTypes.value
+              }
 
-            if (field.fieldname == 'priority') {
-              field.fieldtype = 'Select'
-              field.options = priorityOptions.value
-            }
+              if (field.fieldname == 'priority') {
+                transformedField.fieldtype = 'Select'
+                transformedField.options = priorityOptions.value
+              }
 
-            if (field.fieldname == 'reference_type') {
-              field.fieldtype = 'Select'
-              field.options = referenceTypes.value
-            }
+              if (field.fieldname == 'reference_type') {
+                transformedField.fieldtype = 'Select'
+                transformedField.options = referenceTypes.value
+              }
 
-            if (field.fieldtype === 'Table') {
-              visit.doc[field.fieldname] = []
-            }
-          })
-        })
-      })
+              if (field.fieldname == 'visit_purpose') {
+                transformedField.fieldtype = 'Small Text'
+                transformedField.reqd = 1
+                // Set default value if not provided
+                if (!visit.doc.visit_purpose) {
+                  transformedField.default = 'Site visit scheduled'
+                }
+              }
+
+              if (field.fieldname == 'reference_name' || field.fieldname == 'reference') {
+                // Handle Dynamic Link field for reference_name
+                if (field.fieldtype === 'Dynamic Link') {
+                  // Keep it as Dynamic Link but ensure it has proper options
+                  transformedField.options = field.options || 'reference_type'
+                } else {
+                  // Convert to Link field if not already Dynamic Link
+                  transformedField.fieldtype = 'Link'
+                }
+                
+                // Set the options based on the selected reference_type
+                if (visit.doc.reference_type) {
+                  if (transformedField.fieldtype === 'Link') {
+                    transformedField.options = visit.doc.reference_type
+                  }
+                  transformedField.read_only = 0
+                } else {
+                  // If no reference_type, disable the field
+                  if (transformedField.fieldtype === 'Link') {
+                    transformedField.options = ''
+                  }
+                  transformedField.read_only = 1
+                  }
+              }
+
+              if (field.fieldtype === 'Table') {
+                if (!visit.doc[field.fieldname]) {
+                  visit.doc[field.fieldname] = []
+                }
+              }
+              
+              return transformedField
+            })
+          }))
+        }))
+      }
     })
   },
 })
@@ -163,6 +235,8 @@ function getStatusColor(status) {
 }
 
 async function createVisit() {
+  error.value = null
+  
   // Set current date if not provided
   if (!visit.doc.visit_date) {
     visit.doc.visit_date = new Date().toISOString().split('T')[0]
@@ -173,103 +247,164 @@ async function createVisit() {
     visit.doc.sales_person = getUser().name
   }
 
-  await triggerOnBeforeCreate?.()
+  // Pre-validation - check required fields before API call
+  if (!visit.doc.visit_date) {
+    error.value = __('Visit Date is required')
+    return
+  }
 
-  createResource({
-    url: 'frappe.client.insert',
-    params: {
-      doc: {
-        doctype: 'CRM Site Visit',
-        ...visit.doc,
-      },
-    },
-    auto: true,
-    validate() {
-      error.value = null
+  if (!visit.doc.visit_type) {
+    error.value = __('Visit Type is required')
+    return
+  }
 
-      // Required field validation
-      if (!visit.doc.visit_date) {
-        error.value = __('Visit Date is required')
-        return error.value
+  if (!visit.doc.reference_type || !visit.doc.reference_name) {
+    error.value = __('Reference (Lead/Deal/Customer) is required')
+    return
+  }
+
+  if (!visit.doc.sales_person) {
+    error.value = __('Sales Person is required')
+    return
+  }
+
+  if (!visit.doc.visit_purpose) {
+    error.value = __('Visit Purpose is required')
+    return
+  }
+
+  // Additional validations
+  if (visit.doc.contact_phone && isNaN(visit.doc.contact_phone.replace(/[-+() ]/g, ''))) {
+    error.value = __('Contact Phone should be a valid number')
+    return
+  }
+
+  if (visit.doc.contact_email && !visit.doc.contact_email.includes('@')) {
+    error.value = __('Invalid Email')
+    return
+  }
+
+  if (visit.doc.potential_value && isNaN(visit.doc.potential_value)) {
+    error.value = __('Potential Value should be a number')
+    return
+  }
+
+  if (visit.doc.probability_percentage && (visit.doc.probability_percentage < 0 || visit.doc.probability_percentage > 100)) {
+    error.value = __('Success Probability should be between 0 and 100')
+    return
+  }
+
+  try {
+    await triggerOnBeforeCreate?.()
+
+    // Prepare visit data for insertion
+    const visitData = {
+      doctype: 'CRM Site Visit',
+      ...visit.doc,
+      // Ensure required fields with defaults are set
+      status: visit.doc.status || 'Planned',
+      naming_series: visit.doc.naming_series || 'SV-.YYYY.-',
+      priority: visit.doc.priority || 'Medium',
+      // Ensure visit_purpose is not empty
+      visit_purpose: visit.doc.visit_purpose || 'Site visit scheduled'
+    }
+
+    isVisitCreating.value = true
+
+    const insertResource = createResource({
+      url: 'frappe.client.insert',
+      params: { doc: visitData },
+      auto: false
+    })
+
+    const result = await insertResource.submit()
+    capture('site_visit_created')
+    isVisitCreating.value = false
+    show.value = false
+    
+    // Navigate to the created visit
+    if (result && result.name) {
+      router.push({ name: 'Visit', params: { visitId: result.name } })
+    }
+
+  } catch (err) {
+    isVisitCreating.value = false
+    
+    // Use global error handler for comprehensive error processing
+    handleResourceError(err, 'create site visit')
+    
+    // Set specific local error message
+    if (err._server_messages) {
+      try {
+        const messages = JSON.parse(err._server_messages)
+        error.value = messages[0]?.message || 'Failed to create site visit'
+      } catch {
+        error.value = 'Server error occurred while creating visit'
       }
+    } else if (err.exception) {
+      error.value = 'Please check all required fields and try again'
+    } else if (err.exc_type) {
+      error.value = 'Validation error - please check your input'
+    } else if (err.messages && Array.isArray(err.messages)) {
+      error.value = err.messages.join('\n')
+    } else if (err.message) {
+      error.value = err.message
+    } else {
+      error.value = 'Failed to create site visit. Please try again.'
+    }
+  }
+}
 
-      if (!visit.doc.visit_type) {
-        error.value = __('Visit Type is required')
-        return error.value
+async function saveChanges() {
+  error.value = null
+  
+  try {
+    isVisitCreating.value = true
+    
+    // Get only changed fields
+    const changedFields = {}
+    Object.keys(visit.doc).forEach(key => {
+      if (['modified', 'modified_by', 'creation', 'owner'].includes(key)) return
+      if (JSON.stringify(originalDoc.value[key]) !== JSON.stringify(visit.doc[key])) {
+        changedFields[key] = visit.doc[key]
       }
+    })
 
-      if (!visit.doc.reference_type || !visit.doc.reference_name) {
-        error.value = __('Reference (Lead/Deal/Customer) is required')
-        return error.value
-      }
+    if (Object.keys(changedFields).length > 0) {
+      const updateResource = createResource({
+        url: 'frappe.client.set_value',
+        params: {
+          doctype: 'CRM Site Visit',
+          name: props.visitId,
+          fieldname: changedFields,
+        },
+        auto: false
+      })
 
-      if (!visit.doc.sales_person) {
-        error.value = __('Sales Person is required')
-        return error.value
-      }
+      await updateResource.submit()
+    }
 
-      if (!visit.doc.visit_purpose) {
-        error.value = __('Visit Purpose is required')
-        return error.value
+    isVisitCreating.value = false
+    show.value = false
+    emit('updated')
+    
+  } catch (err) {
+    isVisitCreating.value = false
+    handleResourceError(err, 'update site visit')
+    
+    if (err._server_messages) {
+      try {
+        const messages = JSON.parse(err._server_messages)
+        error.value = messages[0]?.message || 'Failed to update site visit'
+      } catch {
+        error.value = 'Server error occurred while updating visit'
       }
-
-      // Phone number validation
-      if (visit.doc.contact_phone && isNaN(visit.doc.contact_phone.replace(/[-+() ]/g, ''))) {
-        error.value = __('Contact Phone should be a valid number')
-        return error.value
-      }
-
-      // Email validation
-      if (visit.doc.contact_email && !visit.doc.contact_email.includes('@')) {
-        error.value = __('Invalid Email')
-        return error.value
-      }
-
-      // Status validation
-      if (!visit.doc.status) {
-        error.value = __('Status is required')
-        return error.value
-      }
-
-      // Potential value validation (if provided)
-      if (visit.doc.potential_value && isNaN(visit.doc.potential_value)) {
-        error.value = __('Potential Value should be a number')
-        return error.value
-      }
-
-      // Probability percentage validation (if provided)
-      if (visit.doc.probability_percentage && (visit.doc.probability_percentage < 0 || visit.doc.probability_percentage > 100)) {
-        error.value = __('Success Probability should be between 0 and 100')
-        return error.value
-      }
-
-      isVisitCreating.value = true
-    },
-    onSuccess(data) {
-      capture('site_visit_created')
-      isVisitCreating.value = false
-      show.value = false
-      router.push({ name: 'Visit', params: { visitId: data.name } })
-    },
-    onError(err) {
-      isVisitCreating.value = false
-      
-      // Use global error handler for comprehensive error processing
-      handleResourceError(err, 'create site visit')
-      
-      // Still set local error for component display
-      if (err._server_messages || err.exception || err.exc_type) {
-        // Global handler will show toast, just set a simple message for component
-        error.value = 'Please check the error message above and try again'
-      } else if (err.messages && Array.isArray(err.messages)) {
-        error.value = err.messages.join('\n')
-      } else if (err.message) {
-        error.value = err.message
-      } else {
-        error.value = 'Failed to create site visit'
-      }
-    },
-  })
+    } else if (err.message) {
+      error.value = err.message
+    } else {
+      error.value = 'Failed to update site visit. Please try again.'
+    }
+  }
 }
 
 function openQuickEntryModal() {
@@ -278,26 +413,41 @@ function openQuickEntryModal() {
   nextTick(() => (show.value = false))
 }
 
-onMounted(() => {
-  // Set default values
-  visit.doc = {
-    visit_date: new Date().toISOString().split('T')[0],
-    visit_type: 'Initial Meeting',
-    status: 'Planned',
-    priority: 'Medium',
+// Watch for reference_type changes to update reference_name field options
+watch(() => visit.doc.reference_type, (newType, oldType) => {
+  if (newType !== oldType) {
+    // Clear reference_name if reference_type changes to a different value
+    if (oldType && newType !== oldType) {
+      visit.doc.reference_name = null
+    }
+    // Force tabs to re-transform to update reference_name field options
+    nextTick(() => {
+      tabs.reload()
+    })
   }
-  
-  // Apply any passed defaults
-  Object.assign(visit.doc, props.defaults)
+}, { 
+  immediate: false // Don't trigger on initial mount, only on actual changes
+})
 
-  // Set default sales person
-  if (!visit.doc.sales_person) {
-    visit.doc.sales_person = getUser().name
-  }
-
-  // Set default status
-  if (!visit.doc.status && visitStatuses.value[0]?.value) {
-    visit.doc.status = visitStatuses.value[0].value
+onMounted(async () => {
+  if (isEditMode.value && props.visitData) {
+    visit.doc = { ...props.visitData }
+    originalDoc.value = { ...props.visitData }
+    await nextTick()
+    tabs.reload()
+  } else {
+    visit.doc = {
+      visit_date: new Date().toISOString().split('T')[0],
+      visit_type: 'Initial Meeting',
+      status: 'Planned',
+      priority: 'Medium',
+      naming_series: 'SV-.YYYY.-',
+      visit_purpose: 'Site visit scheduled',
+      sales_person: getUser().name,
+      ...props.defaults
+    }
+    await nextTick()
+    tabs.reload()
   }
 })
 </script>

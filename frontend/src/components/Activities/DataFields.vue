@@ -98,10 +98,18 @@ const tabs = createResource({
 })
 
 function saveChanges() {
+  console.log('=== SAVE CHANGES CALLED ===')
+  console.log('document.isDirty:', document.isDirty)
+  
   if (!document.isDirty) return
 
+  console.log('Document object structure:', document)
+  console.log('Available methods on document:', Object.keys(document))
+  console.log('document.save:', document.save)
+  console.log('document.setValue:', document.setValue)
+
   const updatedDoc = { ...document.doc }
-  const oldDoc = { ...document.originalDoc }
+  const oldDoc = { ...document.originalDoc || {} }
 
   const changes = Object.keys(updatedDoc).reduce((acc, key) => {
     if (JSON.stringify(updatedDoc[key]) !== JSON.stringify(oldDoc[key])) {
@@ -110,14 +118,41 @@ function saveChanges() {
     return acc
   }, {})
 
-  const hasListener = attrs['onBeforeSave'] !== undefined
+  console.log('Changes to save:', changes)
+  console.log('Has onBeforeSave listener:', attrs['onBeforeSave'] !== undefined)
 
-  if (hasListener) {
-    emit('beforeSave', changes)
-  } else {
-    document.save.submit(null, {
-      onSuccess: () => emit('afterSave', changes),
+  // Force direct save instead of emitting beforeSave event
+  console.log('Proceeding with direct save (bypassing beforeSave event)')
+  
+  // Try multiple approaches to save
+  if (document.setValue && typeof document.setValue.submit === 'function') {
+    console.log('Using document.setValue.submit approach')
+    document.setValue.submit(changes, {
+      onSuccess: () => {
+        console.log('document.setValue.submit SUCCESS')
+        document.isDirty = false
+        emit('afterSave', changes)
+      },
+      onError: (error) => {
+        console.error('document.setValue.submit FAILED:', error)
+      }
     })
+  } else if (document.save && typeof document.save.submit === 'function') {
+    console.log('Falling back to document.save.submit approach')
+    document.save.submit({
+      onSuccess: () => {
+        console.log('document.save.submit SUCCESS')
+        document.isDirty = false
+        emit('afterSave', changes)
+      },
+      onError: (error) => {
+        console.error('document.save.submit FAILED:', error)
+      }
+    })
+  } else {
+    console.error('No available save method found!')
+    console.error('document.save:', document.save)
+    console.error('document.setValue:', document.setValue)
   }
 }
 

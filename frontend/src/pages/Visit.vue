@@ -12,6 +12,15 @@
         v-if="visit.data._customActions?.length"
         :actions="visit.data._customActions"
       />
+      <Button
+        variant="solid"
+        :label="__('Edit Visit')"
+        @click="showEditModal = true"
+      >
+        <template #prefix>
+          <EditIcon class="h-4 w-4" />
+        </template>
+      </Button>
       <AssignTo
         v-model="assignees.data"
         :data="visit.data"
@@ -155,6 +164,13 @@
       }
     "
   />
+  <VisitModal
+    v-if="visit.data"
+    v-model="showEditModal"
+    :visitId="visit.data.name"
+    :visitData="visit.data"
+    @updated="onVisitUpdated"
+  />
 </template>
 
 <script setup>
@@ -172,12 +188,14 @@ import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import LinkIcon from '@/components/Icons/LinkIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
+import EditIcon from '@/components/Icons/EditIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import AssignTo from '@/components/AssignTo.vue'
 import FilesUploader from '@/components/FilesUploader/FilesUploader.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import CustomActions from '@/components/CustomActions.vue'
+import VisitModal from '@/components/Modals/VisitModal.vue'
 import {
   setupCustomizations,
   copyToClipboard,
@@ -271,6 +289,7 @@ onMounted(() => {
 
 const reload = ref(false)
 const showFilesUploader = ref(false)
+const showEditModal = ref(false)
 
 function updateVisit(fieldname, value, callback) {
   value = Array.isArray(fieldname) ? '' : value
@@ -456,5 +475,13 @@ function openLocation() {
     const url = `https://www.google.com/maps?q=${visit.data.latitude},${visit.data.longitude}`
     window.openWindow(url, '_blank')
   }
+}
+
+function onVisitUpdated() {
+  // Reload visit data and sections when the modal updates the visit
+  visit.reload()
+  sections.reload()
+  reload.value = true
+  toast.success(__('Visit updated successfully'))
 }
 </script>

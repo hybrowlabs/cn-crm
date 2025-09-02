@@ -51,6 +51,9 @@ const showTaskModal = ref(false)
 const task = ref({})
 
 function showTask(t) {
+  let doctype = props.doctype
+  let docname = doc.value.data?.name
+  
   task.value = t || {
     title: '',
     description: '',
@@ -58,6 +61,8 @@ function showTask(t) {
     due_date: '',
     priority: 'Low',
     status: 'Backlog',
+    reference_doctype: doctype,
+    reference_docname: docname,
   }
   showTaskModal.value = true
 }
@@ -86,9 +91,14 @@ const showNoteModal = ref(false)
 const note = ref({})
 
 function showNote(n) {
+  let doctype = props.doctype
+  let docname = doc.value.data?.name
+  
   note.value = n || {
     title: '',
     content: '',
+    reference_doctype: doctype,
+    reference_docname: docname,
   }
   showNoteModal.value = true
 }
@@ -104,8 +114,8 @@ const visit = ref({})
 
 function createCallLog() {
   let doctype = props.doctype
-  let docname = props.doc.data?.name
-  referenceDoc.value = { ...props.doc.data }
+  let docname = doc.value.data?.name
+  referenceDoc.value = { ...doc.value.data }
   callLog.value = {
     reference_doctype: doctype,
     reference_docname: docname,
@@ -116,14 +126,32 @@ function createCallLog() {
 function showVisit() {
   let doctype = props.doctype
   let docname = doc.value.data?.name
-  visit.value = {
-    reference_type: doctype,
-    reference_name: docname,
-    visit_date: new Date().toISOString().split('T')[0],
-    visit_type: 'Initial Meeting',
-    status: 'Planned',
-    priority: 'Medium'
+  
+  
+  // Clear previous defaults first
+  visit.value = {}
+  
+  // Ensure we have valid reference data before showing the modal
+  if (doctype && docname) {
+    visit.value = {
+      reference_type: doctype,
+      reference_name: docname,
+      visit_date: new Date().toISOString().split('T')[0],
+      visit_type: 'Initial Meeting',
+      status: 'Planned',
+      priority: 'Medium'
+    }
+  } else {
+    // If no reference available, just set basic defaults
+    visit.value = {
+      visit_date: new Date().toISOString().split('T')[0],
+      visit_type: 'Initial Meeting',
+      status: 'Planned',
+      priority: 'Medium'
+    }
   }
+  
+  // Open the modal
   showVisitModal.value = true
 }
 
