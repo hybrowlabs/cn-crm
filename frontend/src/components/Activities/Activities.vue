@@ -391,7 +391,7 @@
           { label: __('Status'), key: 'status', type: 'Data' },
           { label: __('Sales Person'), key: 'sales_person', type: 'Data' },
         ]"
-        :rows="doc.linked_visits || []"
+        :rows="props.linkedVisits || []"
         :options="{ selectable: false, showTooltip: false, resizeColumn: true }"
       />
     </div>
@@ -541,6 +541,10 @@ const props = defineProps({
     default: 'CRM Lead',
   },
   tabs: {
+    type: Array,
+    default: () => [],
+  },
+  linkedVisits: {
     type: Array,
     default: () => [],
   },

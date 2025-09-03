@@ -66,6 +66,7 @@
           v-model:reload="reload"
           v-model:tabIndex="tabIndex"
           v-model="lead"
+          :linkedVisits="linkedVisits"
           @afterSave="reloadAssignees"
           @reloadVisits="reloadVisits"
         />
@@ -294,7 +295,7 @@ import {
   usePageMeta,
   toast,
 } from 'frappe-ui'
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, watch, nextTick, watchEffect } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useActiveTabManager } from '@/composables/useActiveTabManager'
 
@@ -332,10 +333,18 @@ const visits = createResource({
   url: 'crm.fcrm.doctype.crm_lead.api.get_lead_visits',
   params: { name: props.leadId },
   cache: ['lead', 'visits', props.leadId],
+  auto: true,
   onSuccess: (data) => {
     errorTitle.value = ''
     errorMessage.value = ''
-    lead.data.linked_visits = data
+    
+    // Update reactive ref
+    linkedVisits.value = data
+    
+    if (lead.data) {
+      // Also assign to lead.data for consistency
+      lead.data.linked_visits = data
+    }
   },
   onError: (err) => {
     if (err.messages?.[0]) {
@@ -352,6 +361,14 @@ const lead = createResource({
   onSuccess: (data) => {
     errorTitle.value = ''
     errorMessage.value = ''
+    
+    // If we have pending visits data, assign it now
+    if (pendingVisitsData.value) {
+      data.linked_visits = pendingVisitsData.value
+      pendingVisitsData.value = null
+      console.log('Lead.vue: Assigned pending visits data to lead on lead load')
+    }
+    
     setupCustomizations(lead, {
       doc: data,
       $dialog,
@@ -383,6 +400,18 @@ onMounted(() => {
 
 const reload = ref(false)
 const showFilesUploader = ref(false)
+const pendingVisitsData = ref(null)
+const linkedVisits = ref([])
+
+// Use watchEffect to reactively update the lead object with visits
+watchEffect(() => {
+  if (lead.data && linkedVisits.value.length > 0) {
+    // Force Vue reactivity by replacing the entire data object
+    const currentData = { ...lead.data }
+    currentData.linked_visits = [...linkedVisits.value]
+    lead.data = currentData
+  }
+})
 
 function updateLead(fieldname, value, callback) {
   value = Array.isArray(fieldname) ? '' : value
