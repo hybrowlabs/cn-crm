@@ -429,12 +429,12 @@ watch(() => visit.doc.reference_type, (newType, oldType) => {
   immediate: false // Don't trigger on initial mount, only on actual changes
 })
 
-onMounted(async () => {
+// Function to apply defaults to visit.doc
+function applyDefaults() {
+  
   if (isEditMode.value && props.visitData) {
     visit.doc = { ...props.visitData }
     originalDoc.value = { ...props.visitData }
-    await nextTick()
-    tabs.reload()
   } else {
     visit.doc = {
       visit_date: new Date().toISOString().split('T')[0],
@@ -446,8 +446,26 @@ onMounted(async () => {
       sales_person: getUser().name,
       ...props.defaults
     }
-    await nextTick()
-    tabs.reload()
   }
+}
+
+// Watch for changes in props.defaults
+watch(() => props.defaults, (newDefaults) => {
+  if (newDefaults && Object.keys(newDefaults).length > 0) {
+    applyDefaults()
+    nextTick(() => {
+      tabs.reload()
+    })
+  }
+}, { 
+  immediate: true,
+  deep: true 
+})
+
+onMounted(async () => {
+  
+  applyDefaults()
+  await nextTick()
+  tabs.reload()
 })
 </script>
