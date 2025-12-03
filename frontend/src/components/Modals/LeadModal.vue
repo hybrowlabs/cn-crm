@@ -114,6 +114,104 @@ const createLead = createResource({
   url: 'frappe.client.insert',
 })
 
+function validateMandatoryFields() {
+  error.value = null
+  const errors = []
+
+  // Get all fields from tabs
+  const allFields = []
+  if (tabs.data) {
+    tabs.data.forEach(tab => {
+      tab.sections.forEach(section => {
+        section.columns.forEach(column => {
+          column.fields.forEach(field => {
+            allFields.push(field)
+          })
+        })
+      })
+    })
+  }
+
+  // Validate each field
+  allFields.forEach(field => {
+    // Check if field is mandatory
+    const isRequired = field.reqd ||
+      (field.mandatory_depends_on && evaluateMandatoryDependsOn(field.mandatory_depends_on))
+
+    if (!isRequired || field.read_only || field.hidden) {
+      return
+    }
+
+    // Check if field is visible based on depends_on
+    if (field.depends_on && !evaluateDependsOn(field.depends_on)) {
+      return
+    }
+
+    // Check if field has a value
+    const value = lead.doc[field.fieldname]
+    const isEmpty = value === null || value === undefined || value === '' ||
+                    (Array.isArray(value) && value.length === 0)
+
+    if (isEmpty) {
+      errors.push(__(`{0} is mandatory`, [__(field.label)]))
+    }
+  })
+
+  // Additional custom validations
+  if (lead.doc.annual_revenue) {
+    if (typeof lead.doc.annual_revenue === 'string') {
+      lead.doc.annual_revenue = lead.doc.annual_revenue.replace(/,/g, '')
+    } else if (isNaN(lead.doc.annual_revenue)) {
+      errors.push(__('Annual Revenue should be a number'))
+    }
+  }
+
+  if (lead.doc.mobile_no && isNaN(lead.doc.mobile_no.replace(/[-+() ]/g, ''))) {
+    errors.push(__('Mobile No should be a number'))
+  }
+
+  if (lead.doc.email && !lead.doc.email.includes('@')) {
+    errors.push(__('Invalid Email'))
+  }
+
+  if (errors.length > 0) {
+    error.value = errors.join('\n')
+    return error.value
+  }
+
+  return null
+}
+
+function evaluateDependsOn(expression) {
+  if (!expression) return true
+  if (expression.startsWith('eval:')) {
+    try {
+      const code = expression.substring(5)
+      const func = new Function('doc', `return ${code}`)
+      return func(lead.doc)
+    } catch (e) {
+      console.error('Error evaluating depends_on:', e)
+      return true
+    }
+  }
+  return !!lead.doc[expression]
+}
+
+function evaluateMandatoryDependsOn(expression) {
+  if (!expression) return false
+  if (expression.startsWith('eval:')) {
+    try {
+      const code = expression.substring(5)
+      const func = new Function('doc', `return ${code}`)
+      return func(lead.doc)
+    } catch (e) {
+      console.error('Error evaluating mandatory_depends_on:', e)
+      return false
+    }
+  }
+  return !!lead.doc[expression]
+}
+
 async function createNewLead() {
   if (lead.doc.website && !lead.doc.website.startsWith('http')) {
     lead.doc.website = 'https://' + lead.doc.website
@@ -130,33 +228,9 @@ async function createNewLead() {
     },
     {
       validate() {
-        error.value = null
-        if (!lead.doc.first_name) {
-          error.value = __('First Name is mandatory')
-          return error.value
-        }
-        if (lead.doc.annual_revenue) {
-          if (typeof lead.doc.annual_revenue === 'string') {
-            lead.doc.annual_revenue = lead.doc.annual_revenue.replace(/,/g, '')
-          } else if (isNaN(lead.doc.annual_revenue)) {
-            error.value = __('Annual Revenue should be a number')
-            return error.value
-          }
-        }
-        if (
-          lead.doc.mobile_no &&
-          isNaN(lead.doc.mobile_no.replace(/[-+() ]/g, ''))
-        ) {
-          error.value = __('Mobile No should be a number')
-          return error.value
-        }
-        if (lead.doc.email && !lead.doc.email.includes('@')) {
-          error.value = __('Invalid Email')
-          return error.value
-        }
-        if (!lead.doc.status) {
-          error.value = __('Status is required')
-          return error.value
+        const validationError = validateMandatoryFields()
+        if (validationError) {
+          return validationError
         }
         isLeadCreating.value = true
       },

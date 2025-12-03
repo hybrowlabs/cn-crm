@@ -20,7 +20,6 @@
     "@tiptap/extension-paragraph": "^2.12.0",
     "@twilio/voice-sdk": "^2.10.2",
     "@vueuse/integrations": "^10.3.0",
-    "chatnext-ui": "0.22.30",
     "frappe-ui": "^0.1.166",
     "gemoji": "^8.1.0",
     "leaflet": "^1.9.4",

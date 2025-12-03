@@ -531,3 +531,52 @@ export function TemplateOption({ active, option, theme, icon, onClick }) {
     ],
   )
 }
+
+/**
+ * Validate mandatory fields in a document based on field metadata
+ * @param {Object} doc - The document to validate
+ * @param {Array} fields - Array of field metadata objects from DocType
+ * @param {Object} customValidations - Optional custom validation rules
+ * @returns {Array} Array of validation error messages
+ */
+export function validateMandatoryFields(doc, fields, customValidations = {}) {
+  const errors = []
+
+  if (!doc || !fields) {
+    return errors
+  }
+
+  // Check each field for mandatory requirement
+  fields.forEach(field => {
+    const isRequired = field.reqd ||
+                       (field.mandatory_depends_on && evaluateDependsOnValue(field.mandatory_depends_on, doc))
+
+    // Skip if field is not required or is read-only or hidden
+    if (!isRequired || field.read_only || field.hidden) {
+      return
+    }
+
+    // Check if field has a value
+    const value = doc[field.fieldname]
+    const isEmpty = value === null || value === undefined || value === '' ||
+                    (Array.isArray(value) && value.length === 0)
+
+    if (isEmpty) {
+      errors.push({
+        fieldname: field.fieldname,
+        label: field.label,
+        message: __(`{0} is mandatory`, [__(field.label)])
+      })
+    }
+  })
+
+  // Apply custom validations if provided
+  if (customValidations && typeof customValidations === 'function') {
+    const customErrors = customValidations(doc)
+    if (customErrors && Array.isArray(customErrors)) {
+      errors.push(...customErrors)
+    }
+  }
+
+  return errors
+}

@@ -441,11 +441,45 @@ function updateLead(fieldname, value, callback) {
 
 function validateRequired(fieldname, value) {
   let meta = lead.data.fields_meta || {}
-  if (meta[fieldname]?.reqd && !value) {
-    toast.error(__('{0} is a required field', [meta[fieldname].label]))
+  let fieldMeta = meta[fieldname]
+
+  if (!fieldMeta) {
+    return false
+  }
+
+  // Check if field is mandatory
+  let isRequired = fieldMeta.reqd
+
+  // Check conditional mandatory (mandatory_depends_on)
+  if (fieldMeta.mandatory_depends_on && !isRequired) {
+    isRequired = evaluateMandatoryCondition(fieldMeta.mandatory_depends_on)
+  }
+
+  // Check if value is empty
+  const isEmpty = value === null || value === undefined || value === '' ||
+                  (Array.isArray(value) && value.length === 0)
+
+  if (isRequired && isEmpty) {
+    toast.error(__('{0} is a required field', [fieldMeta.label]))
     return true
   }
+
   return false
+}
+
+function evaluateMandatoryCondition(expression) {
+  if (!expression) return false
+  if (expression.startsWith('eval:')) {
+    try {
+      const code = expression.substring(5)
+      const func = new Function('doc', `return ${code}`)
+      return func(lead.data)
+    } catch (e) {
+      console.error('Error evaluating mandatory_depends_on:', e)
+      return false
+    }
+  }
+  return !!lead.data[expression]
 }
 
 const breadcrumbs = computed(() => {

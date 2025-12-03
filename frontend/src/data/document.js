@@ -32,6 +32,12 @@ export function useDocument(doctype, docname) {
                 })
                 .join(', ')
               errorMessage = __('Mandatory field error: {0}', [fieldName])
+            } else if (err.messages && Array.isArray(err.messages) && err.messages.length > 0) {
+              // Extract validation error messages from the backend
+              errorMessage = err.messages.join('\n')
+            } else if (err.message) {
+              // Fallback to err.message if messages array is not available
+              errorMessage = err.message
             }
             toast.error(errorMessage)
             console.error(err)

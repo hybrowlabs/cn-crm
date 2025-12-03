@@ -86,6 +86,7 @@
             { label: __('Admin'), value: 'System Manager' },
             { label: __('Manager'), value: 'Sales Manager' },
             { label: __('Sales User'), value: 'Sales User' },
+            { label: __('Service User'), value: 'Service User' },
           ]"
         />
       </div>
@@ -136,7 +137,9 @@
                       ? 'shield'
                       : user.role === 'Sales Manager'
                         ? 'briefcase'
-                        : 'user-check',
+                        : user.role === 'Service User'
+                          ? 'tool'
+                          : 'user-check',
                 }"
                 placement="right"
               />
@@ -184,6 +187,7 @@ const roleMap = {
   'System Manager': __('Admin'),
   'Sales Manager': __('Manager'),
   'Sales User': __('Sales User'),
+  'Service User': __('Service User'),
 }
 
 const usersList = computed(() => {
@@ -273,6 +277,17 @@ function getDropdownOptions(user) {
           active: props.active,
           selected: user.role === 'Sales User',
           onClick: () => updateRole(user, 'Sales User'),
+        }),
+    },
+    {
+      label: __('Service User'),
+      component: (props) =>
+        DropdownOption({
+          option: __('Service User'),
+          icon: 'tool',
+          active: props.active,
+          selected: user.role === 'Service User',
+          onClick: () => updateRole(user, 'Service User'),
         }),
     },
   ]

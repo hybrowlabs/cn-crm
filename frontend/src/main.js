@@ -9,7 +9,6 @@ import router from './router'
 import translationPlugin from './translation'
 import { posthogPlugin } from './telemetry'
 import App from './App.vue'
-import 'chatnext-ui/dist/index'
 
 import {
   FrappeUI,
