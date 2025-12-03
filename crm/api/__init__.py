@@ -71,7 +71,7 @@ def check_app_permission():
 
 	roles = frappe.get_roles()
 	if any(
-		role in ["System Manager", "Sales User", "Sales Manager"] for role in roles
+		role in ["System Manager", "Sales User", "Sales Manager", "Service User"] for role in roles
 	):
 		return True
 
@@ -101,7 +101,7 @@ def accept_invitation(key: str | None = None):
 def invite_by_email(emails: str, role: str):
 	frappe.only_for(["Sales Manager", "System Manager"])
 
-	if role not in ["System Manager", "Sales Manager", "Sales User"]:
+	if role not in ["System Manager", "Sales Manager", "Sales User", "Service User"]:
 		frappe.throw("Cannot invite for this role")
 
 	if not emails:
@@ -115,7 +115,7 @@ def invite_by_email(emails: str, role: str):
 		"CRM Invitation",
 		filters={
 			"email": ["in", email_list],
-			"role": ["in", ["System Manager", "Sales Manager", "Sales User"]],
+			"role": ["in", ["System Manager", "Sales Manager", "Sales User", "Service User"]],
 		},
 		pluck="email",
 	)

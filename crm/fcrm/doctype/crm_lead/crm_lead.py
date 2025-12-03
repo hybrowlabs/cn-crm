@@ -18,15 +18,50 @@ class CRMLead(Document):
 		self.set_sla()
 
 	def validate(self):
+		self.validate_mandatory_fields()
 		self.set_full_name()
 		self.set_lead_name()
 		self.set_title()
 		self.validate_email()
+		self.validate_gst_number()
+		self.auto_fetch_gstin_details()
 		if not self.is_new() and self.has_value_changed("lead_owner") and self.lead_owner:
 			self.share_with_agent(self.lead_owner)
 			self.assign_agent(self.lead_owner)
 		if self.has_value_changed("status"):
 			add_status_change_log(self)
+
+	def validate_mandatory_fields(self):
+		"""Explicitly validate mandatory fields to ensure they are not bypassed"""
+		# Validate first_name: either first_name OR organization OR email must be present
+		if not self.first_name and not self.organization and not self.email:
+			frappe.throw(
+				_("Please provide either First Name, Organization, or Email"),
+				title=_("Missing Required Information")
+			)
+
+		# Validate status: must always be present
+		if not self.status:
+			frappe.throw(
+				_("Status is mandatory"),
+				title=_("Missing Status")
+			)
+
+		# Validate GST Number when GST Applicable is checked
+		if hasattr(self, 'gst_applicable') and self.gst_applicable:
+			if not hasattr(self, 'gst_number') or not self.gst_number:
+				frappe.throw(
+					_("GST Number is mandatory when GST Applicable is checked"),
+					title=_("Missing GST Number")
+				)
+
+		# Validate lead_owner if set in meta
+		if hasattr(self.meta, 'get_field') and self.meta.get_field('lead_owner'):
+			if self.meta.get_field('lead_owner').reqd and not self.lead_owner:
+				frappe.throw(
+					_("Lead Owner is mandatory"),
+					title=_("Missing Lead Owner")
+				)
 
 	def after_insert(self):
 		if self.lead_owner:
@@ -74,6 +109,110 @@ class CRMLead(Document):
 
 			if self.is_new() or not self.image:
 				self.image = has_gravatar(self.email)
+
+	def validate_gst_number(self):
+		"""Validate GST number format and check for duplicates"""
+		# Check if gst_applicable field exists (will be added via migration)
+		if not hasattr(self, 'gst_applicable'):
+			return
+
+		if self.gst_applicable and self.gst_number:
+			from crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings import (
+				validate_deal_gstin,
+				check_gstin_duplicates
+			)
+
+			# Validate GSTIN format and check digit
+			result = validate_deal_gstin(self.gst_number)
+
+			if not result['is_valid']:
+				frappe.throw(
+					_(result['error_message']),
+					title=_("Invalid GST Number")
+				)
+
+			# Display warning if using basic validation only
+			if result['warning_message']:
+				frappe.msgprint(
+					_(result['warning_message']),
+					indicator='orange',
+					alert=True
+				)
+
+			# Check for duplicates
+			duplicates = check_gstin_duplicates(
+				self.gst_number,
+				exclude_doctype="CRM Lead",
+				exclude_name=self.name
+			)
+
+			if duplicates:
+				# Format duplicate message
+				dup_list = "\n".join([
+					f"- {d['doctype']}: {d['name']} ({d['display_name']})"
+					for d in duplicates
+				])
+
+				frappe.throw(
+					_(f"GST Number {self.gst_number} already exists in:\n{dup_list}"),
+					title=_("Duplicate GST Number Found")
+				)
+
+	def auto_fetch_gstin_details(self):
+		"""Automatically fetch and populate organization details from GSTIN"""
+		# Only fetch if GST is applicable and GST number is provided
+		if not hasattr(self, 'gst_applicable') or not self.gst_applicable:
+			return
+
+		if not hasattr(self, 'gst_number') or not self.gst_number:
+			return
+
+		# Check if GST number has changed
+		if not self.is_new():
+			old_doc = self.get_doc_before_save()
+			if old_doc and old_doc.gst_number == self.gst_number:
+				# GST number hasn't changed, skip fetch
+				return
+
+		try:
+			from crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings import fetch_gstin_details
+
+			result = fetch_gstin_details(self.gst_number)
+
+			if result.get("success") and result.get("data"):
+				gstin_data = result["data"]
+				updated_fields = []
+
+				# Auto-populate organization name if empty
+				if not self.organization and gstin_data.get("organization"):
+					self.organization = gstin_data["organization"]
+					updated_fields.append("Organization")
+
+				# Auto-populate company type if empty
+				if not self.company_type and gstin_data.get("company_type"):
+					self.company_type = gstin_data["company_type"]
+					updated_fields.append("Company Type")
+
+				# Show success message if any fields were updated
+				if updated_fields:
+					frappe.msgprint(
+						_("Auto-filled from GSTIN: {0}").format(", ".join(updated_fields)),
+						indicator="green",
+						alert=True
+					)
+
+		except Exception as e:
+			# Don't block save if GSTIN fetch fails
+			frappe.log_error(
+				frappe.get_traceback(),
+				f"Auto GSTIN Fetch Failed for Lead {self.name}"
+			)
+			# Show warning but don't throw
+			frappe.msgprint(
+				_("Could not fetch details from GSTIN: {0}").format(str(e)),
+				indicator="orange",
+				alert=True
+			)
 
 	def assign_agent(self, agent):
 		if not agent:
@@ -164,15 +303,19 @@ class CRMLead(Document):
 			return existing_organization
 
 		organization = frappe.new_doc("CRM Organization")
-		organization.update(
-			{
-				"organization_name": self.organization,
-				"website": self.website,
-				"territory": self.territory,
-				"industry": self.industry,
-				"annual_revenue": self.annual_revenue,
-			}
-		)
+		org_data = {
+			"organization_name": self.organization,
+			"website": self.website,
+			"territory": self.territory,
+			"industry": self.industry,
+			"annual_revenue": self.annual_revenue,
+		}
+
+		# Copy GST information if available
+		if hasattr(self, 'gst_applicable') and self.gst_applicable and hasattr(self, 'gst_number') and self.gst_number:
+			org_data["custom_gstin"] = self.gst_number
+
+		organization.update(org_data)
 		organization.insert(ignore_permissions=True)
 		return organization.name
 
@@ -220,6 +363,7 @@ class CRMLead(Document):
 
 		lead_deal_map = {
 			"lead_owner": "deal_owner",
+			"gst_number": "organization_gstin",
 		}
 
 		restricted_fieldtypes = [
@@ -397,6 +541,64 @@ class CRMLead(Document):
 			"column_field": "status",
 			"title_field": "lead_name",
 			"kanban_fields": '["organization", "email", "mobile_no", "_assign", "modified"]',
+		}
+
+
+@frappe.whitelist()
+def fetch_and_populate_gstin_details(lead_name, gstin):
+	"""
+	Fetch GSTIN details and auto-populate organization fields in CRM Lead
+	"""
+	try:
+		if not gstin:
+			return {
+				"success": False,
+				"error": "GSTIN is required"
+			}
+
+		# Fetch GSTIN details from India Compliance
+		from crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings import fetch_gstin_details
+
+		result = fetch_gstin_details(gstin)
+
+		if not result.get("success"):
+			return result
+
+		# Get the lead document
+		lead = frappe.get_doc("CRM Lead", lead_name)
+
+		# Auto-populate fields from GSTIN data
+		gstin_data = result.get("data", {})
+
+		update_fields = {}
+
+		# Map GSTIN data to lead fields
+		if gstin_data.get("organization"):
+			update_fields["organization"] = gstin_data["organization"]
+
+		if gstin_data.get("company_type"):
+			update_fields["company_type"] = gstin_data["company_type"]
+
+		# Update the lead document
+		if update_fields:
+			for field, value in update_fields.items():
+				setattr(lead, field, value)
+
+			lead.save(ignore_permissions=True)
+
+		return {
+			"success": True,
+			"data": gstin_data,
+			"message": "Organization details populated successfully",
+			"updated_fields": update_fields,
+			"debug": result
+		}
+
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), "GSTIN Auto-populate Error")
+		return {
+			"success": False,
+			"error": str(e)
 		}
 
 

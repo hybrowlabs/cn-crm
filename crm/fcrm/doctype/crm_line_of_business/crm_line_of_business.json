@@ -1,0 +1,141 @@
+{
+ "actions": [],
+ "autoname": "field:lob_code",
+ "creation": "2025-11-17 16:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "basic_info_section",
+  "lob_code",
+  "lob_name",
+  "description",
+  "column_break_1",
+  "is_active",
+  "display_order",
+  "parent_lob",
+  "service_team_section",
+  "default_service_manager",
+  "service_engineers"
+ ],
+ "fields": [
+  {
+   "fieldname": "basic_info_section",
+   "fieldtype": "Section Break",
+   "label": "Basic Information"
+  },
+  {
+   "fieldname": "lob_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "LOB Code",
+   "reqd": 1,
+   "unique": 1,
+   "description": "Unique code for the Line of Business (e.g., ALLOY-MFG)"
+  },
+  {
+   "fieldname": "lob_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "LOB Name",
+   "reqd": 1,
+   "description": "Full name of the Line of Business"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "display_order",
+   "fieldtype": "Int",
+   "label": "Display Order",
+   "description": "Order in which this LOB appears in dropdowns"
+  },
+  {
+   "fieldname": "parent_lob",
+   "fieldtype": "Link",
+   "label": "Parent LOB",
+   "options": "CRM Line of Business",
+   "description": "Parent Line of Business (for hierarchical structure)"
+  },
+  {
+   "fieldname": "service_team_section",
+   "fieldtype": "Section Break",
+   "label": "Service Team"
+  },
+  {
+   "fieldname": "default_service_manager",
+   "fieldtype": "Link",
+   "label": "Default Service Manager",
+   "options": "User",
+   "description": "Default manager for this Line of Business"
+  },
+  {
+   "fieldname": "service_engineers",
+   "fieldtype": "Table",
+   "label": "Service Engineers",
+   "options": "CRM LOB Service Engineer",
+   "description": "List of service engineers assigned to this LOB"
+  }
+ ],
+ "links": [],
+ "modified": "2025-11-17 16:00:00",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Line of Business",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1
+  }
+ ],
+ "sort_field": "display_order",
+ "sort_order": "ASC",
+ "states": [],
+ "title_field": "lob_name",
+ "track_changes": 1
+}

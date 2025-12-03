@@ -72,6 +72,31 @@ class ERPNextCRMSettings(Document):
 			).insert()
 
 	@frappe.whitelist()
+	def sync_all_territories(self):
+		"""Sync all territories between ERPNext and CRM"""
+		try:
+			if not self.enabled:
+				frappe.throw(_("ERPNext CRM integration is not enabled"))
+			
+			if not self.enable_territory_sync:
+				frappe.throw(_("Territory synchronization is not enabled"))
+			
+			from crm.fcrm.doctype.crm_territory.sync_territories import sync_all_territories
+			sync_all_territories()
+			
+			return {
+				"success": True,
+				"message": _("Territory synchronization completed successfully")
+			}
+			
+		except Exception as e:
+			frappe.log_error(frappe.get_traceback(), "Territory Sync Error")
+			return {
+				"success": False,
+				"message": str(e)
+			}
+
+	@frappe.whitelist()
 	def reset_erpnext_form_script(self):
 		try:
 			if frappe.db.exists("CRM Form Script", "Create Quotation from CRM Deal"):
@@ -243,6 +268,105 @@ def validate_deal_gstin(gstin, strict_validation=False):
 			"gstin_info": None,
 			"validation_method": "basic"
 		}
+
+
+def check_gstin_duplicates(gstin, exclude_doctype=None, exclude_name=None):
+	"""
+	Check if GSTIN already exists across all CRM entities and Customers
+
+	Args:
+		gstin (str): The GSTIN to check
+		exclude_doctype (str): Doctype to exclude from check (e.g., current doctype)
+		exclude_name (str): Specific record to exclude (e.g., current record name)
+
+	Returns:
+		list: List of dicts with duplicate records [{doctype, name, display_name}, ...]
+	"""
+	if not gstin:
+		return []
+
+	gstin = gstin.upper().strip()
+	duplicates = []
+
+	# Check in CRM Leads
+	if exclude_doctype != "CRM Lead":
+		lead_filters = {"gst_number": gstin}
+		if exclude_name and exclude_doctype == "CRM Lead":
+			lead_filters["name"] = ["!=", exclude_name]
+
+		leads = frappe.get_all(
+			"CRM Lead",
+			filters=lead_filters,
+			fields=["name", "organization", "first_name", "last_name"]
+		)
+
+		for lead in leads:
+			duplicates.append({
+				"doctype": "CRM Lead",
+				"name": lead.name,
+				"display_name": lead.organization or f"{lead.first_name or ''} {lead.last_name or ''}".strip()
+			})
+
+	# Check in CRM Deals
+	if exclude_doctype != "CRM Deal":
+		deal_filters = {"organization_gstin": gstin}
+		if exclude_name and exclude_doctype == "CRM Deal":
+			deal_filters["name"] = ["!=", exclude_name]
+
+		deals = frappe.get_all(
+			"CRM Deal",
+			filters=deal_filters,
+			fields=["name", "organization"]
+		)
+
+		for deal in deals:
+			duplicates.append({
+				"doctype": "CRM Deal",
+				"name": deal.name,
+				"display_name": deal.organization
+			})
+
+	# Check in CRM Organizations
+	if exclude_doctype != "CRM Organization":
+		org_filters = {"custom_gstin": gstin}
+		if exclude_name and exclude_doctype == "CRM Organization":
+			org_filters["name"] = ["!=", exclude_name]
+
+		orgs = frappe.get_all(
+			"CRM Organization",
+			filters=org_filters,
+			fields=["name", "organization_name"]
+		)
+
+		for org in orgs:
+			duplicates.append({
+				"doctype": "CRM Organization",
+				"name": org.name,
+				"display_name": org.organization_name
+			})
+
+	# Check in Customers (ERPNext) if available
+	if frappe.db.exists("DocType", "Customer"):
+		customer_filters = {"gstin": gstin}
+
+		try:
+			customers = frappe.get_all(
+				"Customer",
+				filters=customer_filters,
+				fields=["name", "customer_name"]
+			)
+
+			for customer in customers:
+				duplicates.append({
+					"doctype": "Customer",
+					"name": customer.name,
+					"display_name": customer.customer_name
+				})
+		except Exception:
+			# Customer doctype might not have gstin field, skip silently
+			pass
+
+	return duplicates
 
 
 def get_erpnext_site_client(erpnext_crm_settings):
@@ -460,6 +584,7 @@ def create_customer_in_erpnext(doc, method):
 	customer_doc = None
 	if not erpnext_crm_settings.is_erpnext_in_different_site:
 		from erpnext.crm.frappe_crm_api import create_customer
+		print(f"Creating customer in ERPNext: Customer")
 		customer_doc = create_customer(customer)
 	else:
 		customer_doc = create_customer_in_remote_site(customer, erpnext_crm_settings)
@@ -529,15 +654,15 @@ def validate_gstin_number(gstin):
 	try:
 		if not gstin:
 			frappe.throw(_("GSTIN is required for validation"), title=_("Missing GSTIN"))
-		
+
 		validation_result = validate_deal_gstin(gstin, False)  # Non-strict validation for API
-		
+
 		return {
 			"success": True,
 			"data": validation_result,
 			"message": _("GSTIN validation completed successfully")
 		}
-		
+
 	except Exception as e:
 		frappe.log_error(frappe.get_traceback(), "GSTIN Validation API Error")
 		return {
@@ -545,6 +670,181 @@ def validate_gstin_number(gstin):
 			"error": str(e),
 			"message": _("Error occurred during GSTIN validation")
 		}
+
+
+@frappe.whitelist()
+def fetch_gstin_details(gstin):
+	"""
+	Fetch organization details from GSTIN using India Compliance app
+	Returns organization information to auto-fill in CRM Lead
+	"""
+	try:
+		if not gstin:
+			return {
+				"success": False,
+				"error": "GSTIN is required"
+			}
+
+		gstin = gstin.upper().strip()
+
+		# First validate the GSTIN
+		validation_result = validate_deal_gstin(gstin, False)
+		if not validation_result["is_valid"]:
+			return {
+				"success": False,
+				"error": validation_result["error_message"]
+			}
+
+		# Try to fetch details from India Compliance app
+		gstin_info = get_gstin_info_from_compliance_app(gstin)
+
+		if gstin_info and gstin_info.get("success"):
+			return {
+				"success": True,
+				"data": gstin_info.get("data", {}),
+				"debug": gstin_info,
+				"message": "GSTIN details fetched successfully"
+			}
+		else:
+			# If India Compliance fetch failed, return basic info
+			return {
+				"success": True,
+				"data": {
+					"gstin": gstin,
+					"message": "GSTIN validated but detailed information not available"
+				},
+				"debug": gstin_info,
+				"message": "GSTIN validated (India Compliance app required for detailed information)"
+			}
+
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), "GSTIN Details Fetch Error")
+		return {
+			"success": False,
+			"error": str(e)
+		}
+
+
+def get_gstin_info_from_compliance_app(gstin):
+	"""
+	Fetch GSTIN details using India Compliance app
+	Returns organization information from GST Portal
+	"""
+	try:
+		# Check if India Compliance app is installed
+		if "india_compliance" not in frappe.get_installed_apps():
+			return {
+				"success": False,
+				"error": "India Compliance app not installed"
+			}
+
+		# Try to import and use India Compliance's GSTIN fetch functionality
+		try:
+			from india_compliance.gst_india.utils.gstin_info import get_gstin_info
+
+			# Fetch GSTIN info from GST Portal via India Compliance
+			gstin_data = get_gstin_info(gstin)
+
+			if not gstin_data:
+				return {
+					"success": False,
+					"error": "Unable to fetch GSTIN details from GST Portal"
+				}
+
+### sample response 
+# {
+#     "gstin": "27AAHCH2271E1ZR",
+#     "business_name": "Hybrowlabs Technologies Private Limited",
+#     "gst_category": "Registered Regular",
+#     "status": "Active",
+#     "all_addresses": [
+#         {
+#             "address_line1": "Flat No.04, Karan Regency Kankeshwar Society",
+#             "address_line2": "Kothrud, ",
+#             "city": "Pune",
+#             "state": "Maharashtra",
+#             "pincode": "411038",
+#             "country": "India"
+#         }
+#     ],
+#     "permanent_address": {
+#         "address_line1": "Flat No.04, Karan Regency Kankeshwar Society",
+#         "address_line2": "Kothrud, ",
+#         "city": "Pune",
+#         "state": "Maharashtra",
+#         "pincode": "411038",
+#         "country": "India"
+#     }
+# }
+
+			# Map India Compliance fields to CRM Lead fields
+			# Extract address from permanent_address or first address in all_addresses
+			permanent_address = gstin_data.get("permanent_address") or {}
+			if not permanent_address and gstin_data.get("all_addresses"):
+				permanent_address = gstin_data["all_addresses"][0] if len(gstin_data["all_addresses"]) > 0 else {}
+
+			organization_data = {
+				"gstin": gstin,
+				"organization": gstin_data.get("business_name") or gstin_data.get("trade_name"),
+				"company_type": map_constitution_to_company_type(gstin_data.get("constitution_of_business")),
+				"address_line1": permanent_address.get("address_line1"),
+				"address_line2": permanent_address.get("address_line2"),
+				"city": permanent_address.get("city"),
+				"state": permanent_address.get("state"),
+				"pincode": permanent_address.get("pincode"),
+				"country": permanent_address.get("country"),
+				"gstin_status": gstin_data.get("status"),
+				"gst_category": gstin_data.get("gst_category"),
+				"registration_date": gstin_data.get("date_of_registration"),
+			}
+
+			return {
+				"success": True,
+				"data": organization_data,
+ 			   "debug_info": gstin_data
+			}
+
+		except ImportError:
+			# India Compliance installed but GSTIN info module not available
+			return {
+				"success": False,
+				"error": "GSTIN info fetch not available in India Compliance app"
+			}
+
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), "India Compliance GSTIN Fetch Error")
+		return {
+			"success": False,
+			"error": f"Error fetching GSTIN details: {str(e)}"
+		}
+
+
+def map_constitution_to_company_type(constitution):
+	"""
+	Map India Compliance constitution types to CRM Lead company types
+	"""
+	constitution_map = {
+		"Private Limited Company": "Pvt Ltd",
+		"Public Limited Company": "Public Ltd",
+		"Partnership": "Partnership",
+		"Proprietorship": "Proprietorship",
+		"Limited Liability Partnership": "LLP",
+	}
+
+	if not constitution:
+		return None
+
+	# Try exact match first
+	if constitution in constitution_map:
+		return constitution_map[constitution]
+
+	# Try partial match
+	constitution_lower = constitution.lower()
+	for key, value in constitution_map.items():
+		if key.lower() in constitution_lower:
+			return value
+
+	return None
 
 
 @frappe.whitelist()

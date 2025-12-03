@@ -85,6 +85,18 @@ website_route_rules = [
 before_install = "crm.install.before_install"
 after_install = "crm.install.after_install"
 
+# Fixtures
+# --------
+
+fixtures = [
+	{
+		"dt": "CRM Form Script",
+		"filters": [
+			["name", "in", ["Fetch Details from GSTIN - CRM Lead"]]
+		]
+	}
+]
+
 # Uninstallation
 # ------------
 
@@ -186,6 +198,10 @@ doc_events = {
 		"before_validate": ["crm.api.demo.validate_user"],
 		"validate_reset_password": ["crm.api.demo.validate_reset_password"],
 	},
+	"Territory": {
+		"on_update": ["crm.fcrm.doctype.crm_territory.territory_sync.sync_territory_to_crm"],
+		"on_trash": ["crm.fcrm.doctype.crm_territory.territory_sync.delete_territory_from_crm"],
+	},
 }
 
 # Scheduled Tasks
@@ -233,6 +249,12 @@ whitelisted_methods = [
 	"crm.fcrm.doctype.crm_site_visit.crm_site_visit.mobile_checkout",
 	"crm.fcrm.doctype.crm_site_visit.crm_site_visit.submit_visit",
 	"crm.fcrm.doctype.crm_site_visit.crm_site_visit.get_my_visits",
+	
+	# Territory Sync Test APIs
+	"crm.api.territory_sync_test.test_territory_sync",
+	"crm.api.territory_sync_test.quick_sync_test", 
+	"crm.api.territory_sync_test.test_field_mapping",
+	"crm.api.territory_sync_test.test_bulk_sync",
 ]
 
 # Testing

@@ -50,6 +50,8 @@ class CRMInvitation(Document):
 			user.append_roles("Sales User")
 		if self.role == "Sales User":
 			self.update_module_in_user(user, "FCRM")
+		elif self.role == "Service User":
+			self.update_module_in_user(user, "FCRM")
 		user.save(ignore_permissions=True)
 
 		self.status = "Accepted"

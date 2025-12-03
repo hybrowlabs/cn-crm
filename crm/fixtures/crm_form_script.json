@@ -1,0 +1,13 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "CRM Form Script",
+  "dt": "CRM Lead",
+  "enabled": 1,
+  "is_standard": 1,
+  "modified": "2025-11-18 12:21:19.104602",
+  "name": "Fetch Details from GSTIN - CRM Lead",
+  "script": "async function setupForm({ doc, call, updateField, toast }) {\n\t// Only add button when editing existing lead (not for new leads)\n\tif (!doc.name) {\n\t\treturn {};\n\t}\n\n\tlet actions = [];\n\n\t// Add \"Fetch from GSTIN\" button\n\tif (doc.gst_applicable && doc.gst_number) {\n\t\tactions.push({\n\t\t\tlabel: __(\"Fetch Details from GSTIN\"),\n\t\t\tcondition: () => doc.gst_applicable && doc.gst_number,\n\t\t\tonClick: async () => {\n\t\t\t\ttry {\n\t\t\t\t\ttoast.info(__(\"Fetching organization details from GSTIN...\"));\n\n\t\t\t\t\tconst result = await call(\n\t\t\t\t\t\t\"crm.fcrm.doctype.crm_lead.crm_lead.fetch_and_populate_gstin_details\",\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\tlead_name: doc.name,\n\t\t\t\t\t\t\tgstin: doc.gst_number\n\t\t\t\t\t\t}\n\t\t\t\t\t);\n\n\t\t\t\t\tif (result && result.success) {\n\t\t\t\t\t\t// Show success message with details\n\t\t\t\t\t\tconst updatedFields = result.updated_fields || {};\n\t\t\t\t\t\tconst fieldNames = Object.keys(updatedFields);\n\t\t\t\t\t\t\n\t\t\t\t\t\tif (fieldNames.length > 0) {\n\t\t\t\t\t\t\ttoast.success(\n\t\t\t\t\t\t\t\t__(\"Organization details fetched! Updated: {0}\", [fieldNames.join(\", \")])\n\t\t\t\t\t\t\t);\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t// Update local doc with fetched values\n\t\t\t\t\t\t\tfor (const [field, value] of Object.entries(updatedFields)) {\n\t\t\t\t\t\t\t\tawait updateField(field, value);\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t} else {\n\t\t\t\t\t\t\ttoast.info(__(\"GSTIN validated but no new information to update\"));\n\t\t\t\t\t\t}\n\t\t\t\t\t} else {\n\t\t\t\t\t\t// Show error message\n\t\t\t\t\t\ttoast.error(\n\t\t\t\t\t\t\t__(result.error || \"Failed to fetch GSTIN details\")\n\t\t\t\t\t\t);\n\t\t\t\t\t}\n\t\t\t\t} catch (error) {\n\t\t\t\t\tconsole.error(\"GSTIN fetch error:\", error);\n\t\t\t\t\ttoast.error(__(\"Error fetching GSTIN details: {0}\", [error.message || error]));\n\t\t\t\t}\n\t\t\t}\n\t\t});\n\t}\n\n\treturn {\n\t\tactions: actions\n\t};\n}\n",
+  "view": "Form"
+ }
+]

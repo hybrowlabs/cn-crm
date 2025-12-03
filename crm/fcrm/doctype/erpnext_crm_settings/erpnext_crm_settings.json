@@ -21,7 +21,11 @@
   "section_break_gst",
   "enable_gst_validation",
   "column_break_gst",
-  "strict_gst_validation"
+  "strict_gst_validation",
+  "section_break_territory_sync",
+  "enable_territory_sync",
+  "column_break_territory",
+  "sync_territories_button"
  ],
  "fields": [
   {
@@ -128,6 +132,31 @@
    "fieldname": "strict_gst_validation",
    "fieldtype": "Check",
    "label": "Strict GST Validation"
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "section_break_territory_sync",
+   "fieldtype": "Section Break",
+   "label": "Territory Synchronization"
+  },
+  {
+   "default": "1",
+   "depends_on": "enabled",
+   "description": "Enable automatic two-way synchronization between ERPNext Territory and CRM Territory",
+   "fieldname": "enable_territory_sync",
+   "fieldtype": "Check",
+   "label": "Enable Territory Sync"
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "column_break_territory",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.enabled && doc.enable_territory_sync",
+   "fieldname": "sync_territories_button",
+   "fieldtype": "Button",
+   "label": "Sync All Territories Now"
   }
  ],
  "index_web_pages_for_search": 1,

@@ -1,0 +1,53 @@
+{
+ "actions": [],
+ "creation": "2025-11-17 16:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "service_engineer",
+  "column_break_1",
+  "is_primary",
+  "expertise_level"
+ ],
+ "fields": [
+  {
+   "fieldname": "service_engineer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Service Engineer",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_primary",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Primary"
+  },
+  {
+   "fieldname": "expertise_level",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Expertise Level",
+   "options": "Beginner\nIntermediate\nAdvanced\nExpert"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2025-11-17 16:00:00",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM LOB Service Engineer",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
