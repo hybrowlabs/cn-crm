@@ -18,6 +18,7 @@ def after_install(force=False):
 	add_default_fields_layout(force)
 	add_property_setter()
 	add_email_template_custom_fields()
+	add_contact_lead_field()
 	add_default_industries()
 	add_default_lead_sources()
 	add_default_lost_reasons()
@@ -264,6 +265,29 @@ def add_email_template_custom_fields():
 		)
 
 		frappe.clear_cache(doctype="Email Template")
+
+
+def add_contact_lead_field():
+	"""Add lead field to Contact doctype"""
+	if not frappe.get_meta("Contact").has_field("lead"):
+		click.secho("* Installing Lead field in Contact")
+
+		create_custom_fields(
+			{
+				"Contact": [
+					{
+						"fieldname": "lead",
+						"fieldtype": "Link",
+						"label": "Lead",
+						"options": "CRM Lead",
+						"reqd": 1,
+						"insert_after": "company_name",
+					},
+				]
+			}
+		)
+
+		frappe.clear_cache(doctype="Contact")
 
 
 def add_default_industries():

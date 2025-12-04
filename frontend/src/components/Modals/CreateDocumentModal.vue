@@ -110,6 +110,13 @@ async function create() {
   loading.value = true
   error.value = null
 
+  // Validate that leads can only be created with 'New' status
+  if (props.doctype === 'CRM Lead' && _data.doc.status && _data.doc.status !== 'New') {
+    error.value = __('Leads can only be created with "New" status')
+    loading.value = false
+    return
+  }
+
   await triggerOnBeforeCreate?.()
 
   let doc = await call(
@@ -142,6 +149,12 @@ watch(
 
     nextTick(() => {
       _data.doc = { ...props.data }
+      // Ensure status defaults to 'New' for CRM Lead if not set or invalid
+      if (props.doctype === 'CRM Lead') {
+        if (!_data.doc.status || _data.doc.status !== 'New') {
+          _data.doc.status = 'New'
+        }
+      }
     })
   },
 )

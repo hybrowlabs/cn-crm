@@ -17,6 +17,8 @@ class CRMDeal(Document):
 		self.set_sla()
 
 	def validate(self):
+		self.validate_lead_requirement()
+		self.validate_eligible_contacts_organizations()
 		self.set_primary_contact()
 		self.set_primary_email_mobile_no()
 		if not self.is_new() and self.has_value_changed("deal_owner") and self.deal_owner:
@@ -26,6 +28,40 @@ class CRMDeal(Document):
 			add_status_change_log(self)
 		self.validate_forcasting_fields()
 		self.validate_lost_reason()
+
+	def validate_lead_requirement(self):
+		"""Ensure Lead is required for Deal"""
+		if not self.lead:
+			frappe.throw(_("Lead is required to create a Deal"), frappe.MandatoryError)
+
+	def validate_eligible_contacts_organizations(self):
+		"""Ensure contacts and organization are linked to the same Lead"""
+		if not self.lead:
+			return
+
+		# Validate organization is linked to the Lead
+		if self.organization:
+			org_lead = frappe.db.get_value("CRM Organization", self.organization, "lead")
+			if org_lead != self.lead:
+				frappe.throw(
+					_("Organization {0} is not linked to Lead {1}").format(
+						frappe.bold(self.organization), frappe.bold(self.lead)
+					),
+					frappe.ValidationError,
+				)
+
+		# Validate contacts are linked to the Lead
+		if self.contacts:
+			for contact_row in self.contacts:
+				if contact_row.contact:
+					contact_lead = frappe.db.get_value("Contact", contact_row.contact, "lead")
+					if contact_lead != self.lead:
+						frappe.throw(
+							_("Contact {0} is not linked to Lead {1}").format(
+								frappe.bold(contact_row.contact), frappe.bold(self.lead)
+							),
+							frappe.ValidationError,
+						)
 
 	def after_insert(self):
 		if self.deal_owner:
@@ -287,15 +323,19 @@ def create_organization(doc):
 		return existing_organization
 
 	organization = frappe.new_doc("CRM Organization")
-	organization.update(
-		{
-			"organization_name": doc.get("organization_name"),
-			"website": doc.get("website"),
-			"territory": doc.get("territory"),
-			"industry": doc.get("industry"),
-			"annual_revenue": doc.get("annual_revenue"),
-		}
-	)
+	org_data = {
+		"organization_name": doc.get("organization_name"),
+		"website": doc.get("website"),
+		"territory": doc.get("territory"),
+		"industry": doc.get("industry"),
+		"annual_revenue": doc.get("annual_revenue"),
+	}
+	
+	# Add lead if provided
+	if doc.get("lead"):
+		org_data["lead"] = doc.get("lead")
+	
+	organization.update(org_data)
 	organization.insert(ignore_permissions=True)
 	return organization.name
 
@@ -319,14 +359,18 @@ def create_contact(doc):
 		return existing_contact
 
 	contact = frappe.new_doc("Contact")
-	contact.update(
-		{
-			"first_name": doc.get("first_name"),
-			"last_name": doc.get("last_name"),
-			"salutation": doc.get("salutation"),
-			"company_name": doc.get("organization") or doc.get("organization_name"),
-		}
-	)
+	contact_data = {
+		"first_name": doc.get("first_name"),
+		"last_name": doc.get("last_name"),
+		"salutation": doc.get("salutation"),
+		"company_name": doc.get("organization") or doc.get("organization_name"),
+	}
+	
+	# Add lead if provided
+	if doc.get("lead"):
+		contact_data["lead"] = doc.get("lead")
+	
+	contact.update(contact_data)
 
 	if doc.get("email"):
 		contact.append("email_ids", {"email_id": doc.get("email"), "is_primary": 1})
@@ -344,15 +388,53 @@ def create_contact(doc):
 def create_deal(args):
 	deal = frappe.new_doc("CRM Deal")
 
+	# Validate lead is provided
+	if not args.get("lead"):
+		frappe.throw(_("Lead is required to create a Deal"), frappe.MandatoryError)
+
+	lead = args.get("lead")
+
 	contact = args.get("contact")
 	if not contact and (
 		args.get("first_name") or args.get("last_name") or args.get("email") or args.get("mobile_no")
 	):
-		contact = create_contact(args)
+		# Create contact with lead reference
+		contact_args = args.copy()
+		contact_args["lead"] = lead
+		contact = create_contact(contact_args)
+
+	# Validate organization is eligible (linked to lead)
+	organization = args.get("organization")
+	if organization:
+		org_lead = frappe.db.get_value("CRM Organization", organization, "lead")
+		if org_lead != lead:
+			frappe.throw(
+				_("Organization {0} is not linked to Lead {1}").format(
+					frappe.bold(organization), frappe.bold(lead)
+				),
+				frappe.ValidationError,
+			)
+	else:
+		# Create organization with lead reference
+		org_args = args.copy()
+		org_args["lead"] = lead
+		organization = create_organization(org_args)
+
+	# Validate contact is eligible (linked to lead)
+	if contact:
+		contact_lead = frappe.db.get_value("Contact", contact, "lead")
+		if contact_lead != lead:
+			frappe.throw(
+				_("Contact {0} is not linked to Lead {1}").format(
+					frappe.bold(contact), frappe.bold(lead)
+				),
+				frappe.ValidationError,
+			)
 
 	deal.update(
 		{
-			"organization": args.get("organization") or create_organization(args),
+			"lead": lead,
+			"organization": organization,
 			"contacts": [{"contact": contact, "is_primary": 1}] if contact else [],
 		}
 	)
@@ -364,12 +446,11 @@ def create_deal(args):
 	deal.insert(ignore_permissions=True)
 	return deal.name
 
-import frappe
 
 @frappe.whitelist()
 def get_deals_data():
-    return frappe.get_all(
-        "CRM Deal",
-        fields=["status", "annual_revenue"],
-        filters={}
-    )
+	return frappe.get_all(
+		"CRM Deal",
+		fields=["status", "annual_revenue"],
+		filters={}
+	)

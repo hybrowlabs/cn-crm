@@ -37,8 +37,7 @@
   </div>
   <div v-if="visit.data" class="flex h-full overflow-hidden">
     <Tabs as="div" v-model="tabIndex" :tabs="tabs" class="overflow-auto">
-      <TabList class="!px-3" />
-      <TabPanel v-slot="{ tab }">
+      <template #tab-panel="{ tab }">
         <div v-if="tab.name == 'Details'">
           <!-- Visit-specific mobile view -->
           <div class="p-4 space-y-4">
@@ -96,7 +95,7 @@
         </div>
         <Activities v-else doctype="CRM Site Visit" :tabs="tabs" v-model:reload="reload" v-model:tabIndex="tabIndex"
           v-model="visit" />
-      </TabPanel>
+      </template>
     </Tabs>
   </div>
 </template>
@@ -129,8 +128,6 @@ import {
   createResource,
   Dropdown,
   Tabs,
-  TabList,
-  TabPanel,
   Breadcrumbs,
   call,
   usePageMeta,

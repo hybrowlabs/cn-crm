@@ -232,6 +232,10 @@ async function createNewLead() {
         if (validationError) {
           return validationError
         }
+        if (lead.doc.status && lead.doc.status !== 'New') {
+          error.value = __('Leads can only be created with "New" status')
+          return error.value
+        }
         isLeadCreating.value = true
       },
       onSuccess(data) {
@@ -268,8 +272,14 @@ onMounted(() => {
   if (!lead.doc?.lead_owner) {
     lead.doc.lead_owner = getUser().name
   }
-  if (!lead.doc?.status && leadStatuses.value[0]?.value) {
-    lead.doc.status = leadStatuses.value[0].value
+  // Ensure status defaults to 'New' if not set or if invalid status is passed
+  if (!lead.doc?.status) {
+    // Find 'New' status from available statuses
+    const newStatus = leadStatuses.value.find((s) => s.value === 'New')
+    lead.doc.status = newStatus?.value || leadStatuses.value[0]?.value || 'New'
+  } else if (lead.doc.status !== 'New') {
+    // If a non-'New' status is provided, override it to 'New'
+    lead.doc.status = 'New'
   }
 })
 </script>

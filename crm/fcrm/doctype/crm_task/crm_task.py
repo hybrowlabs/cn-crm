@@ -13,12 +13,23 @@ class CRMTask(Document):
 		self.assign_to()
 
 	def validate(self):
+		self.validate_lead_reference()
 		if self.is_new() or not self.assigned_to:
 			return
 
 		if self.get_doc_before_save().assigned_to != self.assigned_to:
 			self.unassign_from_previous_user(self.get_doc_before_save().assigned_to)
 			self.assign_to()
+
+	def validate_lead_reference(self):
+		"""Ensure Task only references CRM Lead"""
+		if self.reference_doctype and self.reference_doctype != "CRM Lead":
+			frappe.throw(
+				_("Task can only reference CRM Lead. Current reference: {0}").format(
+					frappe.bold(self.reference_doctype)
+				),
+				frappe.ValidationError,
+			)
 
 	def unassign_from_previous_user(self, user):
 		unassign(self.doctype, self.name, user)

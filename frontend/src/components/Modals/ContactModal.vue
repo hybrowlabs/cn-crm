@@ -88,6 +88,31 @@ const loading = ref(false)
 
 const { document: _contact, triggerOnBeforeCreate } = useDocument('Contact')
 
+// Watch for lead changes to pre-populate data
+import { watch } from 'vue'
+
+watch(() => _contact.doc.lead, async (newLead) => {
+  if (newLead && !_contact.doc.first_name && !_contact.doc.last_name) {
+    try {
+      const leadData = await call('crm.api.contact.get_contact_data_from_lead', {
+        lead_name: newLead
+      })
+      // Pre-populate fields from lead
+      if (leadData.first_name) _contact.doc.first_name = leadData.first_name
+      if (leadData.last_name) _contact.doc.last_name = leadData.last_name
+      if (leadData.salutation) _contact.doc.salutation = leadData.salutation
+      if (leadData.gender) _contact.doc.gender = leadData.gender
+      if (leadData.designation) _contact.doc.designation = leadData.designation
+      if (leadData.company_name) _contact.doc.company_name = leadData.company_name
+      if (leadData.email_id) _contact.doc.email_id = leadData.email_id
+      if (leadData.mobile_no) _contact.doc.mobile_no = leadData.mobile_no
+      if (leadData.phone) _contact.doc.phone = leadData.phone
+    } catch (error) {
+      console.error('Error fetching lead data:', error)
+    }
+  }
+})
+
 async function createContact() {
   if (_contact.doc.email_id) {
     _contact.doc.email_ids = [{ email_id: _contact.doc.email_id }]

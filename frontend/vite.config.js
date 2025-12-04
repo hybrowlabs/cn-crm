@@ -125,7 +125,17 @@ export default defineConfig({
     }),
     virtualStubPlugin,
   ],
-  resolve: { alias },
+  resolve: {
+    alias: [
+      ...alias,
+      // Allow deep imports from frappe-ui (resources, components, etc.)
+      // But exclude tailwind preset which should use the exported path
+      {
+        find: /^frappe-ui\/src\/(?!tailwind\/preset)(.*)$/,
+        replacement: path.resolve(__dirname, '../node_modules/frappe-ui/src/$1'),
+      },
+    ],
+  },
   optimizeDeps: {
     include: [
       'feather-icons',

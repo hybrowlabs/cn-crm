@@ -108,7 +108,8 @@
    "fieldname": "lead",
    "fieldtype": "Link",
    "label": "Lead",
-   "options": "CRM Lead"
+   "options": "CRM Lead",
+   "reqd": 1
   },
   {
    "fieldname": "deal_owner",

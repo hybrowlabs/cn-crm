@@ -151,3 +151,52 @@ def search_emails(txt: str):
 	)
 
 	return results
+
+
+@frappe.whitelist()
+def get_contact_data_from_lead(lead_name):
+	"""Get Contact data pre-populated from Lead"""
+	if not frappe.has_permission("CRM Lead", "read", lead_name):
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+
+	lead = frappe.get_cached_doc("CRM Lead", lead_name)
+	
+	contact_data = {
+		"lead": lead_name,
+		"first_name": lead.first_name or lead.lead_name,
+		"last_name": lead.last_name,
+		"salutation": lead.salutation,
+		"gender": lead.gender,
+		"designation": lead.job_title,
+		"company_name": lead.organization,
+		"email_id": lead.email,
+		"mobile_no": lead.mobile_no,
+		"phone": lead.phone,
+	}
+	
+	return contact_data
+
+
+@frappe.whitelist()
+def get_organization_data_from_lead(lead_name):
+	"""Get Organization data pre-populated from Lead"""
+	if not frappe.has_permission("CRM Lead", "read", lead_name):
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+
+	lead = frappe.get_cached_doc("CRM Lead", lead_name)
+	
+	org_data = {
+		"lead": lead_name,
+		"organization_name": lead.organization,
+		"website": lead.website,
+		"territory": lead.territory,
+		"industry": lead.industry,
+		"annual_revenue": lead.annual_revenue,
+		"no_of_employees": lead.no_of_employees,
+	}
+	
+	# Add GST information if available
+	if hasattr(lead, 'gst_applicable') and lead.gst_applicable and hasattr(lead, 'gst_number') and lead.gst_number:
+		org_data["custom_gstin"] = lead.gst_number
+	
+	return org_data
