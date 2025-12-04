@@ -83,7 +83,7 @@ import { isMobileView } from '@/composables/settings'
 import { showQuickEntryModal, quickEntryProps } from '@/composables/modals'
 import { useDocument } from '@/data/document'
 import { capture } from '@/telemetry'
-import { Switch, createResource } from 'frappe-ui'
+import { Switch, createResource, call } from 'frappe-ui'
 import { computed, ref, onMounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -157,6 +157,18 @@ const tabs = createResource({
               field.prefix = getDealStatus(deal.doc.status).color
             }
 
+            // Filter contacts and organizations by lead
+            if (field.fieldname === 'contact' && deal.doc.lead) {
+              field.getFilters = () => ({
+                lead: deal.doc.lead
+              })
+            }
+            if (field.fieldname === 'organization' && deal.doc.lead) {
+              field.getFilters = () => ({
+                lead: deal.doc.lead
+              })
+            }
+
             if (field.fieldtype === 'Table') {
               deal.doc[field.fieldname] = []
             }
@@ -194,6 +206,10 @@ async function createDeal() {
     auto: true,
     validate() {
       error.value = null
+      if (!deal.doc.lead) {
+        error.value = __('Lead is required')
+        return error.value
+      }
       if (deal.doc.annual_revenue) {
         if (typeof deal.doc.annual_revenue === 'string') {
           deal.doc.annual_revenue = deal.doc.annual_revenue.replace(/,/g, '')

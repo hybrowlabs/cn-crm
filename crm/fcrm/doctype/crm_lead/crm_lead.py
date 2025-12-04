@@ -274,6 +274,7 @@ class CRMLead(Document):
 				"designation": self.job_title,
 				"company_name": self.organization,
 				"image": self.image or "",
+				"lead": self.name,
 			}
 		)
 
@@ -309,6 +310,7 @@ class CRMLead(Document):
 			"territory": self.territory,
 			"industry": self.industry,
 			"annual_revenue": self.annual_revenue,
+			"lead": self.name,
 		}
 
 		# Copy GST information if available

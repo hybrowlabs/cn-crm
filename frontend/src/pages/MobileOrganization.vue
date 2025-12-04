@@ -86,17 +86,17 @@
       </template>
     </FileUploader>
     <Tabs as="div" v-model="tabIndex" :tabs="tabs" class="overflow-auto">
-      <TabList class="!px-4" v-slot="{ tab, selected }">
+      <template #tab-item="{ tab }">
         <button
           v-if="tab.name !== 'Details'"
           class="group flex items-center gap-2 border-b border-transparent py-2.5 text-base text-ink-gray-5 duration-300 ease-in-out hover:border-outline-gray-3 hover:text-ink-gray-9"
-          :class="{ 'text-ink-gray-9': selected }"
+          :class="{ 'text-ink-gray-9': tabIndex === tabs.findIndex(t => t.name === tab.name) }"
         >
           <component v-if="tab.icon" :is="tab.icon" class="h-5" />
           {{ __(tab.label) }}
           <Badge
             class="group-hover:bg-surface-gray-7"
-            :class="[selected ? 'bg-surface-gray-7' : 'bg-gray-600']"
+            :class="[tabIndex === tabs.findIndex(t => t.name === tab.name) ? 'bg-surface-gray-7' : 'bg-gray-600']"
             variant="solid"
             theme="gray"
             size="sm"
@@ -104,8 +104,8 @@
             {{ tab.count }}
           </Badge>
         </button>
-      </TabList>
-      <TabPanel v-slot="{ tab }">
+      </template>
+      <template #tab-panel="{ tab }">
         <div v-if="tab.name == 'Details'">
           <div
             v-if="sections.data"
@@ -142,7 +142,7 @@
             <div>{{ __('No {0} Found', [__(tab.label)]) }}</div>
           </div>
         </div>
-      </TabPanel>
+      </template>
     </Tabs>
   </div>
 </template>
@@ -171,8 +171,6 @@ import {
   FileUploader,
   Dropdown,
   Tabs,
-  TabList,
-  TabPanel,
   call,
   createListResource,
   createDocumentResource,

@@ -9,6 +9,19 @@ from crm.utils import seconds_to_duration
 
 
 class CRMCallLog(Document):
+	def validate(self):
+		self.validate_lead_reference()
+
+	def validate_lead_reference(self):
+		"""Ensure Call Log only references CRM Lead"""
+		if self.reference_doctype and self.reference_doctype != "CRM Lead":
+			frappe.throw(
+				_("Call Log can only reference CRM Lead. Current reference: {0}").format(
+					frappe.bold(self.reference_doctype)
+				),
+				frappe.ValidationError,
+			)
+
 	@staticmethod
 	def default_list_data():
 		columns = [

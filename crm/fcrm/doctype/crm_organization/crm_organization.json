@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "organization_name",
+  "lead",
   "custom_gstin",
   "no_of_employees",
   "currency",
@@ -25,6 +26,13 @@
    "fieldtype": "Data",
    "label": "Organization Name",
    "unique": 1
+  },
+  {
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "label": "Lead",
+   "options": "CRM Lead",
+   "reqd": 1
   },
   {
    "fieldname": "website",

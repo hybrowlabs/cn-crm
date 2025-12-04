@@ -134,7 +134,7 @@ const priorityOptions = computed(() => [
 const referenceTypes = computed(() => [
   { label: 'CRM Lead', value: 'CRM Lead' },
   { label: 'CRM Deal', value: 'CRM Deal' },
-  { label: 'Customer', value: 'Customer' },
+  // Customer removed - only Lead or Deal allowed
 ])
 
 const tabs = createResource({

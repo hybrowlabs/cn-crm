@@ -2,6 +2,9 @@
 	"private": true,
 	"type": "module",
 	"workspaces": ["frontend", "frappe-ui"],
+	"resolutions": {
+		"@iconify/utils": "^2.1.0"
+	},
 	"scripts": {
 		"postinstall": "cd frontend && yarn install",
 		"dev": "cd frontend && yarn dev",

@@ -162,7 +162,7 @@ const _task = ref({
   due_date: '',
   status: 'Backlog',
   priority: 'Low',
-  reference_doctype: props.doctype,
+  reference_doctype: 'CRM Lead', // Always restrict to CRM Lead
   reference_docname: null,
 })
 
@@ -204,7 +204,7 @@ async function updateTask() {
       {
         doc: {
           doctype: 'CRM Task',
-          reference_doctype: props.doctype,
+          reference_doctype: 'CRM Lead', // Always restrict to CRM Lead
           reference_docname: props.doc || null,
           ..._task.value,
         },

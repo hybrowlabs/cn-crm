@@ -51,8 +51,20 @@ const showTaskModal = ref(false)
 const task = ref({})
 
 function showTask(t) {
-  let doctype = props.doctype
+  // Tasks can only reference CRM Lead
   let docname = doc.value.data?.name
+  
+  // If doctype is not CRM Lead, we need to get the lead from the deal
+  if (props.doctype === 'CRM Deal' && docname) {
+    // Get lead from deal
+    call('frappe.client.get_value', {
+      doctype: 'CRM Deal',
+      fieldname: 'lead',
+      filters: { name: docname }
+    }).then((result) => {
+      docname = result.message.lead
+    })
+  }
   
   task.value = t || {
     title: '',
@@ -61,7 +73,7 @@ function showTask(t) {
     due_date: '',
     priority: 'Low',
     status: 'Backlog',
-    reference_doctype: doctype,
+    reference_doctype: 'CRM Lead', // Always CRM Lead
     reference_docname: docname,
   }
   showTaskModal.value = true
@@ -91,13 +103,25 @@ const showNoteModal = ref(false)
 const note = ref({})
 
 function showNote(n) {
-  let doctype = props.doctype
+  // Notes can only reference CRM Lead
   let docname = doc.value.data?.name
+  
+  // If doctype is not CRM Lead, we need to get the lead from the deal
+  if (props.doctype === 'CRM Deal' && docname) {
+    // Get lead from deal
+    call('frappe.client.get_value', {
+      doctype: 'CRM Deal',
+      fieldname: 'lead',
+      filters: { name: docname }
+    }).then((result) => {
+      docname = result.message.lead
+    })
+  }
   
   note.value = n || {
     title: '',
     content: '',
-    reference_doctype: doctype,
+    reference_doctype: 'CRM Lead', // Always CRM Lead
     reference_docname: docname,
   }
   showNoteModal.value = true
@@ -113,20 +137,44 @@ const showVisitModal = ref(false)
 const visit = ref({})
 
 function createCallLog() {
-  let doctype = props.doctype
+  // Call Logs can only reference CRM Lead
   let docname = doc.value.data?.name
-  referenceDoc.value = { ...doc.value.data }
-  callLog.value = {
-    reference_doctype: doctype,
-    reference_docname: docname,
+  
+  // If doctype is not CRM Lead, we need to get the lead from the deal
+  if (props.doctype === 'CRM Deal' && docname) {
+    // Get lead from deal
+    call('frappe.client.get_value', {
+      doctype: 'CRM Deal',
+      fieldname: 'lead',
+      filters: { name: docname }
+    }).then((result) => {
+      docname = result.message.lead
+      referenceDoc.value = { ...doc.value.data }
+      callLog.value = {
+        reference_doctype: 'CRM Lead', // Always CRM Lead
+        reference_docname: docname,
+      }
+      showCallLogModal.value = true
+    })
+  } else {
+    referenceDoc.value = { ...doc.value.data }
+    callLog.value = {
+      reference_doctype: 'CRM Lead', // Always CRM Lead
+      reference_docname: docname,
+    }
+    showCallLogModal.value = true
   }
-  showCallLogModal.value = true
 }
 
 function showVisit() {
   let doctype = props.doctype
   let docname = doc.value.data?.name
   
+  // Visits can reference CRM Lead or CRM Deal (but Deal must have Lead)
+  // If doctype is not CRM Lead or CRM Deal, default to CRM Lead
+  if (doctype !== 'CRM Lead' && doctype !== 'CRM Deal') {
+    doctype = 'CRM Lead'
+  }
   
   // Clear previous defaults first
   visit.value = {}

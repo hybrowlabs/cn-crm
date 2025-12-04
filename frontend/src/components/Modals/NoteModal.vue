@@ -97,7 +97,7 @@ async function updateNote() {
         doctype: 'FCRM Note',
         title: _note.value.title,
         content: _note.value.content,
-        reference_doctype: props.doctype,
+        reference_doctype: 'CRM Lead', // Always restrict to CRM Lead
         reference_docname: props.doc || '',
       },
     }, {

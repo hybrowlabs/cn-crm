@@ -62,8 +62,7 @@
   </div>
   <div v-if="deal.data" class="flex h-full overflow-hidden">
     <Tabs as="div" v-model="tabIndex" :tabs="tabs" class="overflow-auto">
-      <TabList class="!px-3" />
-      <TabPanel v-slot="{ tab }">
+      <template #tab-panel="{ tab }">
         <div v-if="tab.name == 'Details'">
           <SLASection
             v-if="deal.data.sla_status"
@@ -227,7 +226,7 @@
           @beforeSave="beforeStatusChange"
           @afterSave="reloadAssignees"
         />
-      </TabPanel>
+      </template>
     </Tabs>
   </div>
   <OrganizationModal
@@ -299,8 +298,6 @@ import {
   Dropdown,
   Avatar,
   Tabs,
-  TabList,
-  TabPanel,
   Breadcrumbs,
   call,
   usePageMeta,

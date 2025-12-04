@@ -91,6 +91,29 @@ const error = ref(null)
 const { document: organization, triggerOnBeforeCreate } =
   useDocument('CRM Organization')
 
+// Watch for lead changes to pre-populate data
+import { watch } from 'vue'
+
+watch(() => organization.doc.lead, async (newLead) => {
+  if (newLead && !organization.doc.organization_name) {
+    try {
+      const leadData = await call('crm.api.contact.get_organization_data_from_lead', {
+        lead_name: newLead
+      })
+      // Pre-populate fields from lead
+      if (leadData.organization_name) organization.doc.organization_name = leadData.organization_name
+      if (leadData.website) organization.doc.website = leadData.website
+      if (leadData.territory) organization.doc.territory = leadData.territory
+      if (leadData.industry) organization.doc.industry = leadData.industry
+      if (leadData.annual_revenue) organization.doc.annual_revenue = leadData.annual_revenue
+      if (leadData.no_of_employees) organization.doc.no_of_employees = leadData.no_of_employees
+      if (leadData.custom_gstin) organization.doc.custom_gstin = leadData.custom_gstin
+    } catch (error) {
+      console.error('Error fetching lead data:', error)
+    }
+  }
+})
+
 async function createOrganization() {
   loading.value = true
   error.value = null

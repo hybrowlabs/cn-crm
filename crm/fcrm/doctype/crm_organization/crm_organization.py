@@ -8,7 +8,13 @@ from frappe.model.document import Document
 
 class CRMOrganization(Document):
 	def validate(self):
+		self.validate_lead_requirement()
 		self.auto_fetch_gstin_details()
+
+	def validate_lead_requirement(self):
+		"""Ensure Lead is required for new organizations"""
+		if self.is_new() and not self.lead:
+			frappe.throw(_("Lead is required to create an Organization"), frappe.MandatoryError)
 
 	def auto_fetch_gstin_details(self):
 		"""Automatically fetch and populate organization details from GSTIN"""

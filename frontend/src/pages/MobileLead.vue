@@ -67,8 +67,7 @@
   </div>
   <div v-if="lead?.data" class="flex h-full overflow-hidden">
     <Tabs as="div" v-model="tabIndex" :tabs="tabs" class="overflow-auto">
-      <TabList class="!px-3" />
-      <TabPanel v-slot="{ tab }">
+      <template #tab-panel="{ tab }">
         <div v-if="tab.name == 'Details'">
           <SLASection
             v-if="lead.data.sla_status"
@@ -96,7 +95,7 @@
           v-model:tabIndex="tabIndex"
           v-model="lead"
         />
-      </TabPanel>
+      </template>
     </Tabs>
   </div>
   <Dialog
@@ -205,8 +204,6 @@ import {
   createResource,
   Dropdown,
   Tabs,
-  TabList,
-  TabPanel,
   Switch,
   Breadcrumbs,
   call,

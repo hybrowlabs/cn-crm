@@ -27,11 +27,32 @@ class CRMSiteVisit(Document):
 
     def validate(self):
         """Validate Site Visit document"""
+        self.validate_lead_reference()
         self.validate_time_sequence()
         self.validate_location_accuracy()
         self.calculate_duration()
         self.validate_follow_up_date()
         self.validate_submission_workflow()
+
+    def validate_lead_reference(self):
+        """Ensure Visit references Lead or Deal (and Deal must have Lead)"""
+        if not self.reference_type or not self.reference_name:
+            frappe.throw(_("Reference Type and Reference Name are required"), frappe.MandatoryError)
+        
+        if self.reference_type not in ["CRM Lead", "CRM Deal"]:
+            frappe.throw(
+                _("Reference Type must be CRM Lead or CRM Deal"),
+                frappe.ValidationError
+            )
+        
+        if self.reference_type == "CRM Deal":
+            # Validate that Deal has a Lead
+            deal_lead = frappe.db.get_value("CRM Deal", self.reference_name, "lead")
+            if not deal_lead:
+                frappe.throw(
+                    _("Deal {0} must have a Lead reference").format(frappe.bold(self.reference_name)),
+                    frappe.ValidationError
+                )
 
     def populate_reference_details(self):
         """Auto-populate reference details server-side"""
