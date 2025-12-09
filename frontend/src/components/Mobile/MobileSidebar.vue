@@ -115,6 +115,11 @@ const links = [
     to: 'Dashboard',
     default: true,
   },
+  {
+    label: 'Dashboard Builder',
+    icon: DashboardIcon,
+    to: 'Dashboard Builder',
+  },
    {
     label: 'Calendar',
     icon: CalendarIcon,

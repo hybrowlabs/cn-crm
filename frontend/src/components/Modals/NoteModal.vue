@@ -14,7 +14,7 @@
         <h3 class="text-2xl font-semibold leading-6 text-ink-gray-9">
           {{ editMode ? __('Edit Note') : __('Create Note') }}
         </h3>
-        <Button v-if="_note?.reference_docname" size="sm" :label="_note.reference_doctype == 'CRM Deal'
+        <Button v-if="note.doc?.reference_docname" size="sm" :label="note.doc.reference_doctype == 'CRM Deal'
           ? __('Open Deal')
           : __('Open Lead')
           " @click="redirect()">
@@ -25,17 +25,22 @@
       </div>
     </template>
     <template #body-content>
-      <div class="flex flex-col gap-4">
-        <div>
-          <FormControl ref="title" :label="__('Title')" v-model="_note.title" :placeholder="__('Call with John Doe')"
-            required />
+      <div>
+        <div v-if="tabs.loading" class="py-8 text-center">
+          <span class="text-gray-600">Loading form...</span>
         </div>
-        <div>
-          <div class="mb-1.5 text-xs text-ink-gray-5">{{ __('Content') }}</div>
-          <TextEditor variant="outline" ref="content"
-            editor-class="!prose-sm overflow-auto min-h-[180px] max-h-80 py-1.5 px-2 rounded border border-[--surface-gray-2] bg-surface-gray-2 placeholder-ink-gray-4 hover:border-outline-gray-modals hover:bg-surface-gray-3 hover:shadow-sm focus:bg-surface-white focus:border-outline-gray-4 focus:shadow-sm focus:ring-0 focus-visible:ring-2 focus-visible:ring-outline-gray-3 text-ink-gray-8 transition-colors"
-            :bubbleMenu="true" :content="_note.content" @change="(val) => (_note.content = val)" :placeholder="__('Took a call with John Doe and discussed the new project.')
-              " />
+        <div v-else-if="tabs.error" class="py-8 text-center text-red-600">
+          Error loading form: {{ tabs.error }}
+        </div>
+        <div v-else-if="tabs.data">
+          <FieldLayout 
+            :tabs="tabs.data" 
+            :data="note.doc" 
+            doctype="FCRM Note"
+          />
+        </div>
+        <div v-else class="py-8 text-center text-gray-600">
+          No form data available
         </div>
         <ErrorMessage class="mt-4" v-if="error" :message="__(error)" />
       </div>
@@ -45,10 +50,12 @@
 
 <script setup>
 import ArrowUpRightIcon from '@/components/Icons/ArrowUpRightIcon.vue'
+import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
 import { capture } from '@/telemetry'
-import { TextEditor, call } from 'frappe-ui'
+import { useDocument } from '@/data/document'
+import { call, createResource } from 'frappe-ui'
 import { useOnboarding } from 'frappe-ui/frappe'
-import { ref, nextTick, watch } from 'vue'
+import { ref, nextTick, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -76,16 +83,88 @@ const router = useRouter()
 const { updateOnboardingStep } = useOnboarding('frappecrm')
 
 const error = ref(null)
-const title = ref(null)
 const editMode = ref(false)
-let _note = ref({})
+
+const { document: note } = useDocument('FCRM Note', props.note?.name || '')
+
+const tabs = createResource({
+  url: 'crm.fcrm.doctype.crm_fields_layout.crm_fields_layout.get_fields_layout',
+  cache: ['QuickEntry', 'FCRM Note'],
+  params: { doctype: 'FCRM Note', type: 'Quick Entry' },
+  auto: true,
+  transform: (_tabs) => {
+    if (!_tabs || !Array.isArray(_tabs)) {
+      return _tabs
+    }
+    
+    return _tabs.map((tab) => {
+      return {
+        ...tab,
+        sections: tab.sections.map((section) => ({
+          ...section,
+          columns: section.columns.map((column) => ({
+            ...column,
+            fields: column.fields.map((field) => {
+              const transformedField = { ...field }
+              
+              // Handle reference_doctype field
+              if (field.fieldname === 'reference_doctype') {
+                transformedField.fieldtype = 'Select'
+                transformedField.options = [
+                  { label: 'CRM Lead', value: 'CRM Lead' },
+                  { label: 'CRM Deal', value: 'CRM Deal' }
+                ]
+              }
+              
+              // Handle reference_docname field - enable/disable based on reference_doctype
+              if (field.fieldname === 'reference_docname') {
+                if (note.doc.reference_doctype) {
+                  transformedField.read_only = 0
+                  // Ensure Dynamic Link options are set correctly
+                  if (transformedField.fieldtype === 'Dynamic Link') {
+                    transformedField.options = 'reference_doctype'
+                  }
+                } else {
+                  transformedField.read_only = 1
+                  if (transformedField.fieldtype === 'Dynamic Link') {
+                    transformedField.options = ''
+                  }
+                }
+              }
+              
+              // Ensure content field remains Small Text (multiline)
+              if (field.fieldname === 'content') {
+                transformedField.fieldtype = 'Small Text'
+              }
+              
+              return transformedField
+            })
+          }))
+        }))
+      }
+    })
+  },
+})
 
 async function updateNote() {
-  if (_note.value.name) {
+  error.value = null
+  
+  // Validate reference fields
+  if (!note.doc.reference_doctype || !note.doc.reference_docname) {
+    error.value = __('Reference Type and Reference Name are required')
+    return
+  }
+  
+  if (!['CRM Lead', 'CRM Deal'].includes(note.doc.reference_doctype)) {
+    error.value = __('Reference Type must be CRM Lead or CRM Deal')
+    return
+  }
+  
+  if (note.doc.name) {
     let d = await call('frappe.client.set_value', {
       doctype: 'FCRM Note',
-      name: _note.value.name,
-      fieldname: _note.value,
+      name: note.doc.name,
+      fieldname: note.doc,
     })
     if (d.name) {
       notes.value?.reload()
@@ -95,15 +174,16 @@ async function updateNote() {
     let d = await call('frappe.client.insert', {
       doc: {
         doctype: 'FCRM Note',
-        title: _note.value.title,
-        content: _note.value.content,
-        reference_doctype: 'CRM Lead', // Always restrict to CRM Lead
-        reference_docname: props.doc || '',
+        ...note.doc,
       },
     }, {
       onError: (err) => {
         if (err.error.exc_type == 'MandatoryError') {
-          error.value = "Title is mandatory"
+          error.value = __('Title is mandatory')
+        } else if (err.messages && Array.isArray(err.messages)) {
+          error.value = err.messages.join('\n')
+        } else if (err.message) {
+          error.value = err.message
         }
       }
     })
@@ -118,14 +198,30 @@ async function updateNote() {
 }
 
 function redirect() {
-  if (!props.note?.reference_docname) return
-  let name = props.note.reference_doctype == 'CRM Deal' ? 'Deal' : 'Lead'
-  let params = { leadId: props.note.reference_docname }
+  if (!note.doc?.reference_docname) return
+  let name = note.doc.reference_doctype == 'CRM Deal' ? 'Deal' : 'Lead'
+  let params = { leadId: note.doc.reference_docname }
   if (name == 'Deal') {
-    params = { dealId: props.note.reference_docname }
+    params = { dealId: note.doc.reference_docname }
   }
   router.push({ name: name, params: params })
 }
+
+// Watch for reference_type changes to update reference_name field options
+watch(() => note.doc.reference_doctype, (newType, oldType) => {
+  if (newType !== oldType) {
+    // Clear reference_docname if reference_doctype changes
+    if (oldType && newType !== oldType) {
+      note.doc.reference_docname = null
+    }
+    // Force tabs to re-transform to update reference_docname field options
+    nextTick(() => {
+      tabs.reload()
+    })
+  }
+}, { 
+  immediate: false 
+})
 
 watch(
   () => show.value,
@@ -133,11 +229,20 @@ watch(
     if (!value) return
     editMode.value = false
     nextTick(() => {
-      title.value?.el?.focus()
-      _note.value = { ...props.note }
-      if (_note.value.title || _note.value.content) {
+      // Initialize note document
+      if (props.note?.name) {
+        // Edit mode - load existing note
+        note.doc = { ...props.note }
         editMode.value = true
+      } else {
+        // Create mode - set defaults
+        note.doc = {
+          reference_doctype: props.doctype || 'CRM Lead',
+          reference_docname: props.doc || '',
+          ...props.note
+        }
       }
+      tabs.reload()
     })
   },
 )

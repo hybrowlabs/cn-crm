@@ -22,13 +22,19 @@ class CRMTask(Document):
 			self.assign_to()
 
 	def validate_lead_reference(self):
-		"""Ensure Task only references CRM Lead"""
-		if self.reference_doctype and self.reference_doctype != "CRM Lead":
+		"""Ensure Task references CRM Lead or CRM Deal"""
+		if self.reference_doctype and self.reference_doctype not in ["CRM Lead", "CRM Deal"]:
 			frappe.throw(
-				_("Task can only reference CRM Lead. Current reference: {0}").format(
+				_("Task can only reference CRM Lead or CRM Deal. Current reference: {0}").format(
 					frappe.bold(self.reference_doctype)
 				),
 				frappe.ValidationError,
+			)
+		
+		if not self.reference_doctype or not self.reference_docname:
+			frappe.throw(
+				_("Reference Type and Reference Name are required"),
+				frappe.MandatoryError,
 			)
 
 	def unassign_from_previous_user(self, user):

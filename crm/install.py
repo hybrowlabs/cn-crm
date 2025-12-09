@@ -156,6 +156,14 @@ def add_default_fields_layout(force=False):
 			"doctype": "CRM Call Log",
 			"layout": '[{"name":"details_section","columns":[{"name":"column_uMSG","fields":["type","from","duration"]},{"name":"column_wiZT","fields":["to","status","caller","receiver"]}]}]',
 		},
+		"FCRM Note-Quick Entry": {
+			"doctype": "FCRM Note",
+			"layout": '[{"name":"reference_section","columns":[{"name":"column_ref1","fields":["reference_doctype"]},{"name":"column_ref2","fields":["reference_docname"]}]},{"name":"note_section","columns":[{"name":"column_title","fields":["title"]}]},{"name":"content_section","columns":[{"name":"column_content","fields":["content"]}]}]',
+		},
+		"CRM Task-Quick Entry": {
+			"doctype": "CRM Task",
+			"layout": '[{"name":"reference_section","columns":[{"name":"column_ref1","fields":["reference_doctype"]},{"name":"column_ref2","fields":["reference_docname"]}]},{"name":"task_section","columns":[{"name":"column_title","fields":["title"]},{"name":"column_priority","fields":["priority"]}]},{"name":"assignment_section","columns":[{"name":"column_assigned","fields":["assigned_to"]},{"name":"column_status","fields":["status"]}]},{"name":"dates_section","columns":[{"name":"column_start","fields":["start_date"]},{"name":"column_due","fields":["due_date"]}]},{"name":"description_section","columns":[{"name":"column_desc","fields":["description"]}]}]',
+		},
 	}
 
 	sidebar_fields_layouts = {

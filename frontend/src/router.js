@@ -19,6 +19,11 @@ const routes = [
     component: () => import('@/pages/Dashboard.vue'),
   },
   {
+    path: '/dashboard-builder',
+    name: 'Dashboard Builder',
+    component: () => import('@/pages/DashboardBuilder.vue'),
+  },
+  {
     path: '/calendar',
     name: 'Calendar',
     component: () => import('@/pages/Calendar.vue'),
