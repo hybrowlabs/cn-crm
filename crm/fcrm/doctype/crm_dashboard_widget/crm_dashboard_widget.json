@@ -1,0 +1,240 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "format:{parent}-{idx}",
+ "creation": "2025-01-20 10:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "widget_type",
+  "widget_title",
+  "widget_description",
+  "column_break_1",
+  "width",
+  "height",
+  "x_position",
+  "y_position",
+  "section_break_config",
+  "data_source_type",
+  "data_source",
+  "column_break_2",
+  "metric_field",
+  "aggregation_type",
+  "section_break_chart",
+  "chart_type",
+  "x_axis_field",
+  "y_axis_field",
+  "column_break_3",
+  "group_by_field",
+  "section_break_table",
+  "table_columns",
+  "table_filters",
+  "section_break_display",
+  "color_scheme",
+  "show_refresh",
+  "refresh_interval",
+  "column_break_4",
+  "drilldown_doctype",
+  "drilldown_filters"
+ ],
+ "fields": [
+  {
+   "fieldname": "widget_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Widget Type",
+   "options": "KPI\nChart\nTable",
+   "reqd": 1
+  },
+  {
+   "fieldname": "widget_title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1
+  },
+  {
+   "fieldname": "widget_description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "4",
+   "fieldname": "width",
+   "fieldtype": "Int",
+   "label": "Width (grid units)",
+   "reqd": 1
+  },
+  {
+   "default": "3",
+   "fieldname": "height",
+   "fieldtype": "Int",
+   "label": "Height (grid units)",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "x_position",
+   "fieldtype": "Int",
+   "label": "X Position",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "y_position",
+   "fieldtype": "Int",
+   "label": "Y Position",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_config",
+   "fieldtype": "Section Break",
+   "label": "Data Configuration"
+  },
+  {
+   "fieldname": "data_source_type",
+   "fieldtype": "Select",
+   "label": "Data Source Type",
+   "options": "DocType\nReport\nQuery",
+   "reqd": 1
+  },
+  {
+   "fieldname": "data_source",
+   "fieldtype": "Dynamic Link",
+   "label": "Data Source",
+   "options": "data_source_type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:parent.widget_type == 'KPI'",
+   "fieldname": "metric_field",
+   "fieldtype": "Data",
+   "label": "Metric Field"
+  },
+  {
+   "depends_on": "eval:parent.widget_type == 'KPI'",
+   "fieldname": "aggregation_type",
+   "fieldtype": "Select",
+   "label": "Aggregation",
+   "options": "Count\nSum\nAverage\nMin\nMax"
+  },
+  {
+   "fieldname": "section_break_chart",
+   "fieldtype": "Section Break",
+   "label": "Chart Configuration",
+   "depends_on": "eval:parent.widget_type == 'Chart'"
+  },
+  {
+   "depends_on": "eval:parent.widget_type == 'Chart'",
+   "fieldname": "chart_type",
+   "fieldtype": "Select",
+   "label": "Chart Type",
+   "options": "Bar\nLine\nPie\nArea",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:parent.widget_type == 'Chart'",
+   "fieldname": "x_axis_field",
+   "fieldtype": "Data",
+   "label": "X Axis Field"
+  },
+  {
+   "depends_on": "eval:parent.widget_type == 'Chart'",
+   "fieldname": "y_axis_field",
+   "fieldtype": "Data",
+   "label": "Y Axis Field"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:parent.widget_type == 'Chart'",
+   "fieldname": "group_by_field",
+   "fieldtype": "Data",
+   "label": "Group By Field"
+  },
+  {
+   "fieldname": "section_break_table",
+   "fieldtype": "Section Break",
+   "label": "Table Configuration",
+   "depends_on": "eval:parent.widget_type == 'Table'"
+  },
+  {
+   "depends_on": "eval:parent.widget_type == 'Table'",
+   "fieldname": "table_columns",
+   "fieldtype": "Code",
+   "label": "Table Columns",
+   "options": "JSON"
+  },
+  {
+   "depends_on": "eval:parent.widget_type == 'Table'",
+   "fieldname": "table_filters",
+   "fieldtype": "Code",
+   "label": "Table Filters",
+   "options": "JSON"
+  },
+  {
+   "fieldname": "section_break_display",
+   "fieldtype": "Section Break",
+   "label": "Display Options"
+  },
+  {
+   "fieldname": "color_scheme",
+   "fieldtype": "Select",
+   "label": "Color Scheme",
+   "options": "Blue\nGreen\nOrange\nRed\nPurple\nGray"
+  },
+  {
+   "default": "1",
+   "fieldname": "show_refresh",
+   "fieldtype": "Check",
+   "label": "Show Refresh Button"
+  },
+  {
+   "fieldname": "refresh_interval",
+   "fieldtype": "Int",
+   "label": "Refresh Interval (seconds)",
+   "default": "0"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "drilldown_doctype",
+   "fieldtype": "Link",
+   "label": "Drilldown DocType",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "drilldown_filters",
+   "fieldtype": "Code",
+   "label": "Drilldown Filters",
+   "options": "JSON"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_child_table": 1,
+ "links": [],
+ "modified": "2025-01-20 10:00:00",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Dashboard Widget",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
+

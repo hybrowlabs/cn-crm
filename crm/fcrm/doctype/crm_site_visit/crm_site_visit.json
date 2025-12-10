@@ -155,7 +155,7 @@
    "fieldname": "reference_type",
    "fieldtype": "Select",
    "label": "Reference Type",
-   "options": "CRM Lead\nCRM Deal\nCustomer",
+   "options": "CRM Lead\nCRM Deal",
    "reqd": 1
   },
   {

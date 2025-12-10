@@ -41,6 +41,7 @@ declare module 'vue' {
     CameraIcon: typeof import('./src/components/Icons/CameraIcon.vue')['default']
     CertificateIcon: typeof import('./src/components/Icons/CertificateIcon.vue')['default']
     ChangePasswordModal: typeof import('./src/components/Modals/ChangePasswordModal.vue')['default']
+    ChartWidget: typeof import('./src/components/Dashboard/ChartWidget.vue')['default']
     CheckCircleIcon: typeof import('./src/components/Icons/CheckCircleIcon.vue')['default']
     CheckIcon: typeof import('./src/components/Icons/CheckIcon.vue')['default']
     CollapseSidebar: typeof import('./src/components/Icons/CollapseSidebar.vue')['default']
@@ -149,6 +150,7 @@ declare module 'vue' {
     KanbanSettings: typeof import('./src/components/Kanban/KanbanSettings.vue')['default']
     KanbanView: typeof import('./src/components/Kanban/KanbanView.vue')['default']
     KeyboardShortcut: typeof import('./src/components/KeyboardShortcut.vue')['default']
+    KPIWidget: typeof import('./src/components/Dashboard/KPIWidget.vue')['default']
     LayoutHeader: typeof import('./src/components/LayoutHeader.vue')['default']
     LeadModal: typeof import('./src/components/Modals/LeadModal.vue')['default']
     LeadsIcon: typeof import('./src/components/Icons/LeadsIcon.vue')['default']
@@ -229,6 +231,7 @@ declare module 'vue' {
     StepsIcon: typeof import('./src/components/Icons/StepsIcon.vue')['default']
     SuccessIcon: typeof import('./src/components/Icons/SuccessIcon.vue')['default']
     TableMultiselectInput: typeof import('./src/components/Controls/TableMultiselectInput.vue')['default']
+    TableWidget: typeof import('./src/components/Dashboard/TableWidget.vue')['default']
     TaskArea: typeof import('./src/components/Activities/TaskArea.vue')['default']
     TaskIcon: typeof import('./src/components/Icons/TaskIcon.vue')['default']
     TaskModal: typeof import('./src/components/Modals/TaskModal.vue')['default']
@@ -258,5 +261,6 @@ declare module 'vue' {
     WhatsAppIcon: typeof import('./src/components/Icons/WhatsAppIcon.vue')['default']
     WhatsAppSettings: typeof import('./src/components/Settings/WhatsAppSettings.vue')['default']
     WhatsappTemplateSelectorModal: typeof import('./src/components/Modals/WhatsappTemplateSelectorModal.vue')['default']
+    WidgetConfigModal: typeof import('./src/components/Dashboard/WidgetConfigModal.vue')['default']
   }
 }

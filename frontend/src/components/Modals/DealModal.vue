@@ -110,7 +110,7 @@ const fieldLayoutRef = ref(null)
 
 watch(
   [chooseExistingOrganization, chooseExistingContact],
-  ([quotations, contact]) => {
+  ([organization, contact]) => {
     tabs.data.forEach((tab) => {
       tab.sections.forEach((section) => {
         if (section.name === 'organization_section') {

@@ -73,7 +73,7 @@ import { showQuickEntryModal, quickEntryProps } from '@/composables/modals'
 import { useDocument } from '@/data/document'
 import { capture } from '@/telemetry'
 import { handleResourceError } from '@/utils/errorHandler'
-import { createResource } from 'frappe-ui'
+import { createResource, call } from 'frappe-ui'
 import { computed, ref, onMounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -259,7 +259,7 @@ async function createVisit() {
   }
 
   if (!visit.doc.reference_type || !visit.doc.reference_name) {
-    error.value = __('Reference (Lead/Deal/Customer) is required')
+    error.value = __('Reference Type and Reference Name are required')
     return
   }
 
@@ -419,6 +419,12 @@ watch(() => visit.doc.reference_type, (newType, oldType) => {
     // Clear reference_name if reference_type changes to a different value
     if (oldType && newType !== oldType) {
       visit.doc.reference_name = null
+      // Clear autofilled fields when reference type changes
+      visit.doc.contact_phone = null
+      visit.doc.contact_email = null
+      visit.doc.reference_title = null
+      visit.doc.potential_value = null
+      visit.doc.probability_percentage = null
     }
     // Force tabs to re-transform to update reference_name field options
     nextTick(() => {
@@ -427,6 +433,64 @@ watch(() => visit.doc.reference_type, (newType, oldType) => {
   }
 }, { 
   immediate: false // Don't trigger on initial mount, only on actual changes
+})
+
+// Watch for reference_name changes to autofill data
+watch(() => visit.doc.reference_name, async (newName, oldName) => {
+  if (newName && newName !== oldName && visit.doc.reference_type) {
+    // Only autofill if fields are empty to avoid overwriting user input
+    const shouldAutofill = !visit.doc.contact_phone && !visit.doc.contact_email && 
+                          !visit.doc.reference_title && !visit.doc.potential_value
+    
+    if (shouldAutofill) {
+      try {
+        const autofillData = await call('crm.api.form_controller.auto_populate_form_data', {
+          reference_type: visit.doc.reference_type,
+          reference_name: newName,
+          customer_address: visit.doc.customer_address
+        })
+        
+        if (autofillData) {
+          // Only populate empty fields
+          if (autofillData.reference_title && !visit.doc.reference_title) {
+            visit.doc.reference_title = autofillData.reference_title
+          }
+          if (autofillData.contact_phone && !visit.doc.contact_phone) {
+            visit.doc.contact_phone = autofillData.contact_phone
+          }
+          if (autofillData.contact_email && !visit.doc.contact_email) {
+            visit.doc.contact_email = autofillData.contact_email
+          }
+          if (autofillData.city && !visit.doc.city) {
+            visit.doc.city = autofillData.city
+          }
+          if (autofillData.state && !visit.doc.state) {
+            visit.doc.state = autofillData.state
+          }
+          if (autofillData.country && !visit.doc.country) {
+            visit.doc.country = autofillData.country
+          }
+          if (autofillData.potential_value && !visit.doc.potential_value) {
+            visit.doc.potential_value = autofillData.potential_value
+          }
+          if (autofillData.probability_percentage !== undefined && !visit.doc.probability_percentage) {
+            visit.doc.probability_percentage = autofillData.probability_percentage
+          }
+          if (autofillData.sales_person && !visit.doc.sales_person) {
+            visit.doc.sales_person = autofillData.sales_person
+          }
+          if (autofillData.organization && !visit.doc.company) {
+            visit.doc.company = autofillData.organization
+          }
+        }
+      } catch (err) {
+        console.error('Failed to autofill reference data:', err)
+        // Don't show error to user, just log it
+      }
+    }
+  }
+}, { 
+  immediate: false 
 })
 
 // Function to apply defaults to visit.doc

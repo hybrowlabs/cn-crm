@@ -24,7 +24,7 @@
   },
   {
    "fieldname": "content",
-   "fieldtype": "Text Editor",
+   "fieldtype": "Small Text",
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Content"
@@ -32,9 +32,10 @@
   {
    "default": "CRM Lead",
    "fieldname": "reference_doctype",
-   "fieldtype": "Link",
+   "fieldtype": "Select",
    "label": "Reference Document Type",
-   "options": "DocType"
+   "options": "CRM Lead\nCRM Deal",
+   "reqd": 1
   },
   {
    "fieldname": "reference_docname",

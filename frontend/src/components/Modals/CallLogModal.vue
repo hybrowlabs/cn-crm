@@ -142,6 +142,17 @@ async function updateCallLog() {
 }
 
 async function createCallLog() {
+  // Validate reference fields
+  if (!callLog.doc.reference_doctype || !callLog.doc.reference_docname) {
+    error.value = __('Reference Type and Reference Name are required')
+    return
+  }
+  
+  if (!['CRM Lead', 'CRM Deal'].includes(callLog.doc.reference_doctype)) {
+    error.value = __('Reference Type must be CRM Lead or CRM Deal')
+    return
+  }
+  
   Object.assign(callLog.doc, {
     doctype: 'CRM Call Log',
     id: getRandom(6),
@@ -177,7 +188,12 @@ onMounted(() => {
   editMode.value = props.data?.name ? true : false
 
   if (!props.data?.name) {
-    callLog.doc = { ...props.data }
+    callLog.doc = { 
+      ...props.data,
+      // Ensure reference fields are set from props if not in data
+      reference_doctype: props.data.reference_doctype || (props.referenceDoc?.doctype === 'CRM Deal' ? 'CRM Deal' : 'CRM Lead'),
+      reference_docname: props.data.reference_docname || props.referenceDoc?.name
+    }
   }
 })
 
