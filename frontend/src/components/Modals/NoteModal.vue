@@ -25,7 +25,7 @@
       </div>
     </template>
     <template #body-content>
-      <div>
+        <div>
         <div v-if="tabs.loading" class="py-8 text-center">
           <span class="text-gray-600">Loading form...</span>
         </div>
