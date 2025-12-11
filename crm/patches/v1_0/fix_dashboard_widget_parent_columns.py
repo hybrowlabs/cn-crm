@@ -7,12 +7,14 @@ def execute():
 	If no dashboards exist after the fix, seed the default dashboards.
 	"""
 	table = "CRM Dashboard Widget"
+	sql_table = f"`tab{table}`"
 	columns = set(frappe.db.get_table_columns(table))
 
 	# Add missing child link columns (idempotent)
 	for col in ("parent", "parentfield", "parenttype"):
 		if col not in columns:
-			frappe.db.add_column(table, col, "varchar(140)")
+			# Older DB backends do not expose `add_column`; fall back to DDL
+			frappe.db.sql_ddl(f"ALTER TABLE {sql_table} ADD COLUMN `{col}` varchar(140)")
 
 	# Backfill parent linkage for existing widgets
 	frappe.db.sql(
@@ -30,5 +32,11 @@ def execute():
 		from crm.patches.v1_0 import create_default_dashboards
 
 		create_default_dashboards.execute()
+
+
+
+
+
+
 
 

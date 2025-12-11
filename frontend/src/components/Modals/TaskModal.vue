@@ -34,13 +34,13 @@
       </div>
     </template>
     <template #body-content>
-      <div>
+        <div>
         <div v-if="tabs.loading" class="py-8 text-center">
           <span class="text-gray-600">Loading form...</span>
         </div>
         <div v-else-if="tabs.error" class="py-8 text-center text-red-600">
           Error loading form: {{ tabs.error }}
-        </div>
+          </div>
         <div v-else-if="tabs.data">
           <FieldLayout 
             :tabs="tabs.data" 
@@ -270,13 +270,13 @@ watch(
   () => show.value,
   (value) => {
     if (!value) return
-    editMode.value = false
-    nextTick(() => {
+  editMode.value = false
+  nextTick(() => {
       // Initialize task document
       if (props.task?.name) {
         // Edit mode - load existing task
         task.doc = { ...props.task }
-        editMode.value = true
+      editMode.value = true
       } else {
         // Create mode - set defaults
         task.doc = {
@@ -288,7 +288,7 @@ watch(
         }
       }
       tabs.reload()
-    })
+})
   },
 )
 </script>

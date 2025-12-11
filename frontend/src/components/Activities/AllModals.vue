@@ -134,12 +134,12 @@ function createCallLog() {
     doctype = 'CRM Lead'
   }
   
-  referenceDoc.value = { ...doc.value.data }
-  callLog.value = {
+    referenceDoc.value = { ...doc.value.data }
+    callLog.value = {
     reference_doctype: doctype,
-    reference_docname: docname,
-  }
-  showCallLogModal.value = true
+      reference_docname: docname,
+    }
+    showCallLogModal.value = true
 }
 
 function showVisit() {
