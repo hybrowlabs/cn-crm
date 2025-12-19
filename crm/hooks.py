@@ -210,6 +210,7 @@ doc_events = {
 scheduler_events = {
 	"daily": [
 		"crm.fcrm.doctype.crm_site_visit.crm_site_visit.send_visit_reminders",
+		"crm.fcrm.doctype.crm_organization.crm_organization.update_all_organizations_dormancy_status",
 	],
 }
 

@@ -18,7 +18,11 @@
   "website",
   "territory",
   "industry",
-  "address"
+  "address",
+  "dormant_customer_section",
+  "is_dormant",
+  "column_break_dormant",
+  "last_transaction_date"
  ],
  "fields": [
   {
@@ -88,12 +92,36 @@
    "fieldtype": "Link",
    "label": "Address",
    "options": "Address"
+  },
+  {
+   "fieldname": "dormant_customer_section",
+   "fieldtype": "Section Break",
+   "label": "Dormant Customer Tracking"
+  },
+  {
+   "default": "0",
+   "description": "Automatically calculated based on ERPNext customer transaction activity",
+   "fieldname": "is_dormant",
+   "fieldtype": "Check",
+   "label": "Is Dormant Customer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_dormant",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Last Sales Order date from linked ERPNext customers",
+   "fieldname": "last_transaction_date",
+   "fieldtype": "Datetime",
+   "label": "Last Transaction Date",
+   "read_only": 1
   }
  ],
  "image_field": "organization_logo",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-09-17 18:37:10.341062",
+ "modified": "2025-12-18 18:34:05.750755",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Organization",
@@ -125,6 +153,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

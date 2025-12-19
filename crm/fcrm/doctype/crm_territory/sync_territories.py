@@ -3,6 +3,8 @@
 
 import frappe
 from frappe import _
+from frappe.utils.nestedset import get_root_of
+from crm.fcrm.doctype.crm_territory.team_sync import sync_territory_manager_to_team_members
 
 
 @frappe.whitelist()
@@ -15,7 +17,7 @@ def sync_all_territories():
 			frappe.throw(_("ERPNext CRM integration is not enabled"))
 		
 		if not erpnext_settings.is_erpnext_in_different_site:
-			# Same site - sync both ways
+			# Same site - bidirectional sync
 			sync_erpnext_to_crm()
 			sync_crm_to_erpnext()
 		else:
@@ -46,8 +48,9 @@ def sync_erpnext_to_crm():
 		# Get all available fields for Territory
 		mapping = get_territory_field_mapping()
 		territory_fields = list(mapping["territory_to_crm"].keys())
-		
-		territories = frappe.get_all("Territory", fields=["name"] + territory_fields)
+
+		# Order by lft to ensure parents are synced before children
+		territories = frappe.get_all("Territory", fields=["name"] + territory_fields, order_by="lft")
 		
 		for territory_data in territories:
 			territory_doc = frappe.get_doc("Territory", territory_data.name)
@@ -57,21 +60,52 @@ def sync_erpnext_to_crm():
 			
 			# Map Territory data to CRM Territory format
 			crm_territory_data = map_territory_to_crm_data(territory_doc)
-			
+
 			if crm_territory:
 				# Update existing CRM territory
 				crm_territory_doc = frappe.get_doc("CRM Territory", crm_territory)
+
+				# Double-check parent_crm_territory to prevent self-reference
+				if "parent_crm_territory" in crm_territory_data:
+					if crm_territory_data["parent_crm_territory"] == crm_territory_doc.territory_name:
+						root_territory = get_root_of("CRM Territory")
+						frappe.logger().warning(
+							f"Prevented self-reference: {crm_territory_doc.territory_name} -> setting parent to {root_territory}"
+						)
+						crm_territory_data["parent_crm_territory"] = root_territory
+
 				updated_fields = update_doc_with_mapped_data(crm_territory_doc, crm_territory_data)
+
+				# Sync territory_manager to sales_team_members (Section 4.1)
+				sync_territory_manager_to_team_members(crm_territory_doc, territory_doc.territory_manager)
+
 				if updated_fields:
+					# Debug: Check what we're about to save
+
 					crm_territory_doc.save()
 					frappe.logger().info(f"Bulk sync: Updated CRM Territory {territory_doc.territory_name} fields: {updated_fields}")
 			else:
 				# Create new CRM territory
+
+				# Double-check parent_crm_territory to prevent self-reference
+				if "parent_crm_territory" in crm_territory_data:
+					if crm_territory_data["parent_crm_territory"] == territory_doc.territory_name:
+						root_territory = get_root_of("CRM Territory")
+						frappe.logger().warning(
+							f"Prevented self-reference during creation: {territory_doc.territory_name} -> setting parent to {root_territory}"
+						)
+						crm_territory_data["parent_crm_territory"] = root_territory
+
 				crm_territory_doc = frappe.get_doc({
 					"doctype": "CRM Territory",
 					**crm_territory_data
 				})
 				crm_territory_doc.insert()
+
+				# Sync territory_manager to sales_team_members (Section 4.1)
+				sync_territory_manager_to_team_members(crm_territory_doc, territory_doc.territory_manager)
+				crm_territory_doc.save()
+
 				frappe.logger().info(f"Bulk sync: Created new CRM Territory {territory_doc.territory_name}")
 		
 		frappe.db.commit()
@@ -84,18 +118,19 @@ def sync_crm_to_erpnext():
 	"""Sync CRM Territories to ERPNext Territories"""
 	if "erpnext" not in frappe.get_installed_apps():
 		return
-	
+
 	from crm.fcrm.doctype.crm_territory.field_mapping import get_territory_field_mapping, map_crm_to_territory_data, update_doc_with_mapped_data
-	
+
 	# Set flag to prevent infinite loop
 	frappe.flags.skip_crm_territory_sync = True
-	
+
 	try:
 		# Get all available fields for CRM Territory
 		mapping = get_territory_field_mapping()
 		crm_territory_fields = list(mapping["crm_to_territory"].keys())
-		
-		crm_territories = frappe.get_all("CRM Territory", fields=["name"] + crm_territory_fields)
+
+		# Order by lft to ensure parents are synced before children
+		crm_territories = frappe.get_all("CRM Territory", fields=["name"] + crm_territory_fields, order_by="lft")
 		
 		for crm_territory_data in crm_territories:
 			crm_territory_doc = frappe.get_doc("CRM Territory", crm_territory_data.name)
@@ -105,13 +140,38 @@ def sync_crm_to_erpnext():
 			
 			# Map CRM Territory data to Territory format
 			territory_data = map_crm_to_territory_data(crm_territory_doc)
-			
+
+			# CRITICAL: Handle root territory specially to prevent self-reference
+			# ERPNext Territory.validate() automatically sets empty parent to root, causing self-reference
+			from frappe.utils.nestedset import get_root_of
+			root_territory = get_root_of("Territory")
+			is_root = crm_territory_doc.territory_name == root_territory
+
 			if territory:
 				# Update existing territory
 				territory_doc = frappe.get_doc("Territory", territory)
+
+				# For root territory, skip parent_territory field completely
+				if is_root and "parent_territory" in territory_data:
+					del territory_data["parent_territory"]
+
 				updated_fields = update_doc_with_mapped_data(territory_doc, territory_data)
+
 				if updated_fields:
-					territory_doc.save()
+					# For root territory, use SQL to bypass validate()
+					if is_root:
+						frappe.logger().info(f"Skipping save for root territory {root_territory} - using direct SQL update instead")
+						# Ensure parent stays NULL for root
+						frappe.db.sql("""
+							UPDATE `tabTerritory`
+							SET parent_territory = NULL,
+								modified = NOW(),
+								modified_by = %s
+							WHERE name = %s
+						""", (frappe.session.user, territory))
+						frappe.db.commit()
+					else:
+						territory_doc.save()
 					frappe.logger().info(f"Bulk sync: Updated Territory {crm_territory_doc.territory_name} fields: {updated_fields}")
 			else:
 				# Create new territory

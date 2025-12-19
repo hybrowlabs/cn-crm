@@ -10,6 +10,7 @@
   "quotation_section",
   "quotation_print_format",
   "enable_forecasting",
+  "dormant_customers_timespan",
   "branding_tab",
   "brand_name",
   "brand_logo",
@@ -75,6 +76,13 @@
    "label": "Enable Forecasting"
   },
   {
+   "default": "90",
+   "description": "Number of days after which a customer is considered dormant (no activity)",
+   "fieldname": "dormant_customers_timespan",
+   "fieldtype": "Int",
+   "label": "Dormant Customers time span"
+  },
+  {
    "fieldname": "quotation_section",
    "fieldtype": "Section Break",
    "label": "Quotation"
@@ -89,36 +97,36 @@
   {
    "fieldname": "tab_4_tab",
    "fieldtype": "Tab Break",
-   "label": "SPANCO Settings"
+   "label": "LMOTPO Settings"
   },
   {
    "fieldname": "suspects",
    "fieldtype": "Link",
-   "label": "Suspects",
+   "label": "Lead",
    "options": "CRM View Settings"
   },
   {
    "fieldname": "prospects",
    "fieldtype": "Link",
-   "label": "Prospects",
+   "label": "Meetings",
    "options": "CRM View Settings"
   },
   {
    "fieldname": "analysis",
    "fieldtype": "Link",
-   "label": "Analysis",
+   "label": "Opportunities",
    "options": "CRM View Settings"
   },
   {
    "fieldname": "negotiation",
    "fieldtype": "Link",
-   "label": "Negotiation",
+   "label": "Trial",
    "options": "CRM View Settings"
   },
   {
    "fieldname": "closed",
    "fieldtype": "Link",
-   "label": "Closed",
+   "label": "Price Discussion",
    "options": "CRM View Settings"
   },
   {
@@ -131,7 +139,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-07-01 13:20:48.757603",
+ "modified": "2025-12-18 15:02:12.220711",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "FCRM Settings",

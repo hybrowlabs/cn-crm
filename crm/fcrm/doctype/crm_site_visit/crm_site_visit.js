@@ -20,11 +20,17 @@ frappe.ui.form.on('CRM Site Visit', {
     reference_type: function(frm) {
         // Handle server-side field change
         handle_server_field_change(frm, 'reference_type', frm.doc.reference_type);
+
+        // Update service engineer filter
+        update_service_engineer_filter(frm);
     },
-    
+
     reference_name: function(frm) {
         // Handle server-side field change
         handle_server_field_change(frm, 'reference_name', frm.doc.reference_name);
+
+        // Update service engineer filter
+        update_service_engineer_filter(frm);
     },
 
     customer_address: function (frm) {
@@ -576,4 +582,66 @@ function show_post_checkout_options(frm) {
         __('Submit Now'),
         __('Submit Later')
     );
+}
+
+/**
+ * Update service engineer field filter based on reference LOB
+ * Section 4.2: LOB-based service engineer filtering
+ */
+function update_service_engineer_filter(frm) {
+    // Only apply filter if both reference_type and reference_name are set
+    if (!frm.doc.reference_type || !frm.doc.reference_name) {
+        // Clear filter if reference is not set
+        frm.set_query('service_engineer', function() {
+            return {
+                filters: {}
+            };
+        });
+        return;
+    }
+
+    // Set query filter to only show service engineers from the reference's LOB
+    frm.set_query('service_engineer', function() {
+        return {
+            query: 'crm.fcrm.doctype.crm_site_visit.crm_site_visit.get_filtered_service_engineers',
+            filters: {
+                reference_type: frm.doc.reference_type,
+                reference_name: frm.doc.reference_name
+            }
+        };
+    });
+
+    // Clear service_engineer if it's not in the allowed list
+    if (frm.doc.service_engineer) {
+        validate_service_engineer(frm);
+    }
+}
+
+/**
+ * Validate that selected service engineer is from the correct LOB
+ */
+function validate_service_engineer(frm) {
+    frappe.call({
+        method: 'crm.fcrm.doctype.crm_site_visit.crm_site_visit.get_service_engineers_for_reference',
+        args: {
+            reference_type: frm.doc.reference_type,
+            reference_name: frm.doc.reference_name
+        },
+        callback: function(r) {
+            if (r.message && Array.isArray(r.message)) {
+                // Check if current service_engineer is in the allowed list
+                // Field is called 'service_engineer' in LOB child table
+                const allowed_users = r.message.map(engineer => engineer.service_engineer);
+
+                if (frm.doc.service_engineer && !allowed_users.includes(frm.doc.service_engineer)) {
+                    // Clear invalid service engineer
+                    frappe.show_alert({
+                        message: __('Selected service engineer is not assigned to this Line of Business. Please select another.'),
+                        indicator: 'orange'
+                    });
+                    frm.set_value('service_engineer', '');
+                }
+            }
+        }
+    });
 }

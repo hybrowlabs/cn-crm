@@ -9,7 +9,7 @@ def sync_territory_to_crm(doc, method):
 	"""Hook function to sync Territory to CRM Territory"""
 	try:
 		# Skip sync if this update was triggered by CRM Territory sync
-		if frappe.flags.get("skip_territory_sync"):
+		if frappe.flags.get("skip_territory_sync") or frappe.flags.get("skip_crm_territory_sync"):
 			return
 		
 		# Check if ERPNext CRM integration is enabled
@@ -64,7 +64,7 @@ def delete_territory_from_crm(doc, method):
 	"""Hook function to delete Territory from CRM Territory"""
 	try:
 		# Skip sync if this delete was triggered by CRM Territory delete
-		if frappe.flags.get("skip_territory_sync"):
+		if frappe.flags.get("skip_territory_sync") or frappe.flags.get("skip_crm_territory_sync"):
 			return
 		
 		# Check if ERPNext CRM integration is enabled

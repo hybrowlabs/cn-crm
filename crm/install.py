@@ -447,63 +447,63 @@ def add_default_scripts():
 
 
 def add_default_spanco_views():
-	"""Create default SPANCO views for the sales pipeline."""
-	
-	# Define SPANCO views with their configurations
-	spanco_views = {
-		"Suspects": {
-			"label": "Suspects",
+	"""Create default LMOTPO views for the sales pipeline."""
+
+	# Define LMOTPO views with their configurations (based on Section 2 of requirements)
+	lmotpo_views = {
+		"Lead": {
+			"label": "Lead",
 			"dt": "CRM Lead",
 			"filters": '{"status": "New"}',
 			"route_name": "Leads",
 		},
-		"Prospects": {
-			"label": "Prospects", 
+		"Meetings": {
+			"label": "Meetings",
 			"dt": "CRM Lead",
-			"filters": '{"status": ["in", ["Contacted", "Nurture", "Qualified"]]}',
+			"filters": '{"status": ["in", ["Contacted", "Nurture"]]}',
 			"route_name": "Leads",
 		},
-		"Analysis": {
-			"label": "Analysis",
-			"dt": "CRM Deal", 
+		"Opportunities": {
+			"label": "Opportunities",
+			"dt": "CRM Deal",
 			"filters": '{"status": ["in", ["Qualification", "Demo/Making"]]}',
 			"route_name": "Deals",
 		},
-		"Negotiation": {
-			"label": "Negotiation",
+		"Trial": {
+			"label": "Trial",
 			"dt": "CRM Deal",
-			"filters": '{"status": ["in", ["Proposal/Quotation", "Negotiation"]]}',
+			"filters": '{"status": "Proposal/Quotation"}',
 			"route_name": "Deals",
 		},
-		"Commitment": {
-			"label": "Commitment",
+		"Price Discussion": {
+			"label": "Price Discussion",
 			"dt": "CRM Deal",
-			"filters": '{"status": "Ready to Close"}',
+			"filters": '{"status": "Negotiation"}',
 			"route_name": "Deals",
 		},
 		"Order": {
 			"label": "Order",
 			"dt": "CRM Deal",
-			"filters": '{"status": "Won"}',
+			"filters": '{"status": ["in", ["Ready to Close", "Won"]]}',
 			"route_name": "Deals",
 		}
 	}
 
 	view_ids = {}
-	
-	# Create each SPANCO view if it doesn't exist
-	for view_name, config in spanco_views.items():
+
+	# Create each LMOTPO view if it doesn't exist
+	for view_name, config in lmotpo_views.items():
 		# Check if view already exists
 		existing_view = frappe.db.get_value(
-			"CRM View Settings", 
+			"CRM View Settings",
 			{"label": config["label"], "dt": config["dt"]},
 			"name"
 		)
-		
+
 		if existing_view:
-			view_ids[view_name.lower()] = existing_view
+			view_ids[view_name.lower().replace(" ", "_")] = existing_view
 			continue
-			
+
 		# Create new view
 		doc = frappe.new_doc("CRM View Settings")
 		doc.label = config["label"]
@@ -514,23 +514,24 @@ def add_default_spanco_views():
 		doc.is_standard = 1
 		doc.public = 1
 		doc.insert()
-		
-		view_ids[view_name.lower()] = doc.name
 
-	# Update FCRM Settings with the view references
+		view_ids[view_name.lower().replace(" ", "_")] = doc.name
+
+	# Update FCRM Settings with the view references (mapped to LMOTPO structure)
 	fcrm_settings = frappe.get_single("FCRM Settings")
-	
-	if view_ids.get("suspects"):
-		fcrm_settings.suspects = view_ids["suspects"]
-	if view_ids.get("prospects"):
-		fcrm_settings.prospects = view_ids["prospects"] 
-	if view_ids.get("analysis"):
-		fcrm_settings.analysis = view_ids["analysis"]
-	if view_ids.get("negotiation"):
-		fcrm_settings.negotiation = view_ids["negotiation"]
-	if view_ids.get("commitment"):
-		fcrm_settings.closed = view_ids["commitment"]
+
+	# Map LMOTPO views to existing field names in FCRM Settings
+	if view_ids.get("lead"):
+		fcrm_settings.suspects = view_ids["lead"]  # L - Lead
+	if view_ids.get("meetings"):
+		fcrm_settings.prospects = view_ids["meetings"]  # M - Meetings
+	if view_ids.get("opportunities"):
+		fcrm_settings.analysis = view_ids["opportunities"]  # O - Opportunities
+	if view_ids.get("trial"):
+		fcrm_settings.negotiation = view_ids["trial"]  # T - Trial
+	if view_ids.get("price_discussion"):
+		fcrm_settings.closed = view_ids["price_discussion"]  # P - Price Discussion
 	if view_ids.get("order"):
-		fcrm_settings.order = view_ids["order"]
-		
+		fcrm_settings.order = view_ids["order"]  # O - Order
+
 	fcrm_settings.save()

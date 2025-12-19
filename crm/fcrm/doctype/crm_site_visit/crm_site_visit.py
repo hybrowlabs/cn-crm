@@ -818,3 +818,105 @@ def after_insert_calendar_sync(doc, method):
             indicator='orange',
             alert=True
         )
+
+
+@frappe.whitelist()
+def get_service_engineers_for_reference(reference_type, reference_name):
+	"""
+	Get service engineers allowed for a given reference (CRM Lead or CRM Deal)
+	Based on the Line of Business associated with the reference
+
+	Args:
+		reference_type: "CRM Lead" or "CRM Deal"
+		reference_name: Name of the Lead or Deal document
+
+	Returns:
+		List of dicts with user and name for service engineers
+	"""
+	if not reference_type or not reference_name:
+		return []
+
+	try:
+		line_of_business = None
+
+		# Get Line of Business from reference
+		if reference_type == "CRM Lead":
+			# Direct LOB field on Lead
+			line_of_business = frappe.db.get_value("CRM Lead", reference_name, "line_of_business")
+		elif reference_type == "CRM Deal":
+			# Get Lead from Deal, then get LOB from Lead
+			lead = frappe.db.get_value("CRM Deal", reference_name, "lead")
+			if lead:
+				line_of_business = frappe.db.get_value("CRM Lead", lead, "line_of_business")
+
+		if not line_of_business:
+			frappe.logger().warning(f"No Line of Business found for {reference_type} {reference_name}")
+			return []
+
+		# Get service engineers from LOB
+		from crm.fcrm.doctype.crm_line_of_business.crm_line_of_business import get_service_engineers
+		engineers = get_service_engineers(line_of_business)
+
+		return engineers
+
+	except Exception as e:
+		frappe.log_error(
+			frappe.get_traceback(),
+			f"Error fetching service engineers for {reference_type} {reference_name}: {str(e)}"
+		)
+		return []
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_filtered_service_engineers(doctype, txt, searchfield, start, page_len, filters):
+	"""
+	Query function for service_engineer Link field
+	Filters users to only show service engineers from the reference's LOB
+
+	This is called by the Link field's query parameter in the client script
+	"""
+	if not filters or not filters.get("reference_type") or not filters.get("reference_name"):
+		# No filtering if reference is not set
+		return []
+
+	# Get allowed service engineers
+	engineers = get_service_engineers_for_reference(
+		filters.get("reference_type"),
+		filters.get("reference_name")
+	)
+
+	if not engineers:
+		return []
+
+	# Extract user IDs (field is called 'service_engineer' in LOB)
+	user_ids = [eng.get("service_engineer") for eng in engineers if eng.get("service_engineer")]
+
+	if not user_ids:
+		return []
+
+	# Build query to filter User doctype
+	# Match against user ID and apply text search
+	conditions = []
+	values = []
+
+	# Filter by allowed user IDs
+	conditions.append(f"name IN ({','.join(['%s'] * len(user_ids))})")
+	values.extend(user_ids)
+
+	# Apply text search if provided
+	if txt:
+		conditions.append("(name LIKE %s OR full_name LIKE %s)")
+		values.extend([f"%{txt}%", f"%{txt}%"])
+
+	where_clause = " AND ".join(conditions)
+
+	return frappe.db.sql(f"""
+		SELECT name, full_name
+		FROM `tabUser`
+		WHERE {where_clause}
+		ORDER BY
+			CASE WHEN name LIKE %s THEN 0 ELSE 1 END,
+			full_name
+		LIMIT %s, %s
+	""", values + [f"{txt}%", start, page_len])

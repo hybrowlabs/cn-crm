@@ -31,6 +31,7 @@
   "sales_person",
   "column_break_3",
   "sales_manager",
+  "service_engineer",
   "location_address_section",
   "visit_address",
   "city",
@@ -214,6 +215,12 @@
    "fieldname": "sales_manager",
    "fieldtype": "Link",
    "label": "Sales Manager",
+   "options": "User"
+  },
+  {
+   "fieldname": "service_engineer",
+   "fieldtype": "Link",
+   "label": "Service Engineer",
    "options": "User"
   },
   {

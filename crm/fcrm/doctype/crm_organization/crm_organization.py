@@ -4,6 +4,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from frappe.utils import now_datetime, add_days, get_datetime
 
 
 class CRMOrganization(Document):
@@ -109,3 +110,136 @@ class CRMOrganization(Document):
 				"modified",
 			]
 			return {'columns': columns, 'rows': rows}
+
+	def update_dormancy_status(self):
+		"""
+		Update the dormancy status based on ERPNext customer transactions.
+
+		Logic:
+		1. Find all CRM Deals linked to this organization
+		2. Find all ERPNext Customers created from those deals
+		3. Check last Sales Order date for each customer
+		4. Mark as dormant if no SO in last X days (from FCRM Settings)
+		"""
+		try:
+			# Get dormant timespan from FCRM Settings
+			fcrm_settings = frappe.get_single("FCRM Settings")
+			dormant_days = fcrm_settings.dormant_customers_timespan or 90
+
+			# Calculate cutoff date
+			cutoff_date = add_days(now_datetime(), -dormant_days)
+
+			# Get all deals for this organization
+			deals = frappe.get_all(
+				"CRM Deal",
+				filters={"organization": self.name},
+				pluck="name"
+			)
+
+			if not deals:
+				# No deals, cannot determine dormancy
+				self.is_dormant = 0
+				self.last_transaction_date = None
+				return
+
+			# Check if ERPNext is installed
+			if "erpnext" not in frappe.get_installed_apps():
+				# ERPNext not installed, cannot check transactions
+				return
+
+			# Get all customers created from these deals
+			customers = frappe.get_all(
+				"Customer",
+				filters={"crm_deal": ["in", deals]},
+				pluck="name"
+			)
+
+			if not customers:
+				# No customers created yet, not dormant
+				self.is_dormant = 0
+				self.last_transaction_date = None
+				return
+
+			# Find the latest Sales Order for these customers
+			latest_so = frappe.db.sql("""
+				SELECT
+					MAX(transaction_date) as last_order_date
+				FROM `tabSales Order`
+				WHERE customer IN %(customers)s
+				AND docstatus = 0
+			""", {"customers": customers}, as_dict=True)
+
+			last_order_date = latest_so[0].last_order_date if latest_so and latest_so[0].last_order_date else None
+
+			if last_order_date:
+				self.last_transaction_date = get_datetime(last_order_date)
+				# Check if customer is dormant
+				if get_datetime(last_order_date) < cutoff_date:
+					self.is_dormant = 1
+				else:
+					self.is_dormant = 0
+			else:
+				# No sales orders found, mark as dormant
+				self.is_dormant = 1
+				self.last_transaction_date = None
+
+		except Exception as e:
+			frappe.log_error(
+				frappe.get_traceback(),
+				f"Error updating dormancy status for {self.name}"
+			)
+
+
+@frappe.whitelist()
+def update_dormancy_status_for_organization(organization_name):
+	"""
+	API method to manually update dormancy status for a specific organization.
+	"""
+	try:
+		org = frappe.get_doc("CRM Organization", organization_name)
+		org.update_dormancy_status()
+		org.save(ignore_permissions=True)
+
+		frappe.db.commit()
+
+		return {
+			"success": True,
+			"is_dormant": org.is_dormant,
+			"last_transaction_date": org.last_transaction_date,
+			"message": _("Dormancy status updated successfully")
+		}
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), "Update Dormancy Status Error")
+		return {
+			"success": False,
+			"message": str(e)
+		}
+
+
+def update_all_organizations_dormancy_status():
+	"""
+	Background job to update dormancy status for all organizations.
+	This should be run daily via scheduler.
+	"""
+	organizations = frappe.get_all("CRM Organization", pluck="name")
+
+	success_count = 0
+	error_count = 0
+
+	for org_name in organizations:
+		try:
+			org = frappe.get_doc("CRM Organization", org_name)
+			org.update_dormancy_status()
+			org.save(ignore_permissions=True)
+			frappe.db.commit()
+			success_count += 1
+		except Exception as e:
+			error_count += 1
+			frappe.log_error(
+				frappe.get_traceback(),
+				f"Dormancy Update Failed for {org_name}"
+			)
+
+	frappe.logger().info(
+		f"Dormancy status updated: {success_count} successful, {error_count} failed"
+	)

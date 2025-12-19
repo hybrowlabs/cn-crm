@@ -3,6 +3,7 @@
 
 import frappe
 from frappe import _
+from frappe.utils.nestedset import get_root_of
 
 
 def get_territory_field_mapping():
@@ -20,22 +21,22 @@ def get_territory_field_mapping():
 		# CRM Territory -> Territory
 		"crm_to_territory": {
 			"territory_name": "territory_name",
-			"parent_crm_territory": "parent_territory", 
+			"parent_crm_territory": "parent_territory",
 			"is_group": "is_group",
 			"territory_manager": "territory_manager",  # User -> Sales Person (needs conversion)
 			"lft": "lft",
-			"rgt": "rgt",
-			"old_parent": "old_parent"
+			"rgt": "rgt"
+			# Note: old_parent is excluded - it's only used internally by NestedSet during moves
 		},
-		# Territory -> CRM Territory  
+		# Territory -> CRM Territory
 		"territory_to_crm": {
 			"territory_name": "territory_name",
 			"parent_territory": "parent_crm_territory",
-			"is_group": "is_group", 
+			"is_group": "is_group",
 			"territory_manager": "territory_manager",  # Sales Person -> User (needs conversion)
 			"lft": "lft",
-			"rgt": "rgt",
-			"old_parent": "old_parent"
+			"rgt": "rgt"
+			# Note: old_parent is excluded - it's only used internally by NestedSet during moves
 		}
 	}
 	
@@ -73,20 +74,42 @@ def map_territory_to_crm_data(territory_doc):
 	Map Territory document data to CRM Territory format
 	"""
 	mapping = get_territory_field_mapping()["territory_to_crm"]
-	
+
 	crm_data = {}
-	
+
 	for territory_field, crm_field in mapping.items():
 		if hasattr(territory_doc, territory_field):
 			value = getattr(territory_doc, territory_field)
-			
+
 			# Special handling for territory_manager (Sales Person -> User)
 			if territory_field == "territory_manager" and value:
 				user = frappe.db.get_value("Sales Person", value, "user")
 				crm_data[crm_field] = user if user else None
+			# Special handling for parent_territory to prevent self-reference
+			elif territory_field == "parent_territory":
+				root_territory = get_root_of("Territory")
+				crm_root_territory = get_root_of("CRM Territory")
+
+				# Handle root territory (only root itself should have empty parent)
+				if territory_doc.territory_name == root_territory:
+					# This IS the root, set empty parent
+					crm_data[crm_field] = ""
+				# Prevent a territory from being its own parent
+				elif value == territory_doc.territory_name or value == territory_doc.name:
+					# Self-reference detected, set to root
+					frappe.logger().warning(
+						f"Territory {territory_doc.territory_name} has self-reference in parent_territory, setting parent to {crm_root_territory}"
+					)
+					crm_data[crm_field] = crm_root_territory
+				elif not value:
+					# NULL parent but not root itself - set to root
+					crm_data[crm_field] = crm_root_territory
+				else:
+					# Normal case - parent is different from territory
+					crm_data[crm_field] = value
 			else:
 				crm_data[crm_field] = value
-	
+
 	return crm_data
 
 
@@ -95,20 +118,50 @@ def map_crm_to_territory_data(crm_territory_doc):
 	Map CRM Territory document data to Territory format
 	"""
 	mapping = get_territory_field_mapping()["crm_to_territory"]
-	
+
 	territory_data = {}
-	
+
 	for crm_field, territory_field in mapping.items():
 		if hasattr(crm_territory_doc, crm_field):
 			value = getattr(crm_territory_doc, crm_field)
-			
+
 			# Special handling for territory_manager (User -> Sales Person)
 			if crm_field == "territory_manager" and value:
 				sales_person = frappe.db.get_value("Sales Person", {"user": value}, "name")
 				territory_data[territory_field] = sales_person if sales_person else None
+			# Special handling for parent_crm_territory to prevent self-reference
+			elif crm_field == "parent_crm_territory":
+				crm_root_territory = get_root_of("CRM Territory")
+				root_territory = get_root_of("Territory")
+
+				# Handle root territory - it should have NULL parent in ERPNext
+				if crm_territory_doc.territory_name == crm_root_territory:
+					# Root territory - set to None (NULL in ERPNext)
+					territory_data[territory_field] = None
+				# Handle empty parent
+				elif not value or value == "":
+					# If this territory name matches the ERPNext root, set to None
+					# Otherwise set to root (but only if it won't create self-reference)
+					if crm_territory_doc.territory_name == root_territory:
+						territory_data[territory_field] = None
+					else:
+						territory_data[territory_field] = root_territory
+				# Prevent a territory from being its own parent
+				elif value == crm_territory_doc.territory_name or value == crm_territory_doc.name:
+					# Self-reference detected, set to None if it's the root, else set to root
+					if crm_territory_doc.territory_name == root_territory:
+						territory_data[territory_field] = None
+					else:
+						frappe.logger().warning(
+							f"CRM Territory {crm_territory_doc.territory_name} has self-reference in parent, setting parent to {root_territory}"
+						)
+						territory_data[territory_field] = root_territory
+				else:
+					# Normal case - parent is different from territory
+					territory_data[territory_field] = value
 			else:
 				territory_data[territory_field] = value
-	
+
 	return territory_data
 
 

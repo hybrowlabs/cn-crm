@@ -22,7 +22,7 @@
           >
             <div class="flex items-center gap-2">
               <TrendingUp class="w-4 h-4 text-blue-600" />
-              <span class="text-sm font-bold">SPANCO</span>
+              <span class="text-sm font-bold">LMOTPO</span>
             </div>
             <div class="flex items-center gap-3 text-xs">
               <div class="text-center">
@@ -55,7 +55,7 @@
             >
               <TransitionGroup name="mobile-stage">
                 <div
-                  v-for="(stage, index) in spancoData"
+                  v-for="(stage, index) in lmotpoData"
                   :key="stage.stage"
                   :class="[stage.color, 'mobile-stage-segment']"
                   :style="{ width: `${Math.max(stage.percent * 0.85, 10)}%` }"
@@ -75,7 +75,7 @@
 
                   <!-- Separator -->
                   <div
-                    v-if="index < spancoData.length - 1"
+                    v-if="index < lmotpoData.length - 1"
                     class="absolute right-0 top-1 bottom-1 w-px bg-white/30"
                   ></div>
                 </div>
@@ -85,7 +85,7 @@
             <!-- Stage Details Row -->
             <div class="mt-2 grid grid-cols-6 gap-1 text-xs">
               <div
-                v-for="(stage, index) in spancoData"
+                v-for="(stage, index) in lmotpoData"
                 :key="`detail-${stage.stage}`"
                 class="text-center"
               >
@@ -165,7 +165,7 @@
         <div class="hidden sm:block p-4 sm:p-6 pb-3 sm:pb-4">
           <h2 class="text-lg sm:text-xl font-bold flex items-center gap-2">
             <TrendingUp class="w-4 h-4 sm:w-5 sm:h-5" />
-            SPANCO Sales Pipeline
+            LMOTPO Sales Pipeline
           </h2>
         </div>
 
@@ -176,9 +176,9 @@
             <div
               class="flex w-full h-20 sm:h-24 rounded-lg overflow-hidden shadow-lg border"
             >
-              <TransitionGroup name="spanco-stage">
+              <TransitionGroup name="lmotpo-stage">
                 <div
-                  v-for="(stage, index) in spancoData"
+                  v-for="(stage, index) in lmotpoData"
                   :key="stage.stage"
                   :class="[
                     stage.color,
@@ -188,7 +188,7 @@
                   :style="{
                     width: `${Math.max(stage.percent * 0.8, 12)}%`,
                     minWidth:
-                      index === spancoData.length - 1 ? '100px' : '80px',
+                      index === lmotpoData.length - 1 ? '100px' : '80px',
                   }"
                   @click="gotoView(stage.view)"
                 >
@@ -220,7 +220,7 @@
 
                   <!-- Separator Line -->
                   <div
-                    v-if="index < spancoData.length - 1"
+                    v-if="index < lmotpoData.length - 1"
                     class="absolute right-0 top-2 bottom-2 w-px bg-white/30"
                   ></div>
                 </div>
@@ -280,7 +280,7 @@ const toggleStageDetails = (stage) => {
 }
 
 const getStageData = (stageKey) => {
-  return spancoData.value.find((stage) => stage.stage === stageKey)
+  return lmotpoData.value.find((stage) => stage.stage === stageKey)
 }
 
 const viewResources = ref(new Map())
@@ -474,7 +474,6 @@ const fcrmSettings = createResource({
   cache: ['fcrmSettings'],
   auto: true, // Auto-fetch on component mount
   onSuccess: (data) => {
-    console.log('FCRM Settings loaded:', data)
     // Settings are now available, spancoData will reactively update
   },
   onError: (err) => {
@@ -526,37 +525,45 @@ const negotiationView = computed(() =>
 const closureView = computed(() => parseView(fcrmSettings.data?.closed || null))
 const orderView = computed(() => parseView(fcrmSettings.data?.order || null))
 
-// SPANCO data with preserved desktop colors
+// LMOTPO data with preserved desktop colors
 
-const spancoData = computed(() => {
+const lmotpoData = computed(() => {
   const leads = leadsResource.data || []
   const deals = dealsResource.data || []
 
-  // You can change 'annual_revenue' to any numeric field you want to sum for valuation
-  const suspects = leads.filter((l) => l.status === 'New')
-  console.log(leads)
-  const prospects = leads.filter((l) =>
-    ['Contacted', 'Nurture', 'Qualified'].includes(l.status) && !l.converted,
+  // LMOTPO Mapping based on Section 2 of PDF:
+  // L - Lead: Initial prospect identification and qualification
+  const leadStage = leads.filter((l) => l.status === 'New' && !l.converted)
+
+  // M - Meetings: Telephone and field meetings for understanding customer needs
+  const meetingsStage = leads.filter((l) =>
+    ['Contacted', 'Nurture'].includes(l.status) && !l.converted,
   )
-  const analysis = deals.filter((d) =>
+
+  // O - Opportunities: Converted leads with deep-dive discovery and technical analysis
+  const qualifiedLeads = leads.filter((l) => l.status === 'Qualified' && !l.converted)
+  const opportunityDeals = deals.filter((d) =>
     ['Qualification', 'Demo/Making'].includes(d.status),
   )
-  const negotiation = deals.filter((d) =>
-    ['Proposal/Quotation', 'Negotiation'].includes(d.status),
-  )
-  const closure = deals.filter((d) => d.status === 'Ready to Close')
-  const order = deals.filter((d) => d.status === 'Won')
 
+  // T - Trial: Paid and unpaid trial provisioning and evaluation
+  const trialStage = deals.filter((d) => d.status === 'Proposal/Quotation')
 
-  const totalSuspects = suspects.length || 1
+  // P - Price Discussion: Proposal, quotation, and negotiation tracking
+  const priceDiscussionStage = deals.filter((d) => d.status === 'Negotiation')
+
+  // O - Order: Final closure workflow (Won or Lost) - showing only Won
+  const orderStage = deals.filter((d) => ['Ready to Close', 'Won'].includes(d.status))
+
+  const totalLeads = leadStage.length || 1
 
   return [
     {
-      stage: 'S',
-      fullName: 'Suspects',
-      number: suspects.length,
-      percent: 100, // Always 100 for Suspects
-      valuation: suspects.reduce(
+      stage: 'L',
+      fullName: 'Lead',
+      number: leadStage.length,
+      percent: 100, // Always 100 for Lead
+      valuation: leadStage.reduce(
         (sum, l) => sum + (Number(l.annual_revenue) || 0),
         0,
       ),
@@ -565,11 +572,11 @@ const spancoData = computed(() => {
       view: suspectView.value,
     },
     {
-      stage: 'P',
-      fullName: 'Prospects',
-      number: prospects.length,
-      percent: Math.round((prospects.length / totalSuspects) * 100),
-      valuation: prospects.reduce(
+      stage: 'M',
+      fullName: 'Meetings',
+      number: meetingsStage.length,
+      percent: Math.round((meetingsStage.length / totalLeads) * 100),
+      valuation: meetingsStage.reduce(
         (sum, l) => sum + (Number(l.annual_revenue) || 0),
         0,
       ),
@@ -579,12 +586,12 @@ const spancoData = computed(() => {
       view: prospectView.value,
     },
     {
-      stage: 'A',
-      fullName: 'Analysis',
-      number: analysis.length,
-      percent: Math.round((analysis.length / totalSuspects) * 100),
-      valuation: analysis.reduce(
-        (sum, d) => sum + (Number(d.annual_revenue) || 0),
+      stage: 'O',
+      fullName: 'Opportunities',
+      number: qualifiedLeads.length + opportunityDeals.length,
+      percent: Math.round(((qualifiedLeads.length + opportunityDeals.length) / totalLeads) * 100),
+      valuation: [...qualifiedLeads, ...opportunityDeals].reduce(
+        (sum, item) => sum + (Number(item.annual_revenue) || 0),
         0,
       ),
       color:
@@ -593,11 +600,11 @@ const spancoData = computed(() => {
       view: analysisView.value,
     },
     {
-      stage: 'N',
-      fullName: 'Negotiation',
-      number: negotiation.length,
-      percent: Math.round((negotiation.length / totalSuspects) * 100),
-      valuation: negotiation.reduce(
+      stage: 'T',
+      fullName: 'Trial',
+      number: trialStage.length,
+      percent: Math.round((trialStage.length / totalLeads) * 100),
+      valuation: trialStage.reduce(
         (sum, d) => sum + (Number(d.annual_revenue) || 0),
         0,
       ),
@@ -606,11 +613,11 @@ const spancoData = computed(() => {
       view: negotiationView.value,
     },
     {
-      stage: 'C',
-      fullName: 'Closure',
-      number: closure.length,
-      percent: Math.round((closure.length / totalSuspects) * 100),
-      valuation: closure.reduce(
+      stage: 'P',
+      fullName: 'Price Discussion',
+      number: priceDiscussionStage.length,
+      percent: Math.round((priceDiscussionStage.length / totalLeads) * 100),
+      valuation: priceDiscussionStage.reduce(
         (sum, d) => sum + (Number(d.annual_revenue) || 0),
         0,
       ),
@@ -622,9 +629,9 @@ const spancoData = computed(() => {
     {
       stage: 'O',
       fullName: 'Order',
-      number: order.length,
-      percent: Math.round((order.length / totalSuspects) * 100),
-      valuation: order.reduce(
+      number: orderStage.length,
+      percent: Math.round((orderStage.length / totalLeads) * 100),
+      valuation: orderStage.reduce(
         (sum, d) => sum + (Number(d.annual_revenue) || 0),
         0,
       ),
@@ -666,15 +673,15 @@ const formatNumber = (value) => {
 
 
 const totalPipelineValue = computed(() => {
-  return spancoData.value.reduce((sum, stage) => sum + stage.valuation, 0)
+  return lmotpoData.value.reduce((sum, stage) => sum + stage.valuation, 0)
 })
 
 
 const overallConversionRate = computed(() => {
-  const suspects = spancoData.value[0]?.number || 0
-  const orders = spancoData.value[5]?.number || 0
-  if (suspects === 0) return '0.0'
-  return ((orders / suspects) * 100).toFixed(1)
+  const leads = lmotpoData.value[0]?.number || 0
+  const orders = lmotpoData.value[5]?.number || 0
+  if (leads === 0) return '0.0'
+  return ((orders / leads) * 100).toFixed(1)
 })
 
 // // Simulate data update for demonstration
@@ -756,20 +763,20 @@ onMounted(async () => {
   transform: translateY(10px);
 }
 
-/* Desktop SPANCO stage transitions - PRESERVED */
-.spanco-stage-move,
-.spanco-stage-enter-active,
-.spanco-stage-leave-active {
+/* Desktop LMOTPO stage transitions - PRESERVED */
+.lmotpo-stage-move,
+.lmotpo-stage-enter-active,
+.lmotpo-stage-leave-active {
   transition: all 0.6s ease;
 }
 
-.spanco-stage-enter-from,
-.spanco-stage-leave-to {
+.lmotpo-stage-enter-from,
+.lmotpo-stage-leave-to {
   opacity: 0;
   transform: translateY(30px);
 }
 
-.spanco-stage-leave-active {
+.lmotpo-stage-leave-active {
   position: absolute;
 }
 

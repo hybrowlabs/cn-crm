@@ -16,7 +16,9 @@
   "column_break_pypy",
   "lft",
   "rgt",
-  "is_group"
+  "is_group",
+  "section_break_team_members",
+  "sales_team_members"
  ],
  "fields": [
   {
@@ -68,6 +70,7 @@
   {
    "fieldname": "old_parent",
    "fieldtype": "Link",
+   "ignore_user_permissions": 1,
    "label": "Old Parent",
    "options": "CRM Territory"
   },
@@ -85,6 +88,17 @@
   {
    "fieldname": "section_break_qhaf",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_team_members",
+   "fieldtype": "Section Break",
+   "label": "Sales Team Members"
+  },
+  {
+   "fieldname": "sales_team_members",
+   "fieldtype": "Table",
+   "label": "Team Members",
+   "options": "CRM Territory Team Member"
   }
  ],
  "index_web_pages_for_search": 1,
