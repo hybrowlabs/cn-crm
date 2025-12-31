@@ -10,6 +10,7 @@ from crm.fcrm.doctype.crm_service_level_agreement.utils import get_sla
 from crm.fcrm.doctype.crm_status_change_log.crm_status_change_log import (
 	add_status_change_log,
 )
+from crm.api.territory_permissions import has_permission as territory_has_permission
 
 
 class CRMDeal(Document):
@@ -21,6 +22,8 @@ class CRMDeal(Document):
 		self.validate_eligible_contacts_organizations()
 		self.set_primary_contact()
 		self.set_primary_email_mobile_no()
+		self.validate_territory_access()
+		self.auto_set_territory_if_empty()
 		if not self.is_new() and self.has_value_changed("deal_owner") and self.deal_owner:
 			self.share_with_agent(self.deal_owner)
 			self.assign_agent(self.deal_owner)
@@ -277,6 +280,57 @@ class CRMDeal(Document):
 			"title_field": "organization",
 			"kanban_fields": '["annual_revenue", "email", "mobile_no", "_assign", "modified"]',
 		}
+
+	def validate_territory_access(self):
+		"""
+		Validate that current user has access to the assigned territory.
+		"""
+		if not self.territory:
+			return
+
+		# Skip validation for System Manager or during data import
+		if (frappe.session.user == "Administrator" or
+			"System Manager" in frappe.get_roles() or
+			self.flags.ignore_permissions):
+			return
+
+		# Check if user has access to this territory
+		if not territory_has_permission(self, frappe.session.user):
+			frappe.throw(
+				_("You do not have permission to access territory {0}").format(
+					frappe.bold(self.territory)
+				),
+				frappe.PermissionError
+			)
+
+	def auto_set_territory_if_empty(self):
+		"""
+		Auto-assign territory to the deal based on user's primary territory if empty.
+		Inherit from lead if available, otherwise use user's territory.
+		"""
+		if self.territory or self.flags.ignore_permissions:
+			return
+
+		# First try to inherit territory from lead
+		if self.lead:
+			lead_territory = frappe.db.get_value("CRM Lead", self.lead, "territory")
+			if lead_territory:
+				self.territory = lead_territory
+				return
+
+		# Get user's territories as fallback
+		from crm.api.territory_permissions import get_user_territories
+		user_territories = get_user_territories(frappe.session.user)
+
+		if user_territories:
+			# Assign first territory (primary territory)
+			self.territory = user_territories[0]
+
+	def has_permission(self, user=None, permission_type=None):
+		"""
+		Custom permission check for CRM Deal based on territory.
+		"""
+		return territory_has_permission(self, user, permission_type)
 
 
 @frappe.whitelist()

@@ -11,6 +11,7 @@ from crm.fcrm.doctype.crm_service_level_agreement.utils import get_sla
 from crm.fcrm.doctype.crm_status_change_log.crm_status_change_log import (
 	add_status_change_log,
 )
+from crm.api.territory_permissions import has_permission as territory_has_permission
 
 
 class CRMLead(Document):
@@ -25,6 +26,8 @@ class CRMLead(Document):
 		self.validate_email()
 		self.validate_gst_number()
 		self.auto_fetch_gstin_details()
+		self.validate_territory_access()
+		self.auto_set_territory_if_empty()
 		if not self.is_new() and self.has_value_changed("lead_owner") and self.lead_owner:
 			self.share_with_agent(self.lead_owner)
 			self.assign_agent(self.lead_owner)
@@ -463,6 +466,49 @@ class CRMLead(Document):
 		sla = frappe.get_last_doc("CRM Service Level Agreement", {"name": self.sla})
 		if sla:
 			sla.apply(self)
+
+	def validate_territory_access(self):
+		"""
+		Validate that current user has access to the assigned territory.
+		"""
+		if not self.territory:
+			return
+
+		# Skip validation for System Manager or during data import
+		if (frappe.session.user == "Administrator" or
+			"System Manager" in frappe.get_roles() or
+			self.flags.ignore_permissions):
+			return
+
+		# Check if user has access to this territory
+		if not territory_has_permission(self, frappe.session.user):
+			frappe.throw(
+				_("You do not have permission to access territory {0}").format(
+					frappe.bold(self.territory)
+				),
+				frappe.PermissionError
+			)
+
+	def auto_set_territory_if_empty(self):
+		"""
+		Auto-assign territory to the lead based on user's primary territory if empty.
+		"""
+		if self.territory or self.flags.ignore_permissions:
+			return
+
+		# Get user's territories
+		from crm.api.territory_permissions import get_user_territories
+		user_territories = get_user_territories(frappe.session.user)
+
+		if user_territories:
+			# Assign first territory (primary territory)
+			self.territory = user_territories[0]
+
+	def has_permission(self, user=None, permission_type=None):
+		"""
+		Custom permission check for CRM Lead based on territory.
+		"""
+		return territory_has_permission(self, user, permission_type)
 
 	def convert_to_deal(self, deal=None):
 		return convert_to_deal(lead=self.name, doc=self, deal=deal)
