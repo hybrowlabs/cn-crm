@@ -31,7 +31,7 @@ def after_install(force=False):
 def add_default_lead_statuses():
 	statuses = {
 		"New": {
-			"color": "gray",
+			"color": "orange",
 			"position": 1,
 		},
 		"Contacted": {
@@ -56,14 +56,20 @@ def add_default_lead_statuses():
 		},
 	}
 
-	for status in statuses:
-		if frappe.db.exists("CRM Lead Status", status):
+	for status, values in statuses.items():
+		existing = frappe.db.exists("CRM Lead Status", status)
+		if existing:
+			# Ensure existing records align with desired color/position
+			frappe.db.set_value("CRM Lead Status", status, {
+				"color": values["color"],
+				"position": values["position"],
+			})
 			continue
 
 		doc = frappe.new_doc("CRM Lead Status")
 		doc.lead_status = status
-		doc.color = statuses[status]["color"]
-		doc.position = statuses[status]["position"]
+		doc.color = values["color"]
+		doc.position = values["position"]
 		doc.insert()
 
 
@@ -106,15 +112,22 @@ def add_default_deal_statuses():
 		},
 	}
 
-	for status in statuses:
-		if frappe.db.exists("CRM Deal Status", status):
+	for status, values in statuses.items():
+		existing = frappe.db.exists("CRM Deal Status", status)
+		if existing:
+			# Keep existing records in sync with desired color/position/probability
+			frappe.db.set_value("CRM Deal Status", status, {
+				"color": values["color"],
+				"probability": values["probability"],
+				"position": values["position"],
+			})
 			continue
 
 		doc = frappe.new_doc("CRM Deal Status")
 		doc.deal_status = status
-		doc.color = statuses[status]["color"]
-		doc.probability = statuses[status]["probability"]
-		doc.position = statuses[status]["position"]
+		doc.color = values["color"]
+		doc.probability = values["probability"]
+		doc.position = values["position"]
 		doc.insert()
 
 
@@ -447,64 +460,92 @@ def add_default_scripts():
 
 
 def add_default_spanco_views():
-	"""Create default SPANCO views for the sales pipeline."""
-	
-	# Define SPANCO views with their configurations
-	spanco_views = {
-		"Suspects": {
-			"label": "Suspects",
+	"""Ensure LMOTPO pipeline views exist (legacy SPANCO renamed) and wire FCRM Settings."""
+
+	lmotpo_views = {
+		"lead": {
+			"label": "Lead Stage",
 			"dt": "CRM Lead",
 			"filters": '{"status": "New"}',
 			"route_name": "Leads",
 		},
-		"Prospects": {
-			"label": "Prospects", 
+		"meetings": {
+			"label": "Meetings Stage",
 			"dt": "CRM Lead",
-			"filters": '{"status": ["in", ["Contacted", "Nurture", "Qualified"]]}',
+			"filters": '{"status": ["in", ["Contacted", "Nurture"]]}',
 			"route_name": "Leads",
 		},
-		"Analysis": {
-			"label": "Analysis",
-			"dt": "CRM Deal", 
-			"filters": '{"status": ["in", ["Qualification", "Demo/Making"]]}',
+		"opportunities": {
+			"label": "Opportunities Stage",
+			"dt": "CRM Deal",
+			"filters": '{"status": ["in", ["Qualification"]]}',
 			"route_name": "Deals",
 		},
-		"Negotiation": {
-			"label": "Negotiation",
+		"trial": {
+			"label": "Trial Stage",
+			"dt": "CRM Deal",
+			"filters": '{"status": ["in", ["Demo/Making"]]}',
+			"route_name": "Deals",
+		},
+		"pricing": {
+			"label": "Pricing Discussion Stage",
 			"dt": "CRM Deal",
 			"filters": '{"status": ["in", ["Proposal/Quotation", "Negotiation"]]}',
 			"route_name": "Deals",
 		},
-		"Commitment": {
-			"label": "Commitment",
+		"orderbooking": {
+			"label": "Order Booking Stage",
 			"dt": "CRM Deal",
-			"filters": '{"status": "Ready to Close"}',
+			"filters": '{"status": ["in", ["Ready to Close", "Won"]]}',
 			"route_name": "Deals",
 		},
-		"Order": {
-			"label": "Order",
-			"dt": "CRM Deal",
-			"filters": '{"status": "Won"}',
-			"route_name": "Deals",
-		}
 	}
 
+	# Map old labels to new labels (handles both legacy SPANCO and Configure-prefixed labels)
+	rename_map = [
+		(["Suspects", "Configure Lead Stage"], "Lead Stage", "lead"),
+		(["Prospects", "Configure Meetings Stage"], "Meetings Stage", "meetings"),
+		(["Analysis", "Configure Opportunities Stage"], "Opportunities Stage", "opportunities"),
+		(["Commitment", "Configure Trial Stage"], "Trial Stage", "trial"),
+		(["Negotiation", "Configure Pricing Discussion Stage"], "Pricing Discussion Stage", "pricing"),
+		(["Order", "Configure Order Booking Stage"], "Order Booking Stage", "orderbooking"),
+	]
+
 	view_ids = {}
-	
-	# Create each SPANCO view if it doesn't exist
-	for view_name, config in spanco_views.items():
-		# Check if view already exists
-		existing_view = frappe.db.get_value(
-			"CRM View Settings", 
-			{"label": config["label"], "dt": config["dt"]},
-			"name"
-		)
-		
-		if existing_view:
-			view_ids[view_name.lower()] = existing_view
+
+	# Rename legacy SPANCO labels in place to preserve filters, route and flags
+	for old_labels, new_label, key in rename_map:
+		# Check if new label already exists
+		existing_new = frappe.db.get_value("CRM View Settings", {"label": new_label}, "name")
+		if existing_new:
+			view_ids[key] = existing_new
 			continue
-			
-		# Create new view
+
+		# Check each old label variant and rename the first one found
+		for old_label in old_labels:
+			existing_old = frappe.db.get_value("CRM View Settings", {"label": old_label}, "name")
+			if existing_old:
+				doc = frappe.get_doc("CRM View Settings", existing_old)
+				doc.label = new_label
+				doc.save()
+				view_ids[key] = doc.name
+				break
+
+	# Create any missing LMOTPO views
+	for key, config in lmotpo_views.items():
+		if view_ids.get(key):
+			continue
+
+		existing_view = frappe.db.get_value(
+			"CRM View Settings",
+			{"label": config["label"], "dt": config["dt"]},
+			"name",
+		)
+
+		if existing_view:
+			view_ids[key] = existing_view
+			continue
+
 		doc = frappe.new_doc("CRM View Settings")
 		doc.label = config["label"]
 		doc.dt = config["dt"]
@@ -514,23 +555,23 @@ def add_default_spanco_views():
 		doc.is_standard = 1
 		doc.public = 1
 		doc.insert()
-		
-		view_ids[view_name.lower()] = doc.name
+
+		view_ids[key] = doc.name
 
 	# Update FCRM Settings with the view references
 	fcrm_settings = frappe.get_single("FCRM Settings")
-	
-	if view_ids.get("suspects"):
-		fcrm_settings.suspects = view_ids["suspects"]
-	if view_ids.get("prospects"):
-		fcrm_settings.prospects = view_ids["prospects"] 
-	if view_ids.get("analysis"):
-		fcrm_settings.analysis = view_ids["analysis"]
-	if view_ids.get("negotiation"):
-		fcrm_settings.negotiation = view_ids["negotiation"]
-	if view_ids.get("commitment"):
-		fcrm_settings.closed = view_ids["commitment"]
-	if view_ids.get("order"):
-		fcrm_settings.order = view_ids["order"]
-		
+
+	if view_ids.get("lead"):
+		fcrm_settings.suspects = view_ids["lead"]
+	if view_ids.get("meetings"):
+		fcrm_settings.prospects = view_ids["meetings"]
+	if view_ids.get("opportunities"):
+		fcrm_settings.analysis = view_ids["opportunities"]
+	if view_ids.get("trial"):
+		fcrm_settings.negotiation = view_ids["trial"]
+	if view_ids.get("pricing"):
+		fcrm_settings.closed = view_ids["pricing"]
+	if view_ids.get("orderbooking"):
+		fcrm_settings.order = view_ids["orderbooking"]
+
 	fcrm_settings.save()

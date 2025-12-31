@@ -89,42 +89,42 @@
   {
    "fieldname": "tab_4_tab",
    "fieldtype": "Tab Break",
-   "label": "SPANCO Settings"
+   "label": "LMOTPO Settings"
   },
   {
    "fieldname": "suspects",
    "fieldtype": "Link",
-   "label": "Suspects",
+   "label": "Lead Stage",
    "options": "CRM View Settings"
   },
   {
    "fieldname": "prospects",
    "fieldtype": "Link",
-   "label": "Prospects",
+   "label": "Meetings Stage",
    "options": "CRM View Settings"
   },
   {
    "fieldname": "analysis",
    "fieldtype": "Link",
-   "label": "Analysis",
+   "label": "Opportunities Stage",
    "options": "CRM View Settings"
   },
   {
    "fieldname": "negotiation",
    "fieldtype": "Link",
-   "label": "Negotiation",
+   "label": "Trial Stage",
    "options": "CRM View Settings"
   },
   {
    "fieldname": "closed",
    "fieldtype": "Link",
-   "label": "Closed",
+   "label": "Pricing Discussion Stage",
    "options": "CRM View Settings"
   },
   {
    "fieldname": "order",
    "fieldtype": "Link",
-   "label": "Order",
+   "label": "Order Booking Stage",
    "options": "CRM View Settings"
   }
  ],

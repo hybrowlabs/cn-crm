@@ -6,7 +6,7 @@ from frappe import _
 from frappe.custom.doctype.property_setter.property_setter import delete_property_setter, make_property_setter
 from frappe.model.document import Document
 
-from crm.install import after_install
+from crm.install import after_install, add_default_spanco_views
 
 
 class FCRMSettings(Document):
@@ -67,6 +67,8 @@ def get_standard_dropdown_items():
 
 def after_migrate():
 	sync_table("dropdown_items", "standard_dropdown_items")
+	add_default_spanco_views()
+	ensure_lmotpo_widgets()
 
 
 
@@ -89,6 +91,56 @@ def sync_table(key, hook):
 	crm_settings.set(key, items)
 
 	crm_settings.save()
+
+
+def ensure_lmotpo_widgets():
+	"""Append LMOTPO widget to all CRM Dashboards if missing."""
+	for dashboard_name in frappe.get_all("CRM Dashboard", pluck="name"):
+		try:
+			dashboard = frappe.get_doc("CRM Dashboard", dashboard_name)
+		except Exception:
+			continue
+		
+		updated = False
+		for w in dashboard.widgets:
+			if w.widget_type == "Spanco":
+				w.widget_type = "LMOTPO"
+				updated = True
+
+		if any(w.widget_type == "LMOTPO" for w in dashboard.widgets):
+			if updated:
+				try:
+					dashboard.save(ignore_permissions=True)
+				except Exception:
+					frappe.log_error(f"Failed to update LMOTPO widget for dashboard {dashboard_name}", "LMOTPO Widget")
+			continue
+
+		max_y = 0
+		for w in dashboard.widgets:
+			try:
+				max_y = max(max_y, int(w.y_position or 0) + int(w.height or 0))
+			except Exception:
+				continue
+
+		dashboard.append(
+			"widgets",
+			{
+				"widget_type": "LMOTPO",
+				"widget_title": "LMOTPO Pipeline",
+				"widget_description": "Lead → Meetings → Opportunities → Trial → Pricing → Order Booking",
+				"width": 12,
+				"height": 6,
+				"x_position": 0,
+				"y_position": max_y,
+				"show_refresh": 0,
+			},
+		)
+
+		try:
+			dashboard.save(ignore_permissions=True)
+		except Exception:
+			# Skip dashboards that fail to save; continue with others
+			frappe.log_error(f"Failed to append LMOTPO widget for dashboard {dashboard_name}", "LMOTPO Widget")
 
 
 def create_forecasting_script():

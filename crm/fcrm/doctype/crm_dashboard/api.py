@@ -138,55 +138,95 @@ def get_dashboards():
 @frappe.whitelist()
 def save_dashboard(dashboard_data):
 	"""Save or update dashboard"""
-	dashboard_data = json.loads(dashboard_data) if isinstance(dashboard_data, str) else dashboard_data
-	
-	if dashboard_data.get("name"):
-		dashboard = frappe.get_doc("CRM Dashboard", dashboard_data["name"])
-		dashboard.check_permission("write")
-	else:
-		dashboard = frappe.new_doc("CRM Dashboard")
-		dashboard.check_permission("create")
-	
-	# Update dashboard fields
-	dashboard.update({
-		"dashboard_name": dashboard_data.get("dashboard_name"),
-		"description": dashboard_data.get("description"),
-		"is_default": dashboard_data.get("is_default", 0),
-		"is_public": dashboard_data.get("is_public", 0),
-		"date_range_type": dashboard_data.get("date_range_type"),
-		"from_date": dashboard_data.get("from_date"),
-		"to_date": dashboard_data.get("to_date"),
-		"user_filter": dashboard_data.get("user_filter"),
-		"team_filter": dashboard_data.get("team_filter"),
-	})
-	
-	# Update widgets
-	dashboard.widgets = []
-	for widget_data in dashboard_data.get("widgets", []):
-		widget = dashboard.append("widgets", {})
-		# Clean widget data - remove None values and handle JSON fields
-		clean_widget = {}
-		for key, value in widget_data.items():
-			if value is not None:
-				if key in ["table_columns", "table_filters", "drilldown_filters"]:
-					if isinstance(value, str):
-						clean_widget[key] = value
-					elif isinstance(value, (dict, list)):
-						clean_widget[key] = json.dumps(value)
+	try:
+		dashboard_data = json.loads(dashboard_data) if isinstance(dashboard_data, str) else dashboard_data
+		
+		is_new = not dashboard_data.get("name")
+		
+		# Validate dashboard_name for new dashboards
+		if is_new:
+			dashboard_name = dashboard_data.get("dashboard_name")
+			if not dashboard_name:
+				frappe.throw(_("Dashboard name is required"))
+			
+			dashboard = frappe.new_doc("CRM Dashboard")
+			dashboard.name = dashboard_name
+			dashboard.check_permission("create")
+		else:
+			dashboard = frappe.get_doc("CRM Dashboard", dashboard_data["name"])
+			dashboard.check_permission("write")
+			# Delete existing child widgets to avoid duplicate key errors
+			frappe.db.delete("CRM Dashboard Widget", {"parent": dashboard.name})
+			# Reload dashboard to get clean state after deletion
+			dashboard.reload()
+		
+		# Update dashboard fields
+		dashboard.update({
+			"dashboard_name": dashboard_data.get("dashboard_name"),
+			"description": dashboard_data.get("description"),
+			"is_default": dashboard_data.get("is_default", 0),
+			"is_public": dashboard_data.get("is_public", 0),
+			"date_range_type": dashboard_data.get("date_range_type"),
+			"from_date": dashboard_data.get("from_date"),
+			"to_date": dashboard_data.get("to_date"),
+			"user_filter": dashboard_data.get("user_filter"),
+			"team_filter": dashboard_data.get("team_filter"),
+		})
+		
+		# Clear widgets list and rebuild
+		dashboard.widgets = []
+		for widget_data in dashboard_data.get("widgets", []):
+			widget = dashboard.append("widgets", {})
+			# Clean widget data - remove None values and handle JSON fields
+			clean_widget = {}
+			widget_type = widget_data.get("widget_type")
+			
+			for key, value in widget_data.items():
+				if value is not None:
+					if key in ["table_columns", "table_filters", "drilldown_filters"]:
+						if isinstance(value, str):
+							clean_widget[key] = value
+						elif isinstance(value, (dict, list)):
+							clean_widget[key] = json.dumps(value)
+						else:
+							clean_widget[key] = value
 					else:
 						clean_widget[key] = value
-				else:
-					clean_widget[key] = value
-		widget.update(clean_widget)
-	
-	dashboard.save(ignore_permissions=True)
-	
-	# Return with widgets as list
-	dashboard_dict = dashboard.as_dict()
-	if dashboard_dict.get("widgets"):
-		dashboard_dict["widgets"] = [w.as_dict() for w in dashboard.widgets]
-	
-	return dashboard_dict
+			
+			# LMOTPO widgets don't need data_source fields - clear them if set
+			if widget_type == "LMOTPO":
+				clean_widget["data_source_type"] = ""
+				clean_widget["data_source"] = ""
+				clean_widget.pop("metric_field", None)
+				clean_widget.pop("aggregation_type", None)
+				clean_widget.pop("chart_type", None)
+				clean_widget.pop("x_axis_field", None)
+				clean_widget.pop("y_axis_field", None)
+				clean_widget.pop("group_by_field", None)
+				clean_widget.pop("table_columns", None)
+				clean_widget.pop("table_filters", None)
+			
+			widget.update(clean_widget)
+		
+		dashboard.save(ignore_permissions=True)
+		
+		# Return with widgets as list
+		dashboard_dict = dashboard.as_dict()
+		if dashboard_dict.get("widgets"):
+			dashboard_dict["widgets"] = [w.as_dict() for w in dashboard.widgets]
+		
+		return dashboard_dict
+	except frappe.ValidationError:
+		# Re-raise validation errors as-is
+		raise
+	except Exception as e:
+		import traceback
+		error_trace = traceback.format_exc()
+		frappe.log_error(
+			message=f"Error in save_dashboard:\n{error_trace}\n\nDashboard Data: {dashboard_data}",
+			title="Dashboard Save Error"
+		)
+		frappe.throw(_("Failed to save dashboard: {0}").format(str(e)))
 
 
 @frappe.whitelist()
@@ -220,6 +260,11 @@ def get_widget_data(widget_config, filters=None):
 		
 		if not widget_type:
 			frappe.throw(_("widget_type is required"))
+
+		# LMOTPO widgets are non–data-source and should bypass fetch/validation
+		if widget_type == "LMOTPO":
+			return {}
+
 		if not data_source_type:
 			frappe.throw(_("data_source_type is required"))
 		if not data_source:
@@ -283,7 +328,12 @@ def get_widget_data(widget_config, filters=None):
 
 def apply_global_filters(filters, data_source_type, data_source):
 	"""Apply global filters (date, user, team) to filters"""
-	applied = filters.copy() if filters else {}
+	filters = filters or {}
+	applied = {}
+	# keep any user-provided filters that are not global keys
+	for key, val in filters.items():
+		if key not in {"from_date", "to_date", "date_range_type", "user_filter", "team_filter"}:
+			applied[key] = val
 	
 	# Date range filter
 	if filters.get("from_date") and filters.get("to_date"):

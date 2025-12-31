@@ -1,5 +1,6 @@
 <template>
-  <Dialog v-model="show" :options="{ size: '2xl' }">
+  <div class="relative z-[9999]">
+    <Dialog v-model="show" :options="{ size: '2xl' }">
     <template #body>
       <div class="bg-surface-modal px-4 pb-6 pt-5 sm:px-6">
         <div class="mb-5 flex items-center justify-between">
@@ -67,7 +68,7 @@
           </div>
           
           <!-- Data Source -->
-          <div class="border-t pt-4">
+          <div v-if="config.widget_type !== 'LMOTPO'" class="border-t pt-4">
             <h4 class="mb-3 text-sm font-medium text-gray-700">{{ __('Data Source') }}</h4>
             <div class="grid grid-cols-2 gap-4">
               <Dropdown :options="dataSourceTypeOptions">
@@ -85,6 +86,9 @@
               :placeholder="__('Select DocType')"
             />
             </div>
+          </div>
+          <div v-else class="border-t pt-4 text-sm text-gray-600">
+            {{ __('LMOTPO widget does not require a data source.') }}
           </div>
           
           <!-- KPI Specific -->
@@ -178,7 +182,8 @@
         </div>
       </div>
     </template>
-  </Dialog>
+    </Dialog>
+  </div>
 </template>
 
 <script setup>
@@ -237,6 +242,12 @@ const widgetTypeOptions = computed(() =>
       }
       if (w.value !== 'Table') {
         config.value.table_columns = undefined
+      }
+      if (w.value === 'LMOTPO') {
+        config.value.data_source_type = undefined
+        config.value.data_source = undefined
+      } else {
+        config.value.data_source_type = config.value.data_source_type || 'DocType'
       }
     }
   }))
@@ -299,7 +310,7 @@ watch(() => props.widget, (newWidget) => {
     }
   } else {
     // Reset to defaults
-    config.value = {
+      config.value = {
       widget_type: 'KPI',
       widget_title: '',
       width: 4,
@@ -325,7 +336,7 @@ function saveWidget() {
     return
   }
   
-  if (!config.value.data_source) {
+  if (config.value.widget_type !== 'LMOTPO' && !config.value.data_source) {
     error.value = __('Data Source is required')
     return
   }

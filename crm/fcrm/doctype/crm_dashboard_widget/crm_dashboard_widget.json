@@ -45,7 +45,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Widget Type",
-   "options": "KPI\nChart\nTable",
+   "options": "KPI\nChart\nTable\nLMOTPO",
    "reqd": 1
   },
   {
@@ -98,18 +98,20 @@
    "label": "Data Configuration"
   },
   {
+   "depends_on": "eval:parent.widget_type != 'LMOTPO'",
    "fieldname": "data_source_type",
    "fieldtype": "Select",
    "label": "Data Source Type",
    "options": "DocType\nReport\nQuery",
-   "reqd": 1
+   "reqd": 0
   },
   {
+   "depends_on": "eval:parent.widget_type != 'LMOTPO'",
    "fieldname": "data_source",
    "fieldtype": "Dynamic Link",
    "label": "Data Source",
    "options": "data_source_type",
-   "reqd": 1
+   "reqd": 0
   },
   {
    "fieldname": "column_break_2",

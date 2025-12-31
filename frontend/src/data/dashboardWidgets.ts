@@ -1,13 +1,13 @@
 export interface WidgetConfig {
-  widget_type: 'KPI' | 'Chart' | 'Table'
+  widget_type: 'KPI' | 'Chart' | 'Table' | 'LMOTPO'
   widget_title: string
   widget_description?: string
   width: number
   height: number
   x_position: number
   y_position: number
-  data_source_type: 'DocType' | 'Report' | 'Query'
-  data_source: string
+  data_source_type?: 'DocType' | 'Report' | 'Query'
+  data_source?: string
   // KPI specific
   metric_field?: string
   aggregation_type?: 'Count' | 'Sum' | 'Average' | 'Min' | 'Max'
@@ -48,7 +48,8 @@ export interface DashboardConfig {
 export const WIDGET_TYPES = [
   { label: 'KPI Card', value: 'KPI', icon: 'bar-chart-2' },
   { label: 'Chart', value: 'Chart', icon: 'trending-up' },
-  { label: 'Table', value: 'Table', icon: 'table' }
+  { label: 'Table', value: 'Table', icon: 'table' },
+  { label: 'LMOTPO Pipeline', value: 'LMOTPO', icon: 'trending-up' }
 ] as const
 
 export const CHART_TYPES = [

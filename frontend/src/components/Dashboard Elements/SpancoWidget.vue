@@ -22,7 +22,7 @@
           >
             <div class="flex items-center gap-2">
               <TrendingUp class="w-4 h-4 text-blue-600" />
-              <span class="text-sm font-bold">SPANCO</span>
+              <span class="text-sm font-bold">LMOTPO</span>
             </div>
             <div class="flex items-center gap-3 text-xs">
               <div class="text-center">
@@ -165,7 +165,7 @@
         <div class="hidden sm:block p-4 sm:p-6 pb-3 sm:pb-4">
           <h2 class="text-lg sm:text-xl font-bold flex items-center gap-2">
             <TrendingUp class="w-4 h-4 sm:w-5 sm:h-5" />
-            SPANCO Sales Pipeline
+            LMOTPO Sales Pipeline
           </h2>
         </div>
 
@@ -526,37 +526,38 @@ const negotiationView = computed(() =>
 const closureView = computed(() => parseView(fcrmSettings.data?.closed || null))
 const orderView = computed(() => parseView(fcrmSettings.data?.order || null))
 
-// SPANCO data with preserved desktop colors
+// LMOTPO data (Lead → Meetings → Opportunities → Trial → Pricing Discussion → Order Booking)
 
 const spancoData = computed(() => {
   const leads = leadsResource.data || []
   const deals = dealsResource.data || []
 
-  // You can change 'annual_revenue' to any numeric field you want to sum for valuation
-  const suspects = leads.filter((l) => l.status === 'New')
-  console.log(leads)
-  const prospects = leads.filter((l) =>
-    ['Contacted', 'Nurture', 'Qualified'].includes(l.status) && !l.converted,
+  const leadStage = leads.filter((l) => l.status === 'New')
+  const meetingsStage = leads.filter((l) =>
+    ['Contacted', 'Nurture'].includes(l.status) && !l.converted,
   )
-  const analysis = deals.filter((d) =>
-    ['Qualification', 'Demo/Making'].includes(d.status),
+  const opportunitiesStage = deals.filter((d) =>
+    ['Qualification'].includes(d.status),
   )
-  const negotiation = deals.filter((d) =>
+  const trialStage = deals.filter((d) =>
+    ['Demo/Making'].includes(d.status),
+  )
+  const pricingStage = deals.filter((d) =>
     ['Proposal/Quotation', 'Negotiation'].includes(d.status),
   )
-  const closure = deals.filter((d) => d.status === 'Ready to Close')
-  const order = deals.filter((d) => d.status === 'Won')
+  const orderStage = deals.filter((d) =>
+    ['Ready to Close', 'Won'].includes(d.status),
+  )
 
-
-  const totalSuspects = suspects.length || 1
+  const baseCount = leadStage.length || 1
 
   return [
     {
-      stage: 'S',
-      fullName: 'Suspects',
-      number: suspects.length,
-      percent: 100, // Always 100 for Suspects
-      valuation: suspects.reduce(
+      stage: 'L',
+      fullName: 'Lead Stage',
+      number: leadStage.length,
+      percent: 100,
+      valuation: leadStage.reduce(
         (sum, l) => sum + (Number(l.annual_revenue) || 0),
         0,
       ),
@@ -565,11 +566,11 @@ const spancoData = computed(() => {
       view: suspectView.value,
     },
     {
-      stage: 'P',
-      fullName: 'Prospects',
-      number: prospects.length,
-      percent: Math.round((prospects.length / totalSuspects) * 100),
-      valuation: prospects.reduce(
+      stage: 'M',
+      fullName: 'Meetings Stage',
+      number: meetingsStage.length,
+      percent: Math.round((meetingsStage.length / baseCount) * 100),
+      valuation: meetingsStage.reduce(
         (sum, l) => sum + (Number(l.annual_revenue) || 0),
         0,
       ),
@@ -579,11 +580,11 @@ const spancoData = computed(() => {
       view: prospectView.value,
     },
     {
-      stage: 'A',
-      fullName: 'Analysis',
-      number: analysis.length,
-      percent: Math.round((analysis.length / totalSuspects) * 100),
-      valuation: analysis.reduce(
+      stage: 'Op',
+      fullName: 'Opportunities Stage',
+      number: opportunitiesStage.length,
+      percent: Math.round((opportunitiesStage.length / baseCount) * 100),
+      valuation: opportunitiesStage.reduce(
         (sum, d) => sum + (Number(d.annual_revenue) || 0),
         0,
       ),
@@ -593,11 +594,11 @@ const spancoData = computed(() => {
       view: analysisView.value,
     },
     {
-      stage: 'N',
-      fullName: 'Negotiation',
-      number: negotiation.length,
-      percent: Math.round((negotiation.length / totalSuspects) * 100),
-      valuation: negotiation.reduce(
+      stage: 'T',
+      fullName: 'Trial Stage',
+      number: trialStage.length,
+      percent: Math.round((trialStage.length / baseCount) * 100),
+      valuation: trialStage.reduce(
         (sum, d) => sum + (Number(d.annual_revenue) || 0),
         0,
       ),
@@ -606,11 +607,11 @@ const spancoData = computed(() => {
       view: negotiationView.value,
     },
     {
-      stage: 'C',
-      fullName: 'Closure',
-      number: closure.length,
-      percent: Math.round((closure.length / totalSuspects) * 100),
-      valuation: closure.reduce(
+      stage: 'P',
+      fullName: 'Pricing Discussion Stage',
+      number: pricingStage.length,
+      percent: Math.round((pricingStage.length / baseCount) * 100),
+      valuation: pricingStage.reduce(
         (sum, d) => sum + (Number(d.annual_revenue) || 0),
         0,
       ),
@@ -620,11 +621,11 @@ const spancoData = computed(() => {
       view: closureView.value,
     },
     {
-      stage: 'O',
-      fullName: 'Order',
-      number: order.length,
-      percent: Math.round((order.length / totalSuspects) * 100),
-      valuation: order.reduce(
+      stage: 'OB',
+      fullName: 'Order Booking Stage',
+      number: orderStage.length,
+      percent: Math.round((orderStage.length / baseCount) * 100),
+      valuation: orderStage.reduce(
         (sum, d) => sum + (Number(d.annual_revenue) || 0),
         0,
       ),

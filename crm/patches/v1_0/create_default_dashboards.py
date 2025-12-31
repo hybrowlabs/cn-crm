@@ -18,6 +18,33 @@ def make_dashboard_doc(dashboard_name, description, date_range="This Month", is_
     return dashboard
 
 
+def add_lmotpo_widget(dashboard):
+	"""Append LMOTPO pipeline widget if not already present."""
+	if any(w.widget_type in ("LMOTPO", "Spanco") for w in dashboard.widgets):
+		return
+
+	max_y = 0
+	for w in dashboard.widgets:
+		try:
+			max_y = max(max_y, int(w.y_position or 0) + int(w.height or 0))
+		except Exception:
+			continue
+
+	dashboard.append(
+		"widgets",
+		{
+			"widget_type": "LMOTPO",
+			"widget_title": "LMOTPO Pipeline",
+			"widget_description": "Lead → Meetings → Opportunities → Trial → Pricing → Order Booking",
+			"width": 12,
+			"height": 6,
+			"x_position": 0,
+			"y_position": max_y,
+			"show_refresh": 0,
+		},
+	)
+
+
 def execute():
     """Create default dashboards and reports for CRM"""
     create_default_dashboards()
@@ -120,7 +147,8 @@ def create_leads_created_dashboard():
 		"show_refresh": 1,
 		"refresh_interval": 0
 	})
-	
+
+	add_lmotpo_widget(dashboard)
 	dashboard.insert(ignore_permissions=True)
 
 
@@ -191,7 +219,8 @@ def create_stage_wise_leads_dashboard():
 		"refresh_interval": 0,
 		"drilldown_doctype": "CRM Lead"
 	})
-	
+
+	add_lmotpo_widget(dashboard)
 	dashboard.insert(ignore_permissions=True)
 
 
@@ -277,7 +306,8 @@ def create_conversion_rates_dashboard():
 		"show_refresh": 1,
 		"refresh_interval": 0
 	})
-	
+
+	add_lmotpo_widget(dashboard)
 	dashboard.insert(ignore_permissions=True)
 
 
@@ -365,7 +395,8 @@ def create_stage_duration_dashboard():
 		"show_refresh": 1,
 		"refresh_interval": 0
 	})
-	
+
+	add_lmotpo_widget(dashboard)
 	dashboard.insert(ignore_permissions=True)
 
 
@@ -471,7 +502,8 @@ def create_revenue_dashboard():
 		"show_refresh": 1,
 		"refresh_interval": 0
 	})
-	
+
+	add_lmotpo_widget(dashboard)
 	dashboard.insert(ignore_permissions=True)
 
 
@@ -557,7 +589,8 @@ def create_negotiation_dashboard():
 		"show_refresh": 1,
 		"refresh_interval": 0
 	})
-	
+
+	add_lmotpo_widget(dashboard)
 	dashboard.insert(ignore_permissions=True)
 
 
@@ -627,7 +660,8 @@ def create_team_performance_reports():
 		"show_refresh": 1,
 		"refresh_interval": 0
 	})
-	
+
+	add_lmotpo_widget(dashboard)
 	dashboard.insert(ignore_permissions=True)
 
 
@@ -749,7 +783,8 @@ def create_individual_metrics_report():
 		"refresh_interval": 0,
 		"drilldown_doctype": "CRM Lead"
 	})
-	
+
+	add_lmotpo_widget(dashboard)
 	dashboard.insert(ignore_permissions=True)
 
 
@@ -854,6 +889,7 @@ def create_team_metrics_report():
 		"refresh_interval": 0,
 		"drilldown_doctype": "CRM Deal"
 	})
-	
+
+	add_lmotpo_widget(dashboard)
 	dashboard.insert(ignore_permissions=True)
 

@@ -148,7 +148,7 @@
           :class="[
             'absolute rounded-lg border-2 transition-all',
             isEditMode ? 'cursor-move border-blue-300 hover:border-blue-500' : 'border-transparent',
-            isDragging === index ? 'z-50 shadow-lg' : 'z-10'
+            isDragging === index ? 'z-50 shadow-lg' : 'z-0'
           ]"
           :style="{
             left: `${widget.x_position * gridUnitSize}px`,
@@ -191,6 +191,7 @@ import { WIDGET_TYPES, DATE_RANGE_TYPES } from '@/data/dashboardWidgets'
 import KPIWidget from '@/components/Dashboard/KPIWidget.vue'
 import ChartWidget from '@/components/Dashboard/ChartWidget.vue'
 import TableWidget from '@/components/Dashboard/TableWidget.vue'
+import SpancoWidget from '@/components/Dashboard Elements/SpancoWidget.vue'
 import WidgetConfigModal from '@/components/Dashboard/WidgetConfigModal.vue'
 
 const router = useRouter()
@@ -250,7 +251,8 @@ function getWidgetComponent(type) {
   const components = {
     KPI: KPIWidget,
     Chart: ChartWidget,
-    Table: TableWidget
+    Table: TableWidget,
+    LMOTPO: SpancoWidget,
   }
   return components[type] || KPIWidget
 }
@@ -299,19 +301,30 @@ function createNewDashboard() {
 }
 
 function addWidget(type) {
-  editingWidget.value = {
+  const baseY = widgets.value.length > 0
+    ? Math.max(...widgets.value.map(w => w.y_position + w.height))
+    : 0
+
+  const defaults = {
     widget_type: type,
     widget_title: `New ${type} Widget`,
-    width: 4,
-    height: 3,
+    width: type === 'LMOTPO' ? 12 : 4,
+    height: type === 'LMOTPO' ? 6 : 3,
     x_position: 0,
-    y_position: widgets.value.length * 4,
-    data_source_type: 'DocType',
-    data_source: '',
+    y_position: baseY,
     color_scheme: 'Blue',
-    show_refresh: true,
+    show_refresh: type === 'LMOTPO' ? false : true,
     refresh_interval: 0
   }
+
+  if (type !== 'LMOTPO') {
+    Object.assign(defaults, {
+      data_source_type: 'DocType',
+      data_source: '',
+    })
+  }
+
+  editingWidget.value = defaults
   
   editingIndex.value = -1
   showWidgetModal.value = true
