@@ -119,6 +119,17 @@ const routes = [
     component: () => import('@/pages/CallLogs.vue'),
   },
   {
+    path: '/reports',
+    name: 'Reports',
+    component: () => import('@/pages/Reports.vue'),
+  },
+  {
+    path: '/reports/:reportName',
+    name: 'Report Viewer',
+    component: () => import('@/pages/ReportViewer.vue'),
+    props: true,
+  },
+  {
     path: '/welcome',
     name: 'Welcome',
     component: () => import('@/pages/Welcome.vue'),

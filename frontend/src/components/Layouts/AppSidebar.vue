@@ -191,6 +191,7 @@ import { useStorage } from '@vueuse/core'
 import { ref, reactive, computed, h, markRaw, onMounted } from 'vue'
 import DashboardIcon from '@/components/Icons/DashboardIcon.vue'
 import QuotationIcon from '@/components/Icons/QuotationIcon.vue'
+import ReportsIcon from '@/components/Icons/ReportsIcon.vue'
 
 const { getPinnedViews, getPublicViews } = viewsStore()
 const { toggle: toggleNotificationPanel } = notificationsStore()
@@ -261,6 +262,11 @@ const links = [
     label: 'Call Logs',
     icon: PhoneIcon,
     to: 'Call Logs',
+  },
+  {
+    label: 'Reports',
+    icon: ReportsIcon,
+    to: 'Reports',
   },
 ]
 

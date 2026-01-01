@@ -13,6 +13,9 @@ class CRMSiteVisit(Document):
         # Auto-populate reference details
         self.populate_reference_details()
 
+        # Auto-populate LoB and assign service engineer
+        self.populate_lob_and_assign_service_engineer()
+
         # Auto-populate address if customer_address is provided
         self.populate_address_details()
 
@@ -91,6 +94,68 @@ class CRMSiteVisit(Document):
 
         except Exception as e:
             frappe.log_error(f"Failed to populate reference details for {self.name}: {str(e)}")
+
+    def populate_lob_and_assign_service_engineer(self):
+        """Auto-populate Line of Business and assign appropriate service engineer"""
+        if not self.reference_name or not self.reference_type:
+            return
+
+        try:
+            # Get LoB from reference document
+            ref_lob = None
+            if self.reference_type == 'CRM Lead':
+                ref_lob = frappe.db.get_value("CRM Lead", self.reference_name, "line_of_business")
+            elif self.reference_type == 'CRM Deal':
+                ref_lob = frappe.db.get_value("CRM Deal", self.reference_name, "line_of_business")
+
+            # Set LoB if not already set
+            if ref_lob and not self.line_of_business:
+                self.line_of_business = ref_lob
+                frappe.logger().info(f"Site Visit {self.name}: Inherited LoB '{ref_lob}' from {self.reference_type}")
+
+            # Auto-assign service engineer based on LoB if not already assigned
+            if self.line_of_business and not self.service_engineer:
+                try:
+                    from crm.api.smart_service_assignment import assign_service_team
+
+                    team_assignment = assign_service_team(self.line_of_business, "High")
+
+                    if team_assignment.get("success"):
+                        assigned_engineer = team_assignment.get("assigned_engineer")
+                        if assigned_engineer:
+                            self.service_engineer = assigned_engineer
+                            frappe.logger().info(
+                                f"Site Visit {self.name}: Auto-assigned engineer '{assigned_engineer}' "
+                                f"for LoB '{self.line_of_business}'"
+                            )
+                        else:
+                            frappe.logger().info(
+                                f"Site Visit {self.name}: No engineers available for LoB '{self.line_of_business}'"
+                            )
+                    else:
+                        # Log but don't throw error - fallback to General Services should have been attempted
+                        frappe.logger().info(
+                            f"Site Visit {self.name}: Service assignment failed for LoB '{self.line_of_business}': "
+                            f"{team_assignment.get('error', 'Unknown error')}"
+                        )
+
+                except Exception as assignment_error:
+                    # Log error but don't break the save process
+                    frappe.log_error(
+                        frappe.get_traceback(),
+                        f"Service Engineer Assignment Error for Site Visit {self.name}"
+                    )
+                    frappe.logger().error(
+                        f"Site Visit {self.name}: Failed to auto-assign engineer: {str(assignment_error)}"
+                    )
+
+        except Exception as e:
+            # Log error but don't break the save process
+            frappe.log_error(
+                frappe.get_traceback(),
+                f"LoB Population Error for Site Visit {self.name}"
+            )
+            frappe.logger().error(f"Site Visit {self.name}: Failed to populate LoB: {str(e)}")
 
     def populate_address_details(self):
         """Auto-populate address from customer_address"""

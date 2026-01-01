@@ -24,6 +24,7 @@ class CRMDeal(Document):
 		self.set_primary_email_mobile_no()
 		self.validate_territory_access()
 		self.auto_set_territory_if_empty()
+		self.inherit_lob_from_lead()
 		if not self.is_new() and self.has_value_changed("deal_owner") and self.deal_owner:
 			self.share_with_agent(self.deal_owner)
 			self.assign_agent(self.deal_owner)
@@ -325,6 +326,34 @@ class CRMDeal(Document):
 		if user_territories:
 			# Assign first territory (primary territory)
 			self.territory = user_territories[0]
+
+	def inherit_lob_from_lead(self):
+		"""
+		Inherit Line of Business from linked Lead if not already set.
+		Ensures LoB consistency across Lead-Deal relationship.
+		"""
+		if not self.lead:
+			return
+
+		# If LoB is already set, don't override
+		if self.line_of_business:
+			return
+
+		try:
+			# Get LoB from linked lead
+			lead_lob = frappe.db.get_value("CRM Lead", self.lead, "line_of_business")
+			if lead_lob:
+				self.line_of_business = lead_lob
+				frappe.logger().info(f"Deal {self.name}: Inherited LoB '{lead_lob}' from Lead {self.lead}")
+			else:
+				frappe.logger().info(f"Deal {self.name}: Lead {self.lead} has no LoB to inherit")
+
+		except Exception as e:
+			frappe.log_error(
+				frappe.get_traceback(),
+				f"Error inheriting LoB from Lead {self.lead} to Deal {self.name}"
+			)
+			# Don't throw error - just log it and continue
 
 	def has_permission(self, user=None, permission_type=None):
 		"""
