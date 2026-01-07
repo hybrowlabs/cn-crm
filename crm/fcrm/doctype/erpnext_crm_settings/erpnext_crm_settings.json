@@ -22,11 +22,6 @@
   "enable_gst_validation",
   "column_break_gst",
   "strict_gst_validation",
-  "section_break_credit",
-  "enable_credit_integration",
-  "sync_customer_credit_limits",
-  "column_break_credit",
-  "default_customer_credit_limit",
   "section_break_territory_sync",
   "enable_territory_sync",
   "column_break_territory",
@@ -137,42 +132,6 @@
    "fieldname": "strict_gst_validation",
    "fieldtype": "Check",
    "label": "Strict GST Validation"
-  },
-  {
-   "depends_on": "eval:doc.enabled && doc.create_customer_on_status_change",
-   "fieldname": "section_break_credit",
-   "fieldtype": "Section Break",
-   "label": "Credit Management Integration"
-  },
-  {
-   "default": "0",
-   "depends_on": "eval:doc.enabled && doc.create_customer_on_status_change",
-   "description": "Enable credit limit integration with ERPNext Customer",
-   "fieldname": "enable_credit_integration",
-   "fieldtype": "Check",
-   "label": "Enable Credit Integration"
-  },
-  {
-   "default": "1",
-   "depends_on": "eval:doc.enabled && doc.create_customer_on_status_change && doc.enable_credit_integration",
-   "description": "Automatically sync credit limits from CRM to ERPNext Customer",
-   "fieldname": "sync_customer_credit_limits",
-   "fieldtype": "Check",
-   "label": "Sync Customer Credit Limits"
-  },
-  {
-   "depends_on": "eval:doc.enabled && doc.create_customer_on_status_change",
-   "fieldname": "column_break_credit",
-   "fieldtype": "Column Break"
-  },
-  {
-   "currency": "INR",
-   "default": "100000",
-   "depends_on": "eval:doc.enabled && doc.create_customer_on_status_change && doc.enable_credit_integration",
-   "description": "Default credit limit for new customers created from CRM deals",
-   "fieldname": "default_customer_credit_limit",
-   "fieldtype": "Currency",
-   "label": "Default Customer Credit Limit"
   },
   {
    "depends_on": "enabled",

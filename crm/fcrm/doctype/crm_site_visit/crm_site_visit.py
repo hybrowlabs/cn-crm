@@ -295,11 +295,10 @@ class CRMSiteVisit(Document):
                 frappe.throw(_("Check-out time must be after check-in time"))
         
         if self.planned_start_time and self.planned_end_time:
-            planned_start = frappe.utils.get_datetime(self.planned_start_time)
-            planned_end = frappe.utils.get_datetime(self.planned_end_time)
+            planned_start = frappe.utils.get_datetime(f"{self.visit_date} {self.planned_start_time}")
+            planned_end = frappe.utils.get_datetime(f"{self.visit_date} {self.planned_end_time}")
             if planned_end <= planned_start:
                 frappe.throw(_("Planned end time must be after planned start time"))
-
 
     def validate_location_accuracy(self):
         """Warn about poor location accuracy"""

@@ -219,18 +219,18 @@
    "options": "User"
   },
   {
-   "description": "Business line for service team assignment",
    "fieldname": "line_of_business",
    "fieldtype": "Link",
    "label": "Line of Business",
-   "options": "CRM Line of Business"
+   "options": "CRM Line of Business",
+   "description": "Business line for service team assignment"
   },
   {
-   "description": "Engineer assigned to this service visit",
    "fieldname": "service_engineer",
    "fieldtype": "Link",
    "label": "Service Engineer",
-   "options": "User"
+   "options": "User",
+   "description": "Engineer assigned to this service visit"
   },
   {
    "fieldname": "location_address_section",
@@ -445,7 +445,7 @@
  "icon": "fa fa-map-marker",
  "is_submittable": 1,
  "links": [],
- "modified": "2026-01-07 15:06:45.988502",
+ "modified": "2025-06-16 15:26:46.196363",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Site Visit",

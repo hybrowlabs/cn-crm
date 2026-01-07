@@ -138,24 +138,6 @@ const error = ref('')
 const { triggerConvertToDeal } = useDocument('CRM Lead', props.lead.name)
 const { document: deal } = useDocument('CRM Deal')
 
-// Auto-populate lead reference and other relevant fields from lead data
-if (props.lead?.name) {
-  deal.doc.lead = props.lead.name
-}
-if (props.lead?.gst_applicable) {
-  deal.doc.gst_applicable = props.lead.gst_applicable
-}
-if (props.lead?.gst_number) {
-  deal.doc.gst_number = props.lead.gst_number
-}
-// Copy other common fields
-if (props.lead?.annual_revenue) {
-  deal.doc.annual_revenue = props.lead.annual_revenue
-}
-if (props.lead?.no_of_employees) {
-  deal.doc.no_of_employees = props.lead.no_of_employees
-}
-
 async function convertToDeal() {
   error.value = ''
 
