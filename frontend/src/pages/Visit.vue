@@ -138,12 +138,14 @@
         v-if="sections.data"
         class="flex flex-1 flex-col justify-between overflow-hidden"
       >
-        <SidePanelLayout
-          :sections="sections.data"
-          doctype="CRM Site Visit"
-          :docname="visit.data.name"
-          @reload="sections.reload"
-        />
+        <div class="flex-1 overflow-y-auto">
+          <SidePanelLayout
+            :sections="sections.data"
+            doctype="CRM Site Visit"
+            :docname="visit.data.name"
+            @reload="sections.reload"
+          />
+        </div>
       </div>
     </Resizer>
   </div>

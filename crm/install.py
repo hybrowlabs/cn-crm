@@ -11,7 +11,24 @@ def before_install():
 	pass
 
 
+def cleanup_legacy_views():
+	"""Remove legacy views that shouldn't exist"""
+	# Delete view labeled "Lead" (but NOT "Lead Stage")
+	# Explicitly check that label is exactly "Lead" and not "Lead Stage"
+	lead_view = frappe.db.get_value(
+		"CRM View Settings",
+		{"label": "Lead", "dt": "CRM Lead"},
+		"name"
+	)
+	if lead_view:
+		# Double-check that it's not "Lead Stage" before deleting
+		view_doc = frappe.get_doc("CRM View Settings", lead_view)
+		if view_doc.label == "Lead" and view_doc.label != "Lead Stage":
+			frappe.delete_doc("CRM View Settings", lead_view, force=True)
+
+
 def after_install(force=False):
+	cleanup_legacy_views()
 	add_default_lead_statuses()
 	add_default_deal_statuses()
 	add_default_communication_statuses()

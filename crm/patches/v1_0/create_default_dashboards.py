@@ -50,9 +50,47 @@ def execute():
     create_default_dashboards()
 
 
+def create_spanco_dashboard():
+	"""Create the main Spanco Dashboard with LMOTPO widget - default dashboard"""
+	dashboard_name = "Spanco Dashboard"
+
+	# Check if dashboard exists
+	dashboard_exists = frappe.db.exists("CRM Dashboard", {"dashboard_name": dashboard_name})
+	
+	if dashboard_exists:
+		# Dashboard exists, check if it has widgets
+		dashboard = frappe.get_doc("CRM Dashboard", dashboard_name)
+		# Check if widgets exist
+		widget_count = frappe.db.count("CRM Dashboard Widget", {"parent": dashboard_name})
+		
+		if widget_count == 0:
+			# Dashboard exists but has no widgets - add the LMOTPO widget
+			add_lmotpo_widget(dashboard)
+			dashboard.save(ignore_permissions=True)
+			frappe.db.commit()
+		return
+
+	# Create as default and public
+	dashboard = make_dashboard_doc(
+		dashboard_name,
+		"Main LMOTPO Sales Pipeline Dashboard",
+		is_default=1,
+		is_public=1
+	)
+
+	# Add only LMOTPO widget for this dashboard
+	add_lmotpo_widget(dashboard)
+
+	dashboard.insert(ignore_permissions=True)
+	frappe.db.commit()
+
+
 def create_default_dashboards():
 	"""Create default dashboards with widgets"""
-	
+
+	# Create Spanco Dashboard FIRST (the main default dashboard)
+	create_spanco_dashboard()
+
 	# 8.1.1: Leads Created Dashboard
 	create_leads_created_dashboard()
 	

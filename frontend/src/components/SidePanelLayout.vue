@@ -581,9 +581,7 @@ function firstVisibleIndex() {
 }
 
 .sections .section .column {
-  max-height: 300px;
-}
-.sections .section:last-of-type .column {
   max-height: none;
+  overflow-y: auto;
 }
 </style>

@@ -6,6 +6,16 @@ import json
 from frappe import _
 from frappe.utils import getdate, add_days, today, get_datetime
 
+# Standard Frappe fields that are valid but not returned by meta.get_field()
+STANDARD_FIELDS = ['creation', 'modified', 'owner', 'name', 'docstatus', 'idx', 'modified_by']
+
+
+def is_valid_field(meta, field_name):
+	"""Check if field is valid (either a standard Frappe field or defined in DocType)"""
+	if not field_name:
+		return False
+	return field_name in STANDARD_FIELDS or meta.get_field(field_name) is not None
+
 
 @frappe.whitelist()
 def get_dashboard(name=None):
@@ -17,17 +27,34 @@ def get_dashboard(name=None):
 			except frappe.DoesNotExistError:
 				frappe.throw(_("Dashboard {0} not found").format(name))
 		else:
-			# Get default dashboard for user
+			# First, try to get Spanco Dashboard if it's marked as default and public
+			# This ensures the mandatory Spanco Dashboard appears by default
 			try:
-				dashboard_name = frappe.db.get_value(
+				spanco_dashboard = frappe.db.get_value(
 					"CRM Dashboard",
-					{"owner": frappe.session.user, "is_default": 1},
-					"name",
-					order_by="modified desc"
+					{"dashboard_name": "Spanco Dashboard", "is_public": 1, "is_default": 1},
+					"name"
 				)
+				if spanco_dashboard:
+					dashboard_name = spanco_dashboard
+				else:
+					dashboard_name = None
 			except Exception as e:
-				frappe.log_error(f"Error getting default dashboard: {str(e)}", "Dashboard Error")
+				frappe.log_error(f"Error getting Spanco Dashboard: {str(e)}", "Dashboard Error")
 				dashboard_name = None
+			
+			# Get default dashboard for user (if Spanco not found or not default)
+			if not dashboard_name:
+				try:
+					dashboard_name = frappe.db.get_value(
+						"CRM Dashboard",
+						{"owner": frappe.session.user, "is_default": 1},
+						"name",
+						order_by="modified desc"
+					)
+				except Exception as e:
+					frappe.log_error(f"Error getting default dashboard: {str(e)}", "Dashboard Error")
+					dashboard_name = None
 			
 			if not dashboard_name:
 				# Get any dashboard for user
@@ -43,6 +70,18 @@ def get_dashboard(name=None):
 					dashboard_name = None
 			
 			if not dashboard_name:
+				# Try to get Spanco Dashboard as the default system dashboard (even if not marked default)
+				try:
+					dashboard_name = frappe.db.get_value(
+						"CRM Dashboard",
+						{"dashboard_name": "Spanco Dashboard", "is_public": 1},
+						"name"
+					)
+				except Exception as e:
+					frappe.log_error(f"Error getting Spanco Dashboard: {str(e)}", "Dashboard Error")
+					dashboard_name = None
+
+			if not dashboard_name:
 				# Get any public dashboard as fallback
 				try:
 					dashboard_name = frappe.db.get_value(
@@ -54,7 +93,7 @@ def get_dashboard(name=None):
 				except Exception as e:
 					frappe.log_error(f"Error getting public dashboard: {str(e)}", "Dashboard Error")
 					dashboard_name = None
-			
+
 			if dashboard_name:
 				try:
 					dashboard = frappe.get_doc("CRM Dashboard", dashboard_name)
@@ -65,10 +104,27 @@ def get_dashboard(name=None):
 		
 		dashboard.check_permission("read")
 		
+		# Reload dashboard to ensure widgets are loaded from database
+		dashboard.reload()
+		
 		# Convert widgets to list format
 		dashboard_dict = dashboard.as_dict()
-		if dashboard_dict.get("widgets"):
+		
+		# Explicitly load widgets from child table
+		# First try from dashboard.widgets (child table)
+		if hasattr(dashboard, 'widgets') and dashboard.widgets:
 			dashboard_dict["widgets"] = [w.as_dict() for w in dashboard.widgets]
+		else:
+			# Fallback: Load widgets directly from database if not in child table
+			widgets = frappe.get_all(
+				"CRM Dashboard Widget",
+				filters={"parent": dashboard.name, "parenttype": "CRM Dashboard"},
+				order_by="idx asc"
+			)
+			if widgets:
+				dashboard_dict["widgets"] = [frappe.get_doc("CRM Dashboard Widget", w.name).as_dict() for w in widgets]
+			else:
+				dashboard_dict["widgets"] = []
 		
 		return dashboard_dict
 	except frappe.ValidationError:
@@ -142,13 +198,16 @@ def save_dashboard(dashboard_data):
 		dashboard_data = json.loads(dashboard_data) if isinstance(dashboard_data, str) else dashboard_data
 		
 		is_new = not dashboard_data.get("name")
-		
+
 		# Validate dashboard_name for new dashboards
 		if is_new:
 			dashboard_name = dashboard_data.get("dashboard_name")
 			if not dashboard_name:
 				frappe.throw(_("Dashboard name is required"))
-			
+
+			# Clean up any orphaned widgets from previously deleted dashboards with same name
+			frappe.db.delete("CRM Dashboard Widget", {"parent": dashboard_name})
+
 			dashboard = frappe.new_doc("CRM Dashboard")
 			dashboard.name = dashboard_name
 			dashboard.check_permission("create")
@@ -170,7 +229,6 @@ def save_dashboard(dashboard_data):
 			"from_date": dashboard_data.get("from_date"),
 			"to_date": dashboard_data.get("to_date"),
 			"user_filter": dashboard_data.get("user_filter"),
-			"team_filter": dashboard_data.get("team_filter"),
 		})
 		
 		# Clear widgets list and rebuild
@@ -327,14 +385,14 @@ def get_widget_data(widget_config, filters=None):
 
 
 def apply_global_filters(filters, data_source_type, data_source):
-	"""Apply global filters (date, user, team) to filters"""
+	"""Apply global filters (date, user) to filters"""
 	filters = filters or {}
 	applied = {}
 	# keep any user-provided filters that are not global keys
 	for key, val in filters.items():
-		if key not in {"from_date", "to_date", "date_range_type", "user_filter", "team_filter"}:
+		if key not in {"from_date", "to_date", "date_range_type", "user_filter"}:
 			applied[key] = val
-	
+
 	# Date range filter
 	if filters.get("from_date") and filters.get("to_date"):
 		if data_source_type == "DocType":
@@ -342,19 +400,14 @@ def apply_global_filters(filters, data_source_type, data_source):
 			date_field = get_date_field_for_doctype(data_source)
 			if date_field:
 				applied[date_field] = ["between", [filters["from_date"], filters["to_date"]]]
-	
+
 	# User filter
 	if filters.get("user_filter"):
 		if data_source_type == "DocType":
 			user_field = get_user_field_for_doctype(data_source)
 			if user_field:
 				applied[user_field] = filters["user_filter"]
-	
-	# Team filter (if applicable)
-	if filters.get("team_filter"):
-		# Team filtering would depend on specific doctype structure
-		pass
-	
+
 	return applied
 
 
@@ -486,30 +539,29 @@ def get_chart_data(widget_config, filters):
 	# Validate fields - only validate if not using group_by
 	if group_by_field:
 		# When using group_by, we need group_by_field and y_axis_field
-		if not meta.get_field(group_by_field):
+		if not is_valid_field(meta, group_by_field):
 			frappe.throw(_("Group By Field {0} not found").format(group_by_field))
 		if not y_axis_field:
 			frappe.throw(_("Y Axis Field is required for group_by charts"))
-		if y_axis_field and not meta.get_field(y_axis_field):
+		if y_axis_field and not is_valid_field(meta, y_axis_field):
 			frappe.throw(_("Y Axis Field {0} not found").format(y_axis_field))
 	else:
 		# Simple x-y chart needs both fields
 		if not x_axis_field:
 			frappe.throw(_("X Axis Field is required for chart widgets"))
-		if x_axis_field and not meta.get_field(x_axis_field):
+		if x_axis_field and not is_valid_field(meta, x_axis_field):
 			frappe.throw(_("X Axis Field {0} not found").format(x_axis_field))
 		if not y_axis_field:
 			frappe.throw(_("Y Axis Field is required for chart widgets"))
-		if y_axis_field and not meta.get_field(y_axis_field):
+		if y_axis_field and not is_valid_field(meta, y_axis_field):
 			frappe.throw(_("Y Axis Field {0} not found").format(y_axis_field))
 	
 	# Get data
 	if group_by_field:
-		# Group by aggregation
-		group_by_meta = meta.get_field(group_by_field)
-		if not group_by_meta:
-			frappe.throw(_("Group By Field {0} not found").format(group_by_field))
-		
+		# Group by aggregation - already validated above with is_valid_field
+		# For standard fields (creation, modified, etc.), meta.get_field returns None
+		# but they are still valid fields for grouping
+
 		# Check if y_axis_field is numeric for sum, otherwise use count
 		y_axis_meta = meta.get_field(y_axis_field)
 		if y_axis_meta and y_axis_meta.fieldtype in ["Currency", "Float", "Int", "Percent"]:

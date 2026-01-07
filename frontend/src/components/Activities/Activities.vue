@@ -364,7 +364,7 @@
         </div>
       </div>
     </div>
-    <div v-else-if="title == 'Data'" class="h-full flex flex-col px-3 sm:px-10">
+    <div v-else-if="title == 'Data'" class="h-full flex flex-col overflow-y-auto px-3 sm:px-10">
       <DataFields
         :doctype="doctype"
         :docname="doc.data.name"

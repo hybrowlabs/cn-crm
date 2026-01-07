@@ -144,15 +144,16 @@
         v-if="sections.data"
         class="flex flex-1 flex-col justify-between overflow-hidden"
       >
-        <SidePanelLayout
-          :sections="sections.data"
-          :addContact="addContact"
-          doctype="CRM Deal"
-          :docname="deal.data.name"
-          @reload="sections.reload"
-          @beforeFieldChange="beforeStatusChange"
-          @afterFieldChange="reloadAssignees"
-        >
+        <div class="flex-1 overflow-y-auto">
+          <SidePanelLayout
+            :sections="sections.data"
+            :addContact="addContact"
+            doctype="CRM Deal"
+            :docname="deal.data.name"
+            @reload="sections.reload"
+            @beforeFieldChange="beforeStatusChange"
+            @afterFieldChange="reloadAssignees"
+          >
           <template #actions="{ section }">
             <div v-if="section.name == 'contacts_section'" class="pr-2">
               <Link
@@ -285,6 +286,7 @@
             </div>
           </template>
         </SidePanelLayout>
+        </div>
       </div>
     </Resizer>
   </div>

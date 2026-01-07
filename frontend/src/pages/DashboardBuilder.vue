@@ -83,18 +83,6 @@
           </div>
         </div>
         
-        <div class="flex items-center gap-2">
-          <label class="text-sm font-medium text-gray-700">{{ __('Team') }}:</label>
-          <div class="w-full min-w-[180px] sm:w-52 md:w-60">
-            <Link
-              v-model="filters.team_filter"
-              doctype="Team"
-              :placeholder="__('All Teams')"
-              size="sm"
-            />
-          </div>
-        </div>
-        
         <Button
           variant="ghost"
           size="sm"
@@ -288,15 +276,27 @@ async function saveDashboard() {
 }
 
 function createNewDashboard() {
+  // Default LMOTPO widget for new dashboards
+  const defaultLmotpoWidget = {
+    widget_type: 'LMOTPO',
+    widget_title: 'LMOTPO Pipeline',
+    widget_description: 'Lead → Meetings → Opportunities → Trial → Pricing → Order Booking',
+    width: 12,
+    height: 6,
+    x_position: 0,
+    y_position: 0,
+    show_refresh: false,
+  }
+
   dashboardStore.currentDashboard = {
     dashboard_name: 'New Dashboard',
     description: '',
     is_default: false,
     is_public: false,
-    widgets: [],
+    widgets: [defaultLmotpoWidget],
     filters: {}
   }
-  dashboardStore.widgets = []
+  dashboardStore.widgets = [defaultLmotpoWidget]
   dashboardStore.setEditMode(true)
 }
 

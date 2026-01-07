@@ -549,14 +549,38 @@ const spancoData = computed(() => {
     ['Ready to Close', 'Won'].includes(d.status),
   )
 
-  const baseCount = leadStage.length || 1
+  // Calculate total records across ALL stages for percentage that sums to 100%
+  const totalRecords =
+    leadStage.length +
+    meetingsStage.length +
+    opportunitiesStage.length +
+    trialStage.length +
+    pricingStage.length +
+    orderStage.length
+
+  const total = totalRecords || 1
+
+  // Calculate raw percentages
+  const counts = [
+    leadStage.length,
+    meetingsStage.length,
+    opportunitiesStage.length,
+    trialStage.length,
+    pricingStage.length,
+    orderStage.length,
+  ]
+  const rawPercents = counts.map((count) => Math.round((count / total) * 100))
+
+  // Adjust last percentage to ensure sum equals exactly 100%
+  const sumWithoutLast = rawPercents.slice(0, -1).reduce((a, b) => a + b, 0)
+  rawPercents[5] = Math.max(0, 100 - sumWithoutLast)
 
   return [
     {
       stage: 'L',
       fullName: 'Lead Stage',
       number: leadStage.length,
-      percent: 100,
+      percent: rawPercents[0],
       valuation: leadStage.reduce(
         (sum, l) => sum + (Number(l.annual_revenue) || 0),
         0,
@@ -569,7 +593,7 @@ const spancoData = computed(() => {
       stage: 'M',
       fullName: 'Meetings Stage',
       number: meetingsStage.length,
-      percent: Math.round((meetingsStage.length / baseCount) * 100),
+      percent: rawPercents[1],
       valuation: meetingsStage.reduce(
         (sum, l) => sum + (Number(l.annual_revenue) || 0),
         0,
@@ -583,7 +607,7 @@ const spancoData = computed(() => {
       stage: 'Op',
       fullName: 'Opportunities Stage',
       number: opportunitiesStage.length,
-      percent: Math.round((opportunitiesStage.length / baseCount) * 100),
+      percent: rawPercents[2],
       valuation: opportunitiesStage.reduce(
         (sum, d) => sum + (Number(d.annual_revenue) || 0),
         0,
@@ -597,7 +621,7 @@ const spancoData = computed(() => {
       stage: 'T',
       fullName: 'Trial Stage',
       number: trialStage.length,
-      percent: Math.round((trialStage.length / baseCount) * 100),
+      percent: rawPercents[3],
       valuation: trialStage.reduce(
         (sum, d) => sum + (Number(d.annual_revenue) || 0),
         0,
@@ -610,7 +634,7 @@ const spancoData = computed(() => {
       stage: 'P',
       fullName: 'Pricing Discussion Stage',
       number: pricingStage.length,
-      percent: Math.round((pricingStage.length / baseCount) * 100),
+      percent: rawPercents[4],
       valuation: pricingStage.reduce(
         (sum, d) => sum + (Number(d.annual_revenue) || 0),
         0,
@@ -624,7 +648,7 @@ const spancoData = computed(() => {
       stage: 'OB',
       fullName: 'Order Booking Stage',
       number: orderStage.length,
-      percent: Math.round((orderStage.length / baseCount) * 100),
+      percent: rawPercents[5],
       valuation: orderStage.reduce(
         (sum, d) => sum + (Number(d.annual_revenue) || 0),
         0,

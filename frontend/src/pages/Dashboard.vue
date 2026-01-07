@@ -42,16 +42,16 @@
       >
         <div
           v-for="(widget, index) in widgets"
-          :key="index"
+          :key="widget.name || `widget-${index}`"
           :class="[
             'absolute rounded-lg border-2 transition-all',
             'border-transparent z-0'
           ]"
           :style="{
-            left: `${widget.x_position * gridUnitSize}px`,
-            top: `${widget.y_position * gridUnitSize}px`,
-            width: `${widget.width * gridUnitSize}px`,
-            height: `${widget.height * gridUnitSize}px`
+            left: `${(widget.x_position || 0) * gridUnitSize}px`,
+            top: `${(widget.y_position || 0) * gridUnitSize}px`,
+            width: `${(widget.width || 12) * gridUnitSize}px`,
+            height: `${(widget.height || 6) * gridUnitSize}px`
           }"
         >
           <component

@@ -109,7 +109,7 @@ import { isMobileView } from '@/composables/settings'
 import { capture } from '@/telemetry'
 import { useOnboarding } from 'frappe-ui/frappe'
 import { Switch, Dialog, createResource, call } from 'frappe-ui'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -137,6 +137,42 @@ const error = ref('')
 
 const { triggerConvertToDeal } = useDocument('CRM Lead', props.lead.name)
 const { document: deal } = useDocument('CRM Deal')
+
+// Pre-populate GST, Lead field and other fields from lead when modal opens
+watch(() => props.lead, (lead) => {
+  if (lead && deal.doc) {
+    // Pre-populate Lead field (required field)
+    if (lead.name) {
+      deal.doc.lead = lead.name
+    }
+    // Pre-populate GST fields if lead has GST data
+    if (lead.gst_applicable && lead.gst_number) {
+      deal.doc.organization_gstin = lead.gst_number
+    }
+    // Pre-populate deal owner from lead owner
+    if (lead.lead_owner) {
+      deal.doc.deal_owner = lead.lead_owner
+    }
+  }
+}, { immediate: true })
+
+// Also watch for when modal opens to ensure fields are populated
+watch(() => show.value, (isOpen) => {
+  if (isOpen && props.lead && deal.doc) {
+    // Pre-populate Lead field when modal opens
+    if (props.lead.name) {
+      deal.doc.lead = props.lead.name
+    }
+    // Pre-populate GST fields if GST is applicable
+    if (props.lead.gst_applicable && props.lead.gst_number) {
+      deal.doc.organization_gstin = props.lead.gst_number
+    }
+    // Pre-populate deal owner from lead owner
+    if (props.lead.lead_owner) {
+      deal.doc.deal_owner = props.lead.lead_owner
+    }
+  }
+})
 
 async function convertToDeal() {
   error.value = ''

@@ -6,7 +6,7 @@
       </template>
     </LayoutHeader>
 
-    <div class="flex h-full flex-col">
+    <div v-if="isMounted && reports && reports.length > 0" class="flex h-full flex-col">
       <div class="mx-5 mb-4 sm:mx-6">
         <div class="mb-6">
           <h1 class="text-2xl font-semibold text-gray-900">{{ __('Reports') }}</h1>
@@ -29,7 +29,7 @@
               <div class="ml-4 flex-1">
                 <h3 class="text-base font-semibold text-gray-900">{{ __(report.label) }}</h3>
                 <p class="mt-1 text-sm text-gray-600">{{ __(report.description) }}</p>
-                <div class="mt-3">
+                <div v-if="report.tags && report.tags.length > 0" class="mt-3">
                   <span
                     v-for="tag in report.tags"
                     :key="tag"
@@ -44,11 +44,14 @@
         </div>
       </div>
     </div>
+    <div v-else class="flex h-full flex-col items-center justify-center">
+      <p class="text-gray-500">{{ __('Loading reports...') }}</p>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { call, Breadcrumbs } from 'frappe-ui'
 import { usersStore } from '@/stores/users'
@@ -104,22 +107,38 @@ const reports = ref([
 ])
 
 const availableReports = ref([])
+const isMounted = ref(false)
 
 onMounted(async () => {
+  // Ensure DOM is ready before rendering
+  await nextTick()
+  isMounted.value = true
+  
   try {
-    // Get available reports based on user permissions
-    const response = await call('frappe.desk.query_report.get_reports', {
-      module: 'Fcrm'
+    // Get available reports from Report doctype based on user permissions
+    const response = await call('frappe.client.get_list', {
+      doctype: 'Report',
+      fields: ['name', 'report_type', 'ref_doctype'],
+      filters: {
+        disabled: 0,
+        module: 'Fcrm'
+      },
+      order_by: 'name'
     })
 
-    if (response) {
+    if (response && response.length > 0) {
+      // Filter to only show reports that match our predefined list
       const userReports = response.filter(report =>
         reports.value.some(r => r.name === report.name)
       )
       availableReports.value = userReports
+      
+      // Optionally filter reports list to only show available ones
+      // For now, we'll show all predefined reports
     }
   } catch (error) {
-    console.error('Failed to fetch reports:', error)
+    // Silently fail - reports are already hardcoded, so this is optional
+    console.warn('Could not fetch available reports from server:', error)
   }
 })
 

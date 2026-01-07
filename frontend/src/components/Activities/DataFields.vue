@@ -36,7 +36,7 @@
     <LoadingIndicator class="h-6 w-6" />
     <span>{{ __('Loading...') }}</span>
   </div>
-  <div v-else class="pb-8">
+  <div v-else class="pb-8 overflow-y-auto" style="max-height: calc(100vh - 300px);">
     <FieldLayout
       v-if="tabs.data"
       :tabs="tabs.data"

@@ -40,12 +40,23 @@ export const useDashboardStore = defineStore('dashboard', () => {
       })
       
       currentDashboard.value = dashboardData
-      widgets.value = (dashboardData.widgets || []).map((w: any) => ({
+      
+      // Ensure widgets array is properly populated
+      const widgetsList = dashboardData.widgets || []
+      widgets.value = widgetsList.map((w: any) => ({
         ...w,
         table_columns: typeof w.table_columns === 'string' ? JSON.parse(w.table_columns || '[]') : w.table_columns,
         table_filters: typeof w.table_filters === 'string' ? JSON.parse(w.table_filters || '{}') : w.table_filters,
         drilldown_filters: typeof w.drilldown_filters === 'string' ? JSON.parse(w.drilldown_filters || '{}') : w.drilldown_filters,
       }))
+      
+      // Log for debugging
+      if (widgets.value.length === 0) {
+        console.warn('Dashboard loaded but no widgets found:', dashboardData)
+      } else {
+        console.log('Dashboard widgets loaded:', widgets.value.length, widgets.value)
+      }
+      
       filters.value = {
         from_date: dashboardData.from_date,
         to_date: dashboardData.to_date,

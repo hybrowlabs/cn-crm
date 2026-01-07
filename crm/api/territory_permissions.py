@@ -32,9 +32,14 @@ def get_permission_query_conditions(user=None):
 	return condition
 
 
-def has_permission(doc, user=None, permission_type=None):
+def has_permission(doc, ptype=None, user=None):
 	"""
 	Check if user has permission for a specific document based on territory.
+
+	Args:
+		doc: The document to check permission for
+		ptype: Permission type (read, write, etc.) - required by Frappe hook signature
+		user: The user to check permission for (defaults to current user)
 	"""
 	if not user:
 		user = frappe.session.user

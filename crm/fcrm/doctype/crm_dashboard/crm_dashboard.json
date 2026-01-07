@@ -19,7 +19,6 @@
   "to_date",
   "column_break_2",
   "user_filter",
-  "team_filter",
   "section_break_widgets",
   "widgets"
  ],
@@ -84,12 +83,6 @@
    "fieldtype": "Link",
    "label": "Default User Filter",
    "options": "User"
-  },
-  {
-   "fieldname": "team_filter",
-   "fieldtype": "Link",
-   "label": "Default Team Filter",
-   "options": "Team"
   },
   {
    "fieldname": "section_break_widgets",
