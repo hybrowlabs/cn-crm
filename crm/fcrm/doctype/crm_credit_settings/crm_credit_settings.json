@@ -1,0 +1,234 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-01-03 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "section_break_policy",
+  "default_credit_limit",
+  "column_break_policy",
+  "max_credit_limit",
+  "section_break_approval",
+  "auto_approval_limit",
+  "column_break_approval",
+  "require_approval_above",
+  "section_break_validation",
+  "enable_credit_check_at_tech_analysis",
+  "enable_credit_check_at_customer_creation",
+  "column_break_validation",
+  "strict_credit_validation",
+  "allow_credit_override",
+  "section_break_roles",
+  "credit_manager_role",
+  "column_break_roles",
+  "credit_analyst_role",
+  "section_break_notifications",
+  "send_credit_alerts",
+  "column_break_notifications",
+  "credit_alert_threshold"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enable Credit Management"
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "section_break_policy",
+   "fieldtype": "Section Break",
+   "label": "Credit Policy"
+  },
+  {
+   "currency": "INR",
+   "default": "100000",
+   "depends_on": "enabled",
+   "fieldname": "default_credit_limit",
+   "fieldtype": "Currency",
+   "label": "Default Credit Limit"
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "column_break_policy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "currency": "INR",
+   "default": "10000000",
+   "depends_on": "enabled",
+   "fieldname": "max_credit_limit",
+   "fieldtype": "Currency",
+   "label": "Maximum Credit Limit"
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "section_break_approval",
+   "fieldtype": "Section Break",
+   "label": "Credit Approval"
+  },
+  {
+   "currency": "INR",
+   "default": "500000",
+   "depends_on": "enabled",
+   "description": "Credit limits up to this amount will be auto-approved",
+   "fieldname": "auto_approval_limit",
+   "fieldtype": "Currency",
+   "label": "Auto Approval Limit"
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "column_break_approval",
+   "fieldtype": "Column Break"
+  },
+  {
+   "currency": "INR",
+   "default": "500001",
+   "depends_on": "enabled",
+   "description": "Credit limits above this amount require approval",
+   "fieldname": "require_approval_above",
+   "fieldtype": "Currency",
+   "label": "Require Approval Above"
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "section_break_validation",
+   "fieldtype": "Section Break",
+   "label": "Credit Validation"
+  },
+  {
+   "default": "1",
+   "depends_on": "enabled",
+   "description": "Perform credit checks during Tech Analysis stage",
+   "fieldname": "enable_credit_check_at_tech_analysis",
+   "fieldtype": "Check",
+   "label": "Enable Credit Check at Tech Analysis"
+  },
+  {
+   "default": "1",
+   "depends_on": "enabled",
+   "description": "Perform credit checks when creating customers from deals",
+   "fieldname": "enable_credit_check_at_customer_creation",
+   "fieldtype": "Check",
+   "label": "Enable Credit Check at Customer Creation"
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "column_break_validation",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "depends_on": "enabled",
+   "description": "Block operations if credit validation fails",
+   "fieldname": "strict_credit_validation",
+   "fieldtype": "Check",
+   "label": "Strict Credit Validation"
+  },
+  {
+   "default": "0",
+   "depends_on": "enabled",
+   "description": "Allow users with Credit Manager role to override credit limits",
+   "fieldname": "allow_credit_override",
+   "fieldtype": "Check",
+   "label": "Allow Credit Override"
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "section_break_roles",
+   "fieldtype": "Section Break",
+   "label": "Role Configuration"
+  },
+  {
+   "default": "Credit Manager",
+   "depends_on": "enabled",
+   "fieldname": "credit_manager_role",
+   "fieldtype": "Link",
+   "label": "Credit Manager Role",
+   "options": "Role"
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "column_break_roles",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Credit Analyst",
+   "depends_on": "enabled",
+   "fieldname": "credit_analyst_role",
+   "fieldtype": "Link",
+   "label": "Credit Analyst Role",
+   "options": "Role"
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "section_break_notifications",
+   "fieldtype": "Section Break",
+   "label": "Notifications"
+  },
+  {
+   "default": "1",
+   "depends_on": "enabled",
+   "description": "Send alerts when credit utilization exceeds threshold",
+   "fieldname": "send_credit_alerts",
+   "fieldtype": "Check",
+   "label": "Send Credit Alerts"
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "column_break_notifications",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "80",
+   "depends_on": "eval:doc.enabled && doc.send_credit_alerts",
+   "description": "Alert threshold as percentage of credit limit",
+   "fieldname": "credit_alert_threshold",
+   "fieldtype": "Percent",
+   "label": "Credit Alert Threshold"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-01-03 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "CRM Credit Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Sales Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Credit Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

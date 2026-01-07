@@ -9,7 +9,7 @@
   </component>
 </template>
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   as: {
@@ -76,5 +76,12 @@ function updateMaskStyle() {
   }
 }
 
-onMounted(() => setTimeout(() => updateMaskStyle(), 300))
+onMounted(() => {
+  setTimeout(() => updateMaskStyle(), 300)
+  window.addEventListener('resize', updateMaskStyle)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateMaskStyle)
+})
 </script>

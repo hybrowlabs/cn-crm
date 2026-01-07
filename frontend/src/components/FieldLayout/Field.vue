@@ -139,7 +139,7 @@
     <DateTimePicker
       v-else-if="field.fieldtype === 'Datetime'"
       :value="data[field.fieldname]"
-      :formatter="(date) => getFormat(date, '', true, true)"
+      :formatter="(date) => getFormat(date, 'YYYY-MM-DD HH:mm:ss', false, false)"
       :placeholder="getPlaceholder(field)"
       :disabled="Boolean(field.read_only || data.docstatus===1)"
       input-class="border-none"
@@ -235,7 +235,7 @@ import { flt } from '@/utils/numberFormat.js'
 import { getMeta } from '@/stores/meta'
 import { usersStore } from '@/stores/users'
 import { useDocument } from '@/data/document'
-import { Tooltip, DatePicker, DateTimePicker } from 'frappe-ui'
+import { Tooltip, DatePicker, DateTimePicker, dayjs } from 'frappe-ui'
 import { computed, provide, inject } from 'vue'
 
 const props = defineProps({
@@ -343,6 +343,12 @@ const getPlaceholder = (field) => {
 }
 
 function fieldChange(value, df) {
+  // Convert datetime values to proper 24-hour format for backend
+  if (df.fieldtype === 'Datetime' && value) {
+    // Parse the value using dayjs and format it properly
+    value = dayjs(value).format('YYYY-MM-DD HH:mm:ss')
+  }
+
   if (isGridRow) {
     triggerOnChange(df.fieldname, value, data.value)
   } else {
