@@ -259,13 +259,13 @@ async function loadDashboard(name) {
 
 async function saveDashboard() {
   if (!dashboardStore.currentDashboard) return
-  
+
   saving.value = true
   try {
     const dashboardConfig = {
       ...dashboardStore.currentDashboard,
       widgets: widgets.value,
-      filters: filters.value
+      ...filters.value  // Spread filter fields at top level for backend API
     }
     await dashboardStore.saveDashboard(dashboardConfig)
   } catch (error) {

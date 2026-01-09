@@ -103,29 +103,19 @@ def get_dashboard(name=None):
 				frappe.throw(_("No dashboard found"))
 		
 		dashboard.check_permission("read")
-		
-		# Reload dashboard to ensure widgets are loaded from database
-		dashboard.reload()
-		
-		# Convert widgets to list format
+
+		# Convert to dict
 		dashboard_dict = dashboard.as_dict()
-		
-		# Explicitly load widgets from child table
-		# First try from dashboard.widgets (child table)
-		if hasattr(dashboard, 'widgets') and dashboard.widgets:
-			dashboard_dict["widgets"] = [w.as_dict() for w in dashboard.widgets]
-		else:
-			# Fallback: Load widgets directly from database if not in child table
-			widgets = frappe.get_all(
-				"CRM Dashboard Widget",
-				filters={"parent": dashboard.name, "parenttype": "CRM Dashboard"},
-				order_by="idx asc"
-			)
-			if widgets:
-				dashboard_dict["widgets"] = [frappe.get_doc("CRM Dashboard Widget", w.name).as_dict() for w in widgets]
-			else:
-				dashboard_dict["widgets"] = []
-		
+
+		# Always load widgets directly from database to ensure we get all fields
+		# Use simple parent filter only (parenttype may vary)
+		widgets = frappe.db.sql("""
+			SELECT * FROM `tabCRM Dashboard Widget`
+			WHERE parent = %s
+			ORDER BY idx ASC
+		""", (dashboard.name,), as_dict=True)
+		dashboard_dict["widgets"] = widgets if widgets else []
+
 		return dashboard_dict
 	except frappe.ValidationError:
 		# Re-raise validation errors as-is
@@ -196,7 +186,7 @@ def save_dashboard(dashboard_data):
 	"""Save or update dashboard"""
 	try:
 		dashboard_data = json.loads(dashboard_data) if isinstance(dashboard_data, str) else dashboard_data
-		
+
 		is_new = not dashboard_data.get("name")
 
 		# Validate dashboard_name for new dashboards
@@ -205,20 +195,17 @@ def save_dashboard(dashboard_data):
 			if not dashboard_name:
 				frappe.throw(_("Dashboard name is required"))
 
-			# Clean up any orphaned widgets from previously deleted dashboards with same name
-			frappe.db.delete("CRM Dashboard Widget", {"parent": dashboard_name})
-
 			dashboard = frappe.new_doc("CRM Dashboard")
 			dashboard.name = dashboard_name
 			dashboard.check_permission("create")
 		else:
-			dashboard = frappe.get_doc("CRM Dashboard", dashboard_data["name"])
+			dashboard_name = dashboard_data["name"]
+			dashboard = frappe.get_doc("CRM Dashboard", dashboard_name)
 			dashboard.check_permission("write")
-			# Delete existing child widgets to avoid duplicate key errors
-			frappe.db.delete("CRM Dashboard Widget", {"parent": dashboard.name})
-			# Reload dashboard to get clean state after deletion
-			dashboard.reload()
-		
+
+			# For existing dashboards, explicitly delete old widgets first
+			frappe.db.delete("CRM Dashboard Widget", {"parent": dashboard_name})
+
 		# Update dashboard fields
 		dashboard.update({
 			"dashboard_name": dashboard_data.get("dashboard_name"),
@@ -230,49 +217,113 @@ def save_dashboard(dashboard_data):
 			"to_date": dashboard_data.get("to_date"),
 			"user_filter": dashboard_data.get("user_filter"),
 		})
-		
-		# Clear widgets list and rebuild
+
+		# Clear existing widgets completely - we'll insert via SQL
 		dashboard.widgets = []
-		for widget_data in dashboard_data.get("widgets", []):
-			widget = dashboard.append("widgets", {})
-			# Clean widget data - remove None values and handle JSON fields
-			clean_widget = {}
-			widget_type = widget_data.get("widget_type")
-			
-			for key, value in widget_data.items():
-				if value is not None:
-					if key in ["table_columns", "table_filters", "drilldown_filters"]:
-						if isinstance(value, str):
-							clean_widget[key] = value
-						elif isinstance(value, (dict, list)):
-							clean_widget[key] = json.dumps(value)
-						else:
-							clean_widget[key] = value
-					else:
-						clean_widget[key] = value
-			
-			# LMOTPO widgets don't need data_source fields - clear them if set
-			if widget_type == "LMOTPO":
-				clean_widget["data_source_type"] = ""
-				clean_widget["data_source"] = ""
-				clean_widget.pop("metric_field", None)
-				clean_widget.pop("aggregation_type", None)
-				clean_widget.pop("chart_type", None)
-				clean_widget.pop("x_axis_field", None)
-				clean_widget.pop("y_axis_field", None)
-				clean_widget.pop("group_by_field", None)
-				clean_widget.pop("table_columns", None)
-				clean_widget.pop("table_filters", None)
-			
-			widget.update(clean_widget)
-		
+
+		# Save dashboard first (without widgets)
 		dashboard.save(ignore_permissions=True)
-		
-		# Return with widgets as list
+
+		# System fields that should not be included in SQL insert
+		skip_fields = {'name', 'parent', 'parenttype', 'parentfield', 'idx', 'doctype', 'docstatus', 'owner', 'creation', 'modified', 'modified_by'}
+
+		# Insert widgets directly via SQL (Frappe ORM has issues with this child table)
+		now = frappe.utils.now()
+		widgets_to_return = []
+
+		for idx, widget_data in enumerate(dashboard_data.get("widgets", []), start=1):
+			widget_type = widget_data.get("widget_type", "")
+
+			# For LMOTPO, clear data source fields
+			if widget_type == "LMOTPO":
+				widget_data["data_source_type"] = ""
+				widget_data["data_source"] = ""
+				for field in ["metric_field", "aggregation_type", "chart_type", "x_axis_field", "y_axis_field", "group_by_field", "table_columns", "table_filters"]:
+					widget_data.pop(field, None)
+
+			# Generate unique name for widget
+			widget_name = frappe.generate_hash(length=10)
+
+			# Insert widget via raw SQL
+			frappe.db.sql("""
+				INSERT INTO `tabCRM Dashboard Widget` (
+					name, parent, parenttype, parentfield, idx,
+					widget_type, widget_title, widget_description,
+					width, height, x_position, y_position,
+					data_source_type, data_source,
+					metric_field, aggregation_type,
+					chart_type, x_axis_field, y_axis_field, group_by_field,
+					table_columns, table_filters,
+					color_scheme, show_refresh, refresh_interval,
+					drilldown_doctype, drilldown_filters,
+					owner, creation, modified, modified_by, docstatus
+				) VALUES (
+					%s, %s, %s, %s, %s,
+					%s, %s, %s,
+					%s, %s, %s, %s,
+					%s, %s,
+					%s, %s,
+					%s, %s, %s, %s,
+					%s, %s,
+					%s, %s, %s,
+					%s, %s,
+					%s, %s, %s, %s, %s
+				)
+			""", (
+				widget_name,
+				dashboard_name,
+				"CRM Dashboard",
+				"widgets",
+				idx,
+				widget_type,
+				widget_data.get("widget_title", ""),
+				widget_data.get("widget_description", ""),
+				widget_data.get("width", 4),
+				widget_data.get("height", 3),
+				widget_data.get("x_position", 0),
+				widget_data.get("y_position", 0),
+				widget_data.get("data_source_type", ""),
+				widget_data.get("data_source", ""),
+				widget_data.get("metric_field", ""),
+				widget_data.get("aggregation_type", ""),
+				widget_data.get("chart_type", ""),
+				widget_data.get("x_axis_field", ""),
+				widget_data.get("y_axis_field", ""),
+				widget_data.get("group_by_field", ""),
+				json.dumps(widget_data.get("table_columns")) if isinstance(widget_data.get("table_columns"), (dict, list)) else (widget_data.get("table_columns") or ""),
+				json.dumps(widget_data.get("table_filters")) if isinstance(widget_data.get("table_filters"), (dict, list)) else (widget_data.get("table_filters") or ""),
+				widget_data.get("color_scheme", ""),
+				widget_data.get("show_refresh", 1),
+				widget_data.get("refresh_interval", 0),
+				widget_data.get("drilldown_doctype", ""),
+				json.dumps(widget_data.get("drilldown_filters")) if isinstance(widget_data.get("drilldown_filters"), (dict, list)) else (widget_data.get("drilldown_filters") or ""),
+				frappe.session.user,
+				now,
+				now,
+				frappe.session.user,
+				0
+			))
+
+			# Add to return list
+			widgets_to_return.append({
+				"name": widget_name,
+				"parent": dashboard_name,
+				"parenttype": "CRM Dashboard",
+				"parentfield": "widgets",
+				"idx": idx,
+				**{k: v for k, v in widget_data.items() if k not in skip_fields and v is not None}
+			})
+
+		# Commit all changes
+		frappe.db.commit()
+
+		# Clear cache to ensure fresh data on next read
+		frappe.clear_document_cache("CRM Dashboard", dashboard_name)
+
+		# Return dashboard with widgets
 		dashboard_dict = dashboard.as_dict()
-		if dashboard_dict.get("widgets"):
-			dashboard_dict["widgets"] = [w.as_dict() for w in dashboard.widgets]
-		
+		dashboard_dict["widgets"] = widgets_to_return
+
 		return dashboard_dict
 	except frappe.ValidationError:
 		# Re-raise validation errors as-is
@@ -451,10 +502,19 @@ def get_kpi_data(widget_config, filters):
 		data_source = widget_config.get("data_source")
 		metric_field = widget_config.get("metric_field")
 		aggregation_type = widget_config.get("aggregation_type", "Count")
-		
+		table_filters = widget_config.get("table_filters")
+
 		if data_source_type != "DocType":
 			frappe.throw(_("KPI widgets currently only support DocType data sources"))
-		
+
+		# Merge table_filters with global filters (same as Table widgets)
+		merged_filters = filters.copy() if filters else {}
+		if table_filters:
+			if isinstance(table_filters, str):
+				table_filters = json.loads(table_filters)
+			merged_filters.update(table_filters)
+		filters = merged_filters
+
 		# Build query
 		if aggregation_type == "Count":
 			try:

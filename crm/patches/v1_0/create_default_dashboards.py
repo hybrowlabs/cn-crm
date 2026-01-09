@@ -52,7 +52,7 @@ def execute():
 
 def create_spanco_dashboard():
 	"""Create the main Spanco Dashboard with LMOTPO widget - default dashboard"""
-	dashboard_name = "Spanco Dashboard"
+	dashboard_name = "LMOTPO Dashboard"
 
 	# Check if dashboard exists
 	dashboard_exists = frappe.db.exists("CRM Dashboard", {"dashboard_name": dashboard_name})

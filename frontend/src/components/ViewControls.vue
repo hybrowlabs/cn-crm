@@ -1184,7 +1184,7 @@ const viewActions = (view) => {
 }
 
 function isDefaultView(v, isStandard) {
-  let defaultView = getDefaultView()
+  let defaultView = getDefaultView(props.doctype)
 
   if (!defaultView || (isStandard && !v.name)) return false
 

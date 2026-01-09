@@ -53,30 +53,45 @@
       </div>
     </div>
     
-    <div v-else-if="chartData" ref="chartContainer" class="h-48 w-full">
+    <div v-else-if="chartData" ref="chartContainer" class="h-48 w-full relative">
+      <!-- Tooltip -->
+      <div
+        v-if="tooltip.visible"
+        class="absolute z-10 px-2 py-1 text-xs font-medium text-white bg-gray-800 rounded shadow-lg pointer-events-none whitespace-nowrap"
+        :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px', transform: 'translate(-50%, -100%)' }"
+      >
+        <div class="font-semibold">{{ tooltip.label }}</div>
+        <div>{{ tooltip.value }}</div>
+      </div>
+
       <!-- Simple SVG-based chart rendering -->
       <svg :width="chartWidth" :height="chartHeight" class="w-full h-full">
         <!-- Chart will be rendered here -->
-        <g v-if="widget.chart_type === 'Bar'" transform="translate(40, 20)">
+        <g v-if="widget.chart_type === 'Bar'" transform="translate(40, 10)">
           <rect
             v-for="(value, index) in chartData.datasets[0].data"
             :key="index"
-            :x="index * barWidth + index * 10"
-            :y="chartHeight - 40 - (value / maxValue) * (chartHeight - 60)"
+            :x="getBarX(index)"
+            :y="chartHeight - bottomMargin - (value / maxValue) * (chartHeight - bottomMargin - 20)"
             :width="barWidth"
-            :height="(value / maxValue) * (chartHeight - 60)"
+            :height="Math.max(0, (value / maxValue) * (chartHeight - bottomMargin - 20))"
             :fill="getColor(index)"
-            class="hover:opacity-80 transition-opacity"
+            class="hover:opacity-80 transition-opacity cursor-pointer"
+            @mouseenter="showTooltip($event, index)"
+            @mouseleave="hideTooltip"
+            @mousemove="updateTooltipPosition($event)"
           />
           <text
             v-for="(label, index) in chartData.labels"
-            :key="index"
-            :x="index * barWidth + index * 10 + barWidth / 2"
-            :y="chartHeight - 20"
-            text-anchor="middle"
-            class="text-xs fill-gray-600"
+            :key="'label-' + index"
+            v-show="shouldShowLabel(index)"
+            :x="getBarX(index) + barWidth / 2"
+            :y="chartHeight - bottomMargin + 12"
+            :transform="needsRotation ? `rotate(-45, ${getBarX(index) + barWidth / 2}, ${chartHeight - bottomMargin + 12})` : ''"
+            :text-anchor="needsRotation ? 'end' : 'middle'"
+            class="text-[10px] fill-gray-600 pointer-events-none"
           >
-            {{ label }}
+            {{ formatLabel(label) }}
           </text>
         </g>
         
@@ -240,6 +255,15 @@ const error = ref(null)
 const chartData = ref(null)
 const chartContainer = ref(null)
 
+// Tooltip state
+const tooltip = ref({
+  visible: false,
+  x: 0,
+  y: 0,
+  label: '',
+  value: ''
+})
+
 const chartWidth = computed(() => chartContainer.value?.clientWidth || 400)
 const chartHeight = computed(() => chartContainer.value?.clientHeight || 200)
 
@@ -248,10 +272,54 @@ const maxValue = computed(() => {
   return Math.max(...chartData.value.datasets[0].data, 1)
 })
 
+const labelCount = computed(() => chartData.value?.labels?.length || 0)
+
+// Determine if we need to rotate labels (when there are many labels)
+const needsRotation = computed(() => labelCount.value > 6)
+
+// Calculate bottom margin based on whether labels are rotated
+const bottomMargin = computed(() => needsRotation.value ? 60 : 30)
+
+// Calculate bar width based on available space and number of bars
 const barWidth = computed(() => {
-  if (!chartData.value?.labels?.length) return 40
-  return Math.max(20, (chartWidth.value - 80) / chartData.value.labels.length - 10)
+  if (!labelCount.value) return 40
+  const availableWidth = chartWidth.value - 80
+  const gap = Math.min(8, availableWidth / labelCount.value * 0.2)
+  return Math.max(8, (availableWidth - gap * labelCount.value) / labelCount.value)
 })
+
+// Calculate bar X position
+function getBarX(index) {
+  const availableWidth = chartWidth.value - 80
+  const gap = Math.min(8, availableWidth / labelCount.value * 0.2)
+  return index * (barWidth.value + gap)
+}
+
+// Determine which labels to show (skip some when there are too many)
+function shouldShowLabel(index) {
+  if (labelCount.value <= 10) return true
+  // Show every Nth label based on count
+  const step = Math.ceil(labelCount.value / 10)
+  return index % step === 0 || index === labelCount.value - 1
+}
+
+// Format/truncate label for display
+function formatLabel(label) {
+  if (!label) return ''
+  const str = String(label)
+  // For dates, try to show just day/month
+  if (str.match(/^\d{4}-\d{2}-\d{2}/)) {
+    const date = new Date(str)
+    if (!isNaN(date.getTime())) {
+      return `${date.getDate()}/${date.getMonth() + 1}`
+    }
+  }
+  // Truncate long labels
+  if (str.length > 10) {
+    return str.substring(0, 8) + '...'
+  }
+  return str
+}
 
 const linePoints = computed(() => {
   if (!chartData.value?.datasets?.[0]?.data) return ''
@@ -266,6 +334,39 @@ const linePoints = computed(() => {
 function getColor(index) {
   const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6b7280']
   return colors[index % colors.length]
+}
+
+// Tooltip functions
+function showTooltip(event, index) {
+  if (!chartData.value?.labels || !chartData.value?.datasets?.[0]?.data) return
+
+  const rect = chartContainer.value?.getBoundingClientRect()
+  if (!rect) return
+
+  const label = chartData.value.labels[index]
+  const value = chartData.value.datasets[0].data[index]
+
+  tooltip.value = {
+    visible: true,
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top - 10,
+    label: String(label),
+    value: `Count: ${value}`
+  }
+}
+
+function hideTooltip() {
+  tooltip.value.visible = false
+}
+
+function updateTooltipPosition(event) {
+  if (!tooltip.value.visible) return
+
+  const rect = chartContainer.value?.getBoundingClientRect()
+  if (!rect) return
+
+  tooltip.value.x = event.clientX - rect.left
+  tooltip.value.y = event.clientY - rect.top - 10
 }
 
 async function fetchData() {

@@ -1,8 +1,7 @@
 {
  "actions": [],
- "allow_import": 1,
  "allow_rename": 1,
- "autoname": "format:{parent}-{idx}",
+ "autoname": "hash",
  "creation": "2025-01-20 10:00:00",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -102,16 +101,14 @@
    "fieldname": "data_source_type",
    "fieldtype": "Select",
    "label": "Data Source Type",
-   "options": "DocType\nReport\nQuery",
-   "reqd": 0
+   "options": "DocType\nReport\nQuery"
   },
   {
    "depends_on": "eval:parent.widget_type != 'LMOTPO'",
    "fieldname": "data_source",
    "fieldtype": "Dynamic Link",
    "label": "Data Source",
-   "options": "data_source_type",
-   "reqd": 0
+   "options": "data_source_type"
   },
   {
    "fieldname": "column_break_2",
@@ -131,10 +128,10 @@
    "options": "Count\nSum\nAverage\nMin\nMax"
   },
   {
+   "depends_on": "eval:parent.widget_type == 'Chart'",
    "fieldname": "section_break_chart",
    "fieldtype": "Section Break",
-   "label": "Chart Configuration",
-   "depends_on": "eval:parent.widget_type == 'Chart'"
+   "label": "Chart Configuration"
   },
   {
    "depends_on": "eval:parent.widget_type == 'Chart'",
@@ -167,10 +164,10 @@
    "label": "Group By Field"
   },
   {
+   "depends_on": "eval:parent.widget_type == 'Table'",
    "fieldname": "section_break_table",
    "fieldtype": "Section Break",
-   "label": "Table Configuration",
-   "depends_on": "eval:parent.widget_type == 'Table'"
+   "label": "Table Configuration"
   },
   {
    "depends_on": "eval:parent.widget_type == 'Table'",
@@ -204,10 +201,10 @@
    "label": "Show Refresh Button"
   },
   {
+   "default": "0",
    "fieldname": "refresh_interval",
    "fieldtype": "Int",
-   "label": "Refresh Interval (seconds)",
-   "default": "0"
+   "label": "Refresh Interval (seconds)"
   },
   {
    "fieldname": "column_break_4",
@@ -227,16 +224,17 @@
   }
  ],
  "index_web_pages_for_search": 1,
- "is_child_table": 1,
+ "istable": 1,
  "links": [],
- "modified": "2025-01-20 10:00:00",
+ "modified": "2026-01-08 15:28:36.506086",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Dashboard Widget",
+ "naming_rule": "Random",
  "owner": "Administrator",
  "permissions": [],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []
 }
-

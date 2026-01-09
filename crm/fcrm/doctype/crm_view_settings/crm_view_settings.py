@@ -149,14 +149,22 @@ def sync_default_columns(view):
 def set_as_default(name=None, type=None, doctype=None):
 	if name:
 		frappe.db.set_value("CRM View Settings", name, "is_default", 1)
+		# Get the doctype from the view if not provided
+		if not doctype:
+			doctype = frappe.db.get_value("CRM View Settings", name, "dt")
 	else:
 		doc = create_or_update_standard_view({"type": type, "doctype": doctype, "is_default": 1})
 		name = doc.name
 
-	# remove default from other views of same user
+	# remove default from other views of same user (including public views) for the same doctype
 	frappe.db.set_value(
 		"CRM View Settings",
-		{"name": ("!=", name), "user": frappe.session.user, "is_default": 1},
+		{
+			"name": ("!=", name),
+			"user": ("in", ["", None, frappe.session.user]),
+			"is_default": 1,
+			"dt": doctype,
+		},
 		"is_default",
 		0,
 	)
