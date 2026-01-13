@@ -1,4 +1,53 @@
 <template>
+  <!-- Checkout Dialog -->
+  <Dialog v-model="showCheckoutDialog" :options="{ title: __('Complete Visit'), size: 'lg' }">
+    <template #body-content>
+      <div class="space-y-4">
+        <FormControl
+          v-model="checkoutForm.visit_summary"
+          type="textarea"
+          :label="__('Visit Summary')"
+          :placeholder="__('Describe what happened during the visit...')"
+          :rows="3"
+        />
+        <FormControl
+          v-model="checkoutForm.lead_quality"
+          type="select"
+          :label="__('Lead Quality')"
+          :options="leadQualityOptions"
+        />
+        <FormControl
+          v-model="checkoutForm.next_steps"
+          type="textarea"
+          :label="__('Next Steps (Optional)')"
+          :placeholder="__('What are the next actions to take?')"
+          :rows="2"
+        />
+        <div class="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="follow_up_required"
+            v-model="checkoutForm.follow_up_required"
+            class="h-4 w-4 rounded border-gray-300"
+          />
+          <label for="follow_up_required" class="text-sm text-gray-700">{{ __('Follow-up Required') }}</label>
+        </div>
+        <FormControl
+          v-if="checkoutForm.follow_up_required"
+          v-model="checkoutForm.follow_up_date"
+          type="date"
+          :label="__('Follow-up Date')"
+        />
+      </div>
+    </template>
+    <template #actions>
+      <div class="flex justify-end gap-2">
+        <Button variant="outline" @click="showCheckoutDialog = false">{{ __('Cancel') }}</Button>
+        <Button variant="solid" @click="confirmCheckout" :loading="checkoutLoading">{{ __('Complete Checkout') }}</Button>
+      </div>
+    </template>
+  </Dialog>
+
   <LayoutHeader v-if="visit.data">
     <header class="relative flex h-10.5 items-center justify-between gap-2 py-2.5 pl-2">
       <Breadcrumbs :items="breadcrumbs">
@@ -27,10 +76,10 @@
     <div class="flex items-center gap-2">
       <CustomActions v-if="visit.data._customActions?.length" :actions="visit.data._customActions" />
       <!-- Check-in/Check-out buttons -->
-      <Button v-if="visit.data.status === 'Planned' && isApp" :label="__('Check In')" variant="solid" size="sm"
-        @click="checkIn" />
-      <Button v-else-if="visit.data.status === 'In Progress' && isApp" :label="__('Check Out')" variant="solid"
-        size="sm" @click="checkOut" />
+      <Button v-if="visit.data.status === 'Planned' && isApp" :label="checkinLoading ? __('Getting Location...') : __('Check In')" variant="solid" size="sm"
+        :loading="checkinLoading" :disabled="checkinLoading" @click="checkIn" />
+      <Button v-else-if="visit.data.status === 'In Progress' && isApp" :label="checkoutLocationLoading ? __('Getting Location...') : __('Check Out')" variant="solid"
+        size="sm" :loading="checkoutLocationLoading" :disabled="checkoutLocationLoading" @click="checkOut" />
       <Button v-else-if="visit.data.status === 'Completed' && visit.data.docstatus == 0" :label="__('Submit')"
         variant="solid" size="sm" @click="submit" />
     </div>
@@ -129,6 +178,8 @@ import {
   Dropdown,
   Tabs,
   Breadcrumbs,
+  Dialog,
+  FormControl,
   call,
   usePageMeta,
   toast,
@@ -153,7 +204,31 @@ const props = defineProps({
   },
 })
 
-const {assignees} = useDocument('CRM Site Visit', props.visitId)
+const {assignees, document: siteVisitDocument} = useDocument('CRM Site Visit', props.visitId)
+
+// Loading states for location fetching
+const checkinLoading = ref(false)
+const checkoutLocationLoading = ref(false)
+
+// Checkout dialog state
+const showCheckoutDialog = ref(false)
+const checkoutLoading = ref(false)
+const checkoutLocation = ref(null)
+const checkoutForm = ref({
+  visit_summary: '',
+  lead_quality: '',
+  next_steps: '',
+  follow_up_required: false,
+  follow_up_date: '',
+})
+
+const leadQualityOptions = [
+  { label: __('Select Quality...'), value: '' },
+  { label: __('Hot'), value: 'Hot' },
+  { label: __('Warm'), value: 'Warm' },
+  { label: __('Cold'), value: 'Cold' },
+  { label: __('Not Qualified'), value: 'Not Qualified' },
+]
 
 const visit = createResource({
   url: 'crm.fcrm.doctype.crm_site_visit.api.get_visit',
@@ -392,124 +467,152 @@ function openLocation() {
 
 // Mobile-optimized check-in/check-out functions
 async function checkIn() {
+  if (!(window.isApp && typeof nativeInterface !== 'undefined' && nativeInterface.execute)) {
+    toast.error(__('Geolocation is not supported by this device.'))
+    return
+  }
+
+  checkinLoading.value = true
   try {
-    if (window.isApp && typeof nativeInterface !== 'undefined' && nativeInterface.execute) {
-      // Call native interface to get location
-      const location = await nativeInterface.execute("getLocation").catch((err) => {
-        toast.error(__('Failed to get location: {0}', [err.message]))
-      });
-      const { coords, mocked } = location;
-      const { latitude, longitude, accuracy } = coords;
-      if (mocked) {
-        toast.error(__('Location appears to be mocked. Please disable mock location services.'));
-      }
-      await call('crm.api.site_visit.quick_checkin', {
-        visit_id: props.visitId,
-        latitude,
-        longitude,
-        accuracy,
-      });
-      visit.reload()
-      toast.success(__('Checked in successfully!'))
+    // Call native interface to get location
+    const location = await nativeInterface.execute("getLocation").catch((err) => {
+      toast.error(__('Failed to get location: {0}', [err.message]))
+      throw err
+    });
+
+    // Location fetched - loading will stop
+    checkinLoading.value = false
+
+    const { coords, mocked } = location;
+    const { latitude, longitude, accuracy } = coords;
+
+    if (mocked) {
+      toast.error(__('Location appears to be mocked. Please disable mock location services.'));
+      return
     }
-    // // Get current location
-    // else if (navigator.geolocation) {
-    //   navigator.geolocation.getCurrentPosition(
-    //     async (position) => {
-    //       const { latitude, longitude, accuracy } = position.coords
 
-    //       await call('crm.api.site_visit.quick_checkin', {
-    //         visit_id: props.visitId,
-    //         latitude,
-    //         longitude,
-    //         accuracy,
-    //       })
-
-    //       visit.reload()
-    //       toast.success(__('Checked in successfully!'))
-    //     },
-    //     (error) => {
-    //       // Fallback for location error
-    //       toast.error(__('Location access denied. Please enable location services.'))
-    //     },
-    //     {
-    //       enableHighAccuracy: true,
-    //       timeout: 10000,
-    //       maximumAge: 60000,
-    //     }
-    //   )
-    // } 
-    else {
-
-      toast.error(__('Geolocation is not supported by this device.'))
+    await call('crm.api.site_visit.quick_checkin', {
+      visit_id: props.visitId,
+      latitude,
+      longitude,
+      accuracy,
+    });
+    // Reload both resources to ensure UI updates
+    await visit.reload()
+    if (siteVisitDocument?.reload) {
+      await siteVisitDocument.reload()
     }
+    toast.success(__('Checked in successfully!'))
   } catch (error) {
     toast.error(__('Check-in failed: {0}', [error.message]))
+  } finally {
+    checkinLoading.value = false
   }
 }
 
 async function checkOut() {
+  if (!(window.isApp && typeof nativeInterface !== 'undefined' && nativeInterface.execute)) {
+    toast.error(__('Geolocation is not supported by this device.'))
+    return
+  }
+
+  checkoutLocationLoading.value = true
   try {
-    if (window.isApp && typeof nativeInterface !== 'undefined' && nativeInterface.execute) {
-      // Call native interface to get location
-      const location = await nativeInterface.execute("getLocation").catch((err) => {
-        toast.error(__('Failed to get location: {0}', [err.message]));
-      });
-      const { coords, mocked } = location;
-      const { latitude, longitude, accuracy } = coords;
-      if (mocked) {
-        toast.error(__('Location appears to be mocked. Please disable mock location services.'));
-      }
+    // Call native interface to get location first
+    const location = await nativeInterface.execute("getLocation").catch((err) => {
+      toast.error(__('Failed to get location: {0}', [err.message]));
+      throw err;
+    });
 
-      await call('crm.api.site_visit.quick_checkout', {
-        visit_id: props.visitId,
-        latitude,
-        longitude,
-        visit_summary: '', // Could add a quick summary modal
-        lead_quality: '', // Placeholder for lead quality
-      });
+    // Location fetched - stop loading
+    checkoutLocationLoading.value = false
 
-      visit.reload()
-      toast.success(__('Checked out successfully!'))
+    const { coords, mocked } = location;
+    if (mocked) {
+      toast.error(__('Location appears to be mocked. Please disable mock location services.'));
+      return;
     }
-    // // Get current location
-    // if (navigator.geolocation) {
-    //   navigator.geolocation.getCurrentPosition(
-    //     async (position) => {
-    //       const { latitude, longitude } = position.coords
 
-    //       await call('crm.api.site_visit.quick_checkout', {
-    //         visit_id: props.visitId,
-    //         latitude,
-    //         longitude,
-    //         visit_summary: '', // Could add a quick summary modal
-    //       })
+    // Store location and show dialog to collect visit details
+    checkoutLocation.value = coords;
 
-    //       visit.reload()
-    //       toast.success(__('Checked out successfully!'))
-    //     },
-    //     (error) => {
-    //       toast.error(__('Location access denied. Please enable location services.'))
-    //     },
-    //     {
-    //       enableHighAccuracy: true,
-    //       timeout: 10000,
-    //       maximumAge: 60000,
-    //     }
-    //   )
-    // } 
-    else {
-      toast.error(__('Geolocation is not supported by this device.'))
-    }
+    // Reset form with any existing data from the visit
+    checkoutForm.value = {
+      visit_summary: visit.data.visit_summary || '',
+      lead_quality: visit.data.lead_quality || '',
+      next_steps: visit.data.next_steps || '',
+      follow_up_required: visit.data.follow_up_required || false,
+      follow_up_date: visit.data.follow_up_date || '',
+    };
+
+    showCheckoutDialog.value = true;
   } catch (error) {
     toast.error(__('Check-out failed: {0}', [error.message]))
+  } finally {
+    checkoutLocationLoading.value = false
+  }
+}
+
+async function confirmCheckout() {
+  if (!checkoutLocation.value) {
+    toast.error(__('Location not available. Please try again.'))
+    return
+  }
+
+  checkoutLoading.value = true
+  try {
+    const { latitude, longitude, accuracy } = checkoutLocation.value
+
+    const result = await call('crm.api.site_visit.checkout_visit', {
+      visit_id: props.visitId,
+      latitude,
+      longitude,
+      visit_summary: checkoutForm.value.visit_summary,
+      lead_quality: checkoutForm.value.lead_quality,
+    });
+
+    // Check if checkout was successful
+    if (!result?.success) {
+      toast.error(result?.message || __('Checkout failed. Please try again.'))
+      return
+    }
+
+    // If follow-up is required, update those fields separately
+    if (checkoutForm.value.next_steps || checkoutForm.value.follow_up_required) {
+      await call('frappe.client.set_value', {
+        doctype: 'CRM Site Visit',
+        name: props.visitId,
+        fieldname: {
+          next_steps: checkoutForm.value.next_steps,
+          follow_up_required: checkoutForm.value.follow_up_required ? 1 : 0,
+          follow_up_date: checkoutForm.value.follow_up_date || null,
+        },
+      });
+    }
+
+    showCheckoutDialog.value = false
+    // Reload both resources to ensure UI updates
+    await visit.reload()
+    // Also reload the document resource used by SidePanelLayout
+    if (siteVisitDocument?.reload) {
+      await siteVisitDocument.reload()
+    }
+    toast.success(result?.message || __('Checked out successfully!'))
+  } catch (error) {
+    toast.error(__('Check-out failed: {0}', [error.message]))
+  } finally {
+    checkoutLoading.value = false
   }
 }
 
 async function submit() {
   try {
     await call('crm.fcrm.doctype.crm_site_visit.crm_site_visit.submit_visit', {visit_id: props.visitId})
-    visit.reload()
+    // Reload both resources to ensure UI updates
+    await visit.reload()
+    if (siteVisitDocument?.reload) {
+      await siteVisitDocument.reload()
+    }
     toast.success(__('Visit submitted successfully!'))
   } catch (error) {
     toast.error(__('Failed to submit visit: {0}', [error.message]))

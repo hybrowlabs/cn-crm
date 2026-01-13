@@ -116,7 +116,7 @@ def checkout_visit(visit_id, latitude, longitude, visit_summary=None, lead_quali
     """Unified check-out function with workflow awareness"""
     # Use the enhanced function from doctype controller
     from crm.fcrm.doctype.crm_site_visit.crm_site_visit import mobile_checkout
-    return mobile_checkout(visit_id, latitude, longitude, visit_summary, auto_submit)
+    return mobile_checkout(visit_id, latitude, longitude, visit_summary, lead_quality, auto_submit)
 
 
 @frappe.whitelist()

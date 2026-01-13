@@ -176,6 +176,7 @@ import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
+import VisitsIcon from '@/components/Icons/VisitsIcon.vue'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import OrganizationsIcon from '@/components/Icons/OrganizationsIcon.vue'
 import ContactsIcon from '@/components/Icons/ContactsIcon.vue'
@@ -250,9 +251,22 @@ const lead = createResource({
   },
 })
 
+const visits = createResource({
+  url: 'crm.fcrm.doctype.crm_lead.api.get_lead_visits',
+  params: { name: props.leadId },
+  cache: ['lead', 'visits', props.leadId],
+  auto: true,
+  onSuccess: (data) => {
+    if (lead.data) {
+      lead.data.linked_visits = data
+    }
+  },
+})
+
 onMounted(() => {
   if (lead.data) return
   lead.fetch()
+  visits.fetch()
 })
 
 const reload = ref(false)
@@ -356,6 +370,11 @@ const tabs = computed(() => {
       name: 'Data',
       label: __('Data'),
       icon: DetailsIcon,
+    },
+    {
+      name: 'Visits',
+      label: __('Visits'),
+      icon: VisitsIcon,
     },
     {
       name: 'Calls',

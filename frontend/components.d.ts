@@ -253,6 +253,7 @@ declare module 'vue' {
     ViewBreadcrumbs: typeof import('./src/components/ViewBreadcrumbs.vue')['default']
     ViewControls: typeof import('./src/components/ViewControls.vue')['default']
     ViewModal: typeof import('./src/components/Modals/ViewModal.vue')['default']
+    VisitArea: typeof import('./src/components/Activities/VisitArea.vue')['default']
     VisitListView: typeof import('./src/components/ListViews/VisitListView.vue')['default']
     VisitModal: typeof import('./src/components/Modals/VisitModal.vue')['default']
     VisitsIcon: typeof import('./src/components/Icons/VisitsIcon.vue')['default']

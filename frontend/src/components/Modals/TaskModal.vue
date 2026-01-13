@@ -18,10 +18,10 @@
           {{ editMode ? __('Edit Task') : __('Create Task') }}
         </h3>
         <Button
-          v-if="task.doc?.reference_docname"
+          v-if="taskDoc.reference_docname"
           size="sm"
           :label="
-            task.doc.reference_doctype == 'CRM Deal'
+            taskDoc.reference_doctype == 'CRM Deal'
               ? __('Open Deal')
               : __('Open Lead')
           "
@@ -35,16 +35,19 @@
     </template>
     <template #body-content>
         <div>
-        <div v-if="tabs.loading" class="py-8 text-center">
-          <span class="text-gray-600">Loading form...</span>
+        <div v-if="loading" class="py-8 text-center">
+          <span class="text-gray-600">{{ __('Loading...') }}</span>
+        </div>
+        <div v-else-if="tabs.loading" class="py-8 text-center">
+          <span class="text-gray-600">{{ __('Loading form...') }}</span>
         </div>
         <div v-else-if="tabs.error" class="py-8 text-center text-red-600">
           Error loading form: {{ tabs.error }}
           </div>
         <div v-else-if="tabs.data">
-          <FieldLayout 
-            :tabs="tabs.data" 
-            :data="task.doc" 
+          <FieldLayout
+            :tabs="tabs.data"
+            :data="taskDoc"
             doctype="CRM Task"
           />
         </div>
@@ -65,10 +68,9 @@ import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
 import { taskStatusOptions, taskPriorityOptions, getFormat } from '@/utils'
 import { usersStore } from '@/stores/users'
 import { capture } from '@/telemetry'
-import { useDocument } from '@/data/document'
-import { call, createResource } from 'frappe-ui'
+import { call, createResource, dayjs } from 'frappe-ui'
 import { useOnboarding } from 'frappe-ui/frappe'
-import { ref, watch, nextTick, onMounted, computed } from 'vue'
+import { ref, reactive, watch, nextTick, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -97,8 +99,10 @@ const { updateOnboardingStep } = useOnboarding('frappecrm')
 
 const error = ref(null)
 const editMode = ref(false)
+const loading = ref(false)
 
-const { document: task } = useDocument('CRM Task', props.task?.name || '')
+// Use a reactive object for task document instead of useDocument
+const taskDoc = reactive({})
 
 const tabs = createResource({
   url: 'crm.fcrm.doctype.crm_fields_layout.crm_fields_layout.get_fields_layout',
@@ -109,7 +113,7 @@ const tabs = createResource({
     if (!_tabs || !Array.isArray(_tabs)) {
       return _tabs
     }
-    
+
     return _tabs.map((tab) => {
       return {
         ...tab,
@@ -119,7 +123,7 @@ const tabs = createResource({
             ...column,
             fields: column.fields.map((field) => {
               const transformedField = { ...field }
-              
+
               // Handle reference_doctype field
               if (field.fieldname === 'reference_doctype') {
                 transformedField.fieldtype = 'Select'
@@ -128,10 +132,10 @@ const tabs = createResource({
                   { label: 'CRM Deal', value: 'CRM Deal' }
                 ]
               }
-              
+
               // Handle reference_docname field - enable/disable based on reference_doctype
               if (field.fieldname === 'reference_docname') {
-                if (task.doc.reference_doctype) {
+                if (taskDoc.reference_doctype) {
                   transformedField.read_only = 0
                   // Ensure Dynamic Link options are set correctly
                   if (transformedField.fieldtype === 'Dynamic Link') {
@@ -144,7 +148,7 @@ const tabs = createResource({
                   }
                 }
               }
-              
+
               // Handle status field
               if (field.fieldname === 'status') {
                 transformedField.fieldtype = 'Select'
@@ -156,7 +160,7 @@ const tabs = createResource({
                   { label: 'Canceled', value: 'Canceled' }
                 ]
               }
-              
+
               // Handle priority field
               if (field.fieldname === 'priority') {
                 transformedField.fieldtype = 'Select'
@@ -166,12 +170,12 @@ const tabs = createResource({
                   { label: 'High', value: 'High' }
                 ]
               }
-              
+
               // Ensure description field remains Text Editor
               if (field.fieldname === 'description') {
                 transformedField.fieldtype = 'Text Editor'
               }
-              
+
               return transformedField
             })
           }))
@@ -182,54 +186,110 @@ const tabs = createResource({
 })
 
 function redirect() {
-  if (!task.doc?.reference_docname) return
-  let name = task.doc.reference_doctype == 'CRM Deal' ? 'Deal' : 'Lead'
-  let params = { leadId: task.doc.reference_docname }
+  if (!taskDoc.reference_docname) return
+  let name = taskDoc.reference_doctype == 'CRM Deal' ? 'Deal' : 'Lead'
+  let params = { leadId: taskDoc.reference_docname }
   if (name == 'Deal') {
-    params = { dealId: task.doc.reference_docname }
+    params = { dealId: taskDoc.reference_docname }
   }
   router.push({ name: name, params: params })
 }
 
 // Watch for reference_doctype changes to update reference_docname field options
-watch(() => task.doc.reference_doctype, (newType, oldType) => {
+watch(() => taskDoc.reference_doctype, (newType, oldType) => {
   if (newType !== oldType) {
     // Clear reference_docname if reference_doctype changes
     if (oldType && newType !== oldType) {
-      task.doc.reference_docname = null
+      taskDoc.reference_docname = null
     }
     // Force tabs to re-transform to update reference_docname field options
     nextTick(() => {
       tabs.reload()
     })
   }
-}, { 
-  immediate: false 
+}, {
+  immediate: false
 })
+
+// Format datetime to MySQL format (YYYY-MM-DD HH:mm:ss)
+function formatDatetimeForServer(value) {
+  if (!value) return value
+  const parsed = dayjs(value)
+  if (parsed.isValid()) {
+    return parsed.format('YYYY-MM-DD HH:mm:ss')
+  }
+  return value
+}
+
+// Prepare task doc for server submission
+function prepareTaskDoc(doc) {
+  const prepared = { ...doc }
+  // Format due_date to MySQL datetime format
+  if (prepared.due_date) {
+    prepared.due_date = formatDatetimeForServer(prepared.due_date)
+  }
+  return prepared
+}
+
+// Fetch task document from backend
+async function fetchTaskFromBackend(taskName) {
+  loading.value = true
+  try {
+    const doc = await call('frappe.client.get', {
+      doctype: 'CRM Task',
+      name: taskName,
+    })
+    if (doc) {
+      // Clear existing properties and set new ones
+      Object.keys(taskDoc).forEach(key => delete taskDoc[key])
+      Object.assign(taskDoc, doc)
+    }
+  } catch (err) {
+    console.error('Error fetching task:', err)
+    error.value = __('Error loading task data')
+  } finally {
+    loading.value = false
+  }
+}
+
+// Initialize task document with defaults for create mode
+function initializeNewTask() {
+  Object.keys(taskDoc).forEach(key => delete taskDoc[key])
+  Object.assign(taskDoc, {
+    reference_doctype: props.doctype || 'CRM Lead',
+    reference_docname: props.doc || null,
+    status: 'Backlog',
+    priority: 'Low',
+    ...props.task
+  })
+}
 
 async function updateTask() {
   error.value = null
-  
+
   // Validate reference fields
-  if (!task.doc.reference_doctype || !task.doc.reference_docname) {
+  if (!taskDoc.reference_doctype || !taskDoc.reference_docname) {
     error.value = __('Reference Type and Reference Name are required')
     return
   }
-  
-  if (!['CRM Lead', 'CRM Deal'].includes(task.doc.reference_doctype)) {
+
+  if (!['CRM Lead', 'CRM Deal'].includes(taskDoc.reference_doctype)) {
     error.value = __('Reference Type must be CRM Lead or CRM Deal')
     return
   }
-  
-  if (!task.doc.assigned_to) {
-    task.doc.assigned_to = getUser().name
+
+  if (!taskDoc.assigned_to) {
+    taskDoc.assigned_to = getUser().name
   }
-  
-  if (task.doc.name) {
+
+  // Prepare the document with properly formatted fields
+  const preparedDoc = prepareTaskDoc(taskDoc)
+
+  if (taskDoc.name) {
     let d = await call('frappe.client.set_value', {
       doctype: 'CRM Task',
-      name: task.doc.name,
-      fieldname: task.doc,
+      name: taskDoc.name,
+      fieldname: preparedDoc,
     })
     if (d.name) {
       tasks.value?.reload()
@@ -241,7 +301,7 @@ async function updateTask() {
       {
         doc: {
           doctype: 'CRM Task',
-          ...task.doc,
+          ...preparedDoc,
         },
       },
       {
@@ -268,27 +328,20 @@ async function updateTask() {
 
 watch(
   () => show.value,
-  (value) => {
+  async (value) => {
     if (!value) return
-  editMode.value = false
-  nextTick(() => {
-      // Initialize task document
-      if (props.task?.name) {
-        // Edit mode - load existing task
-        task.doc = { ...props.task }
+    editMode.value = false
+    error.value = null
+
+    if (props.task?.name) {
+      // Edit mode - fetch fresh data from backend
       editMode.value = true
-      } else {
-        // Create mode - set defaults
-        task.doc = {
-          reference_doctype: props.doctype || 'CRM Lead',
-          reference_docname: props.doc || null,
-          status: 'Backlog',
-          priority: 'Low',
-          ...props.task
-        }
-      }
-      tabs.reload()
-})
+      await fetchTaskFromBackend(props.task.name)
+    } else {
+      // Create mode - set defaults
+      initializeNewTask()
+    }
+    tabs.reload()
   },
 )
 </script>

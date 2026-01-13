@@ -266,6 +266,7 @@ import TaskIcon from '@/components/Icons/TaskIcon.vue'
 import NoteIcon from '@/components/Icons/NoteIcon.vue'
 import AttachmentIcon from '@/components/Icons/AttachmentIcon.vue'
 import WhatsAppIcon from '@/components/Icons/WhatsAppIcon.vue'
+import VisitsIcon from '@/components/Icons/VisitsIcon.vue'
 import IndicatorIcon from '@/components/Icons/IndicatorIcon.vue'
 import ArrowUpRightIcon from '@/components/Icons/ArrowUpRightIcon.vue'
 import SuccessIcon from '@/components/Icons/SuccessIcon.vue'
@@ -369,6 +370,16 @@ const quotations = createResource({
   }
 });
 
+const visits = createResource({
+  url: 'crm.fcrm.doctype.crm_deal.api.get_deal_visits',
+  params: { name: props.dealId },
+  cache: ['deal', 'visits', props.dealId],
+  auto: true,
+  onSuccess: (data) => {
+    deal.linked_visits = data
+  },
+});
+
 const organization = createResource({
   url: 'frappe.client.get',
   onSuccess: (data) => (deal.data._organizationObj = data),
@@ -378,6 +389,7 @@ onMounted(() => {
   if (deal.data) return
   deal.fetch()
   quotations.fetch()
+  visits.fetch()
 })
 
 const reload = ref(false)
@@ -488,6 +500,11 @@ const tabs = computed(() => {
       name: 'Quotations',
       label: __('Quotations'),
       icon: DetailsIcon
+    },
+    {
+      name: 'Visits',
+      label: __('Visits'),
+      icon: VisitsIcon,
     },
     {
       name: 'Calls',

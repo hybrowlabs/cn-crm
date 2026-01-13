@@ -372,7 +372,7 @@
         @afterSave="(data) => emit('afterSave', data)"
       />
     </div>
-    <div v-else-if="title == 'Quotations'" class="h-full flex flex-col px-3 sm:px-10">
+    <div v-else-if="title == 'Quotations'" class="flex flex-col px-3 pb-3 sm:px-10 sm:pb-5">
       <QuotationsListView
         :columns="[
           { label: __('Quotation'), key: 'name', type: 'Data' },
@@ -382,18 +382,8 @@
         :rows="doc.linked_quotations"
       />
     </div>
-    <div v-else-if="title == 'Visits'" class="h-full flex flex-col px-3 sm:px-10">
-      <VisitListView
-        :columns="[
-          { label: __('Visit'), key: 'name', type: 'Data' },
-          { label: __('Date'), key: 'visit_date', type: 'Date' },
-          { label: __('Type'), key: 'visit_type', type: 'Data' },
-          { label: __('Status'), key: 'status', type: 'Data' },
-          { label: __('Sales Person'), key: 'sales_person', type: 'Data' },
-        ]"
-        :rows="props.linkedVisits || []"
-        :options="{ selectable: false, showTooltip: false, resizeColumn: true }"
-      />
+    <div v-else-if="title == 'Visits'" class="px-3 pb-3 sm:px-10 sm:pb-5">
+      <VisitArea :visits="props.linkedVisits?.length ? props.linkedVisits : (doc.data?.linked_visits || doc.linked_visits || [])" />
     </div>
     
     <div
@@ -482,6 +472,7 @@ import CommentArea from '@/components/Activities/CommentArea.vue'
 import CallArea from '@/components/Activities/CallArea.vue'
 import NoteArea from '@/components/Activities/NoteArea.vue'
 import TaskArea from '@/components/Activities/TaskArea.vue'
+import VisitArea from '@/components/Activities/VisitArea.vue'
 import AttachmentArea from '@/components/Activities/AttachmentArea.vue'
 import DataFields from '@/components/Activities/DataFields.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
@@ -530,7 +521,6 @@ import {
 } from 'vue'
 import { useRoute } from 'vue-router'
 import QuotationsListView from '@/components/ListViews/QuotationsListView.vue'
-import VisitListView from '@/components/ListViews/VisitListView.vue'
 
 const { makeCall, $socket } = globalStore()
 const { getUser } = usersStore()

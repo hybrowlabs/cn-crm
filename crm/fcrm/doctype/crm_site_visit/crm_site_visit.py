@@ -592,17 +592,27 @@ def mobile_checkin(visit_id, latitude, longitude, accuracy=None):
 
 
 @frappe.whitelist(allow_guest=False)
-def mobile_checkout(visit_id, latitude, longitude, visit_summary=None, auto_submit=False):
+def mobile_checkout(visit_id, latitude, longitude, visit_summary=None, lead_quality=None, auto_submit=False):
     """Legacy API endpoint - redirects to new workflow API"""
     from crm.api.site_visit_workflow import perform_workflow_action
-    return perform_workflow_action(
+    result = perform_workflow_action(
         docname=visit_id,
         action='checkout',
         latitude=latitude,
         longitude=longitude,
         visit_summary=visit_summary,
-        auto_submit=auto_submit
+        lead_quality=lead_quality
     )
+
+    # Handle auto_submit if requested and checkout was successful
+    if auto_submit and result.get('success'):
+        submit_result = perform_workflow_action(
+            docname=visit_id,
+            action='submit'
+        )
+        result['auto_submitted'] = submit_result.get('success', False)
+
+    return result
 
 
 @frappe.whitelist(allow_guest=False)
