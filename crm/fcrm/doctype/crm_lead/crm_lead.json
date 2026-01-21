@@ -17,10 +17,10 @@
   "gst_applicable",
   "gst_number",
   "website",
+  "address",
   "territory",
   "industry",
   "line_of_business",
-  "project",
   "job_title",
   "source",
   "lead_owner",
@@ -170,15 +170,13 @@
    "fieldname": "industry",
    "fieldtype": "Link",
    "label": "Industry",
-   "options": "CRM Industry",
-   "reqd": 1
+   "options": "CRM Industry"
   },
   {
    "fieldname": "line_of_business",
    "fieldtype": "Link",
    "label": "Line of Business",
-   "options": "CRM Line of Business",
-   "reqd": 1
+   "options": "CRM Line of Business"
   },
   {
    "fieldname": "image",
@@ -324,8 +322,7 @@
    "fieldname": "territory",
    "fieldtype": "Link",
    "label": "Territory",
-   "options": "CRM Territory",
-   "reqd": 1
+   "options": "Territory"
   },
   {
    "fieldname": "log_tab",
@@ -374,18 +371,16 @@
    "read_only": 1
   },
   {
-   "fieldname": "project",
-   "fieldtype": "Link",
-   "label": "Project",
-   "options": "Project",
-   "reqd": 1
+   "fieldname": "address",
+   "fieldtype": "Small Text",
+   "label": "Address"
   }
  ],
  "grid_page_length": 50,
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-01 10:52:10.796812",
+ "modified": "2026-01-20 11:09:46.182718",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Lead",

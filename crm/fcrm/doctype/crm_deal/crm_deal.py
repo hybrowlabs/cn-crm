@@ -18,7 +18,7 @@ class CRMDeal(Document):
 		self.set_sla()
 
 	def validate(self):
-		self.validate_lead_requirement()
+		# Lead is optional - deals can be created directly without a lead
 		self.validate_eligible_contacts_organizations()
 		self.set_primary_contact()
 		self.set_primary_email_mobile_no()
@@ -33,20 +33,16 @@ class CRMDeal(Document):
 		self.validate_forcasting_fields()
 		self.validate_lost_reason()
 
-	def validate_lead_requirement(self):
-		"""Ensure Lead is required for Deal"""
-		if not self.lead:
-			frappe.throw(_("Lead is required to create a Deal"), frappe.MandatoryError)
-
 	def validate_eligible_contacts_organizations(self):
-		"""Ensure contacts and organization are linked to the same Lead"""
+		"""Ensure contacts and organization are linked to the same Lead (if lead is provided)"""
+		# Skip validation if no lead is linked - deals can exist without leads
 		if not self.lead:
 			return
 
 		# Validate organization is linked to the Lead
 		if self.organization:
 			org_lead = frappe.db.get_value("CRM Organization", self.organization, "lead")
-			if org_lead != self.lead:
+			if org_lead and org_lead != self.lead:
 				frappe.throw(
 					_("Organization {0} is not linked to Lead {1}").format(
 						frappe.bold(self.organization), frappe.bold(self.lead)
@@ -59,7 +55,7 @@ class CRMDeal(Document):
 			for contact_row in self.contacts:
 				if contact_row.contact:
 					contact_lead = frappe.db.get_value("Contact", contact_row.contact, "lead")
-					if contact_lead != self.lead:
+					if contact_lead and contact_lead != self.lead:
 						frappe.throw(
 							_("Contact {0} is not linked to Lead {1}").format(
 								frappe.bold(contact_row.contact), frappe.bold(self.lead)
@@ -471,42 +467,42 @@ def create_contact(doc):
 def create_deal(args):
 	deal = frappe.new_doc("CRM Deal")
 
-	# Validate lead is provided
-	if not args.get("lead"):
-		frappe.throw(_("Lead is required to create a Deal"), frappe.MandatoryError)
-
+	# Lead is optional - deals can be created without a lead
 	lead = args.get("lead")
 
 	contact = args.get("contact")
 	if not contact and (
 		args.get("first_name") or args.get("last_name") or args.get("email") or args.get("mobile_no")
 	):
-		# Create contact with lead reference
+		# Create contact (with lead reference if provided)
 		contact_args = args.copy()
-		contact_args["lead"] = lead
+		if lead:
+			contact_args["lead"] = lead
 		contact = create_contact(contact_args)
 
-	# Validate organization is eligible (linked to lead)
+	# Get or create organization
 	organization = args.get("organization")
-	if organization:
+	if organization and lead:
+		# Validate organization is linked to lead (only if both are provided)
 		org_lead = frappe.db.get_value("CRM Organization", organization, "lead")
-		if org_lead != lead:
+		if org_lead and org_lead != lead:
 			frappe.throw(
 				_("Organization {0} is not linked to Lead {1}").format(
 					frappe.bold(organization), frappe.bold(lead)
 				),
 				frappe.ValidationError,
 			)
-	else:
-		# Create organization with lead reference
+	elif not organization:
+		# Create organization (with lead reference if provided)
 		org_args = args.copy()
-		org_args["lead"] = lead
+		if lead:
+			org_args["lead"] = lead
 		organization = create_organization(org_args)
 
-	# Validate contact is eligible (linked to lead)
-	if contact:
+	# Validate contact is linked to lead (only if both are provided)
+	if contact and lead:
 		contact_lead = frappe.db.get_value("Contact", contact, "lead")
-		if contact_lead != lead:
+		if contact_lead and contact_lead != lead:
 			frappe.throw(
 				_("Contact {0} is not linked to Lead {1}").format(
 					frappe.bold(contact), frappe.bold(lead)
@@ -514,13 +510,16 @@ def create_deal(args):
 				frappe.ValidationError,
 			)
 
-	deal.update(
-		{
-			"lead": lead,
-			"organization": organization,
-			"contacts": [{"contact": contact, "is_primary": 1}] if contact else [],
-		}
-	)
+	deal_data = {
+		"organization": organization,
+		"contacts": [{"contact": contact, "is_primary": 1}] if contact else [],
+	}
+
+	# Only set lead if provided
+	if lead:
+		deal_data["lead"] = lead
+
+	deal.update(deal_data)
 
 	args.pop("organization", None)
 

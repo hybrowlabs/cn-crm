@@ -27,7 +27,202 @@
           </div>
         </div>
         <div>
-          <FieldLayout v-if="tabs.data" :tabs="tabs.data" :data="lead.doc" />
+          <!-- Duplicate Warning Banner -->
+          <div
+            v-if="duplicateWarning.show"
+            ref="duplicateWarningRef"
+            class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 sm:p-4"
+          >
+            <!-- Header -->
+            <div class="flex items-start gap-2 sm:gap-3">
+              <FeatherIcon
+                name="alert-triangle"
+                class="size-5 text-amber-600 shrink-0 mt-0.5"
+              />
+              <div class="flex-1 min-w-0">
+                <h4 class="text-sm font-medium text-amber-800">
+                  {{ __('Potential Duplicates Found') }}
+                </h4>
+                <p class="mt-1 text-xs sm:text-sm text-amber-700">
+                  {{ __('Similar records already exist. Please review before creating.') }}
+                </p>
+              </div>
+              <button
+                @click="duplicateWarning.show = false"
+                class="text-amber-600 hover:text-amber-800 p-1 -m-1"
+              >
+                <FeatherIcon name="x" class="size-5 sm:size-4" />
+              </button>
+            </div>
+
+            <!-- Existing Leads -->
+            <div v-if="duplicateWarning.leads.length > 0" class="mt-3">
+              <p class="text-xs font-medium text-amber-800 uppercase tracking-wide mb-2">
+                {{ __('Existing Leads') }}
+              </p>
+              <div class="space-y-2">
+                <div
+                  v-for="dup in duplicateWarning.leads"
+                  :key="dup.name"
+                  class="bg-white rounded-md p-3 border border-amber-200"
+                >
+                  <!-- Mobile: Stacked layout -->
+                  <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-medium text-ink-gray-9 break-words">
+                        {{ dup.lead_name || dup.organization || dup.email }}
+                      </p>
+                      <!-- Mobile: Stack details vertically -->
+                      <div class="mt-1 text-xs text-ink-gray-5 space-y-0.5 sm:space-y-0">
+                        <p v-if="dup.organization" class="sm:inline">
+                          {{ dup.organization }}
+                          <span class="hidden sm:inline"> · </span>
+                        </p>
+                        <p v-if="dup.email" class="sm:inline break-all">
+                          {{ dup.email }}
+                          <span class="hidden sm:inline" v-if="dup.mobile_no"> · </span>
+                        </p>
+                        <p v-if="dup.mobile_no" class="sm:inline">
+                          {{ dup.mobile_no }}
+                        </p>
+                      </div>
+                      <p class="text-xs text-amber-600 mt-1">
+                        {{ __('Matched by:') }} {{ dup.match_reasons.join(', ') }}
+                      </p>
+                    </div>
+                    <!-- Mobile: Full-width action row -->
+                    <div class="flex items-center justify-between sm:justify-end gap-2 pt-2 sm:pt-0 border-t border-amber-100 sm:border-0 sm:ml-3">
+                      <Badge :label="dup.status" variant="subtle" theme="orange" />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        :label="__('View Lead')"
+                        class="flex-1 sm:flex-initial"
+                        @click="openLeadInNewTab(dup.name)"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Existing Organizations -->
+            <div v-if="duplicateWarning.organizations.length > 0" class="mt-3">
+              <p class="text-xs font-medium text-amber-800 uppercase tracking-wide mb-2">
+                {{ __('Existing Organizations') }}
+              </p>
+              <div class="space-y-2">
+                <div
+                  v-for="org in duplicateWarning.organizations"
+                  :key="org.name"
+                  class="bg-white rounded-md p-3 border border-amber-200"
+                >
+                  <!-- Mobile: Stacked layout -->
+                  <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-medium text-ink-gray-9 break-words">
+                        {{ org.organization_name }}
+                      </p>
+                      <div class="mt-1 text-xs text-ink-gray-5 space-y-0.5 sm:space-y-0">
+                        <p v-if="org.industry" class="sm:inline">
+                          {{ org.industry }}
+                          <span class="hidden sm:inline" v-if="org.deal"> · </span>
+                        </p>
+                        <p v-if="org.deal" class="sm:inline">
+                          {{ __('Deal') }}: {{ org.deal }}
+                          <span v-if="org.deal_status"> ({{ org.deal_status }})</span>
+                        </p>
+                      </div>
+                    </div>
+                    <!-- Mobile: Full-width action row -->
+                    <div class="flex items-center justify-between sm:justify-end gap-2 pt-2 sm:pt-0 border-t border-amber-100 sm:border-0 sm:ml-3">
+                      <Badge
+                        v-if="org.deal"
+                        :label="__('Has Deal')"
+                        variant="subtle"
+                        theme="blue"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        :label="__('View Org')"
+                        class="flex-1 sm:flex-initial"
+                        @click="openOrganizationInNewTab(org.name)"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Existing Contacts -->
+            <div v-if="duplicateWarning.contacts.length > 0" class="mt-3">
+              <p class="text-xs font-medium text-amber-800 uppercase tracking-wide mb-2">
+                {{ __('Existing Contacts') }}
+              </p>
+              <div class="space-y-2">
+                <div
+                  v-for="contact in duplicateWarning.contacts"
+                  :key="contact.name"
+                  class="bg-white rounded-md p-3 border border-amber-200"
+                >
+                  <!-- Mobile: Stacked layout -->
+                  <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-medium text-ink-gray-9 break-words">
+                        {{ contact.full_name }}
+                      </p>
+                      <div class="mt-1 text-xs text-ink-gray-5 space-y-0.5 sm:space-y-0">
+                        <p v-if="contact.company_name" class="sm:inline">
+                          {{ contact.company_name }}
+                          <span class="hidden sm:inline" v-if="contact.email || contact.mobile_no"> · </span>
+                        </p>
+                        <p v-if="contact.email" class="sm:inline break-all">
+                          {{ contact.email }}
+                          <span class="hidden sm:inline" v-if="contact.mobile_no"> · </span>
+                        </p>
+                        <p v-if="contact.mobile_no" class="sm:inline">
+                          {{ contact.mobile_no }}
+                        </p>
+                      </div>
+                      <p class="text-xs text-amber-600 mt-1">
+                        {{ __('Matched by:') }} {{ contact.match_reasons.join(', ') }}
+                        <span v-if="contact.linked_deal" class="text-ink-gray-5">
+                          · {{ __('Linked to Deal') }}: {{ contact.linked_deal }}
+                        </span>
+                      </p>
+                    </div>
+                    <!-- Mobile: Full-width action row -->
+                    <div class="flex items-center justify-between sm:justify-end gap-2 pt-2 sm:pt-0 border-t border-amber-100 sm:border-0 sm:ml-3">
+                      <Badge
+                        v-if="contact.linked_deal"
+                        :label="__('Has Deal')"
+                        variant="subtle"
+                        theme="green"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        :label="__('View Contact')"
+                        class="flex-1 sm:flex-initial"
+                        @click="openContactInNewTab(contact.name)"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p class="mt-3 text-xs text-amber-600 italic text-center sm:text-left">
+              {{ __('You can still create this lead if it is not a duplicate.') }}
+            </p>
+          </div>
+
+          <FieldLayout
+            v-if="tabs.data"
+            :tabs="tabs.data"
+            :data="lead.doc"
+          />
           <ErrorMessage class="mt-4" v-if="error" :message="__(error)" />
         </div>
       </div>
@@ -54,10 +249,10 @@ import { sessionStore } from '@/stores/session'
 import { isMobileView } from '@/composables/settings'
 import { showQuickEntryModal, quickEntryProps } from '@/composables/modals'
 import { capture } from '@/telemetry'
-import { createResource } from 'frappe-ui'
+import { createResource, Badge } from 'frappe-ui'
 import { useOnboarding } from 'frappe-ui/frappe'
 import { useDocument } from '@/data/document'
-import { computed, onMounted, ref, nextTick } from 'vue'
+import { computed, onMounted, ref, nextTick, reactive, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -75,6 +270,101 @@ const error = ref(null)
 const isLeadCreating = ref(false)
 
 const { document: lead, triggerOnBeforeCreate } = useDocument('CRM Lead')
+
+// Ref for duplicate warning banner (for scrolling on mobile)
+const duplicateWarningRef = ref(null)
+
+// Duplicate detection state
+const duplicateWarning = reactive({
+  show: false,
+  leads: [],
+  organizations: [],
+  contacts: [],
+})
+
+// Debounce timer for duplicate checking
+let duplicateCheckTimer = null
+
+// Resource for checking duplicates
+const checkDuplicates = createResource({
+  url: 'crm.fcrm.doctype.crm_lead.crm_lead.check_lead_duplicates',
+  onSuccess(data) {
+    if (data.has_duplicates) {
+      duplicateWarning.leads = data.leads || []
+      duplicateWarning.organizations = data.organizations || []
+      duplicateWarning.contacts = data.contacts || []
+      duplicateWarning.show = true
+
+      // On mobile, scroll to the warning banner so user sees it
+      if (isMobileView.value) {
+        nextTick(() => {
+          duplicateWarningRef.value?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          })
+        })
+      }
+    } else {
+      duplicateWarning.show = false
+      duplicateWarning.leads = []
+      duplicateWarning.organizations = []
+      duplicateWarning.contacts = []
+    }
+  },
+})
+
+// Debounced duplicate check function
+function debouncedDuplicateCheck() {
+  if (duplicateCheckTimer) {
+    clearTimeout(duplicateCheckTimer)
+  }
+
+  duplicateCheckTimer = setTimeout(() => {
+    const org = lead.doc.organization
+    const email = lead.doc.email
+    const mobile = lead.doc.mobile_no
+
+    // Only check if at least one field has meaningful content
+    if ((org && org.length >= 2) || email || mobile) {
+      checkDuplicates.submit({
+        organization: org || null,
+        email: email || null,
+        mobile_no: mobile || null,
+      })
+    } else {
+      // Clear warnings if no search criteria
+      duplicateWarning.show = false
+      duplicateWarning.leads = []
+      duplicateWarning.organizations = []
+      duplicateWarning.contacts = []
+    }
+  }, 500) // 500ms debounce
+}
+
+// Watch for changes to lead.doc fields that should trigger duplicate checking
+watch(
+  () => [lead.doc.organization, lead.doc.email, lead.doc.mobile_no],
+  () => {
+    debouncedDuplicateCheck()
+  },
+  { deep: true }
+)
+
+// Helper functions for opening records in new tabs
+function openLeadInNewTab(leadName) {
+  const url = router.resolve({ name: 'Lead', params: { leadId: leadName } })
+  window.open(url.href, '_blank')
+}
+
+function openOrganizationInNewTab(orgName) {
+  const url = router.resolve({ name: 'Organization', params: { organizationId: orgName } })
+  window.open(url.href, '_blank')
+}
+
+function openContactInNewTab(contactName) {
+  // Open contact in Frappe desk since contacts may not have a dedicated CRM page
+  window.open(`/app/contact/${contactName}`, '_blank')
+}
 
 const leadStatuses = computed(() => {
   let statuses = statusOptions('lead')

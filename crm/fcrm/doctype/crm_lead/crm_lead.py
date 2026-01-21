@@ -25,7 +25,7 @@ class CRMLead(Document):
 		self.set_title()
 		self.validate_email()
 		self.validate_gst_number()
-		self.auto_fetch_gstin_details()
+		# Note: auto_fetch_gstin_details() removed - GST Portal API now called only during deal conversion
 		self.validate_territory_access()
 		self.auto_set_territory_if_empty()
 		if not self.is_new() and self.has_value_changed("lead_owner") and self.lead_owner:
@@ -114,35 +114,27 @@ class CRMLead(Document):
 				self.image = has_gravatar(self.email)
 
 	def validate_gst_number(self):
-		"""Validate GST number format and check for duplicates"""
+		"""Validate GST number format (offline only) and check for duplicates"""
 		# Check if gst_applicable field exists (will be added via migration)
 		if not hasattr(self, 'gst_applicable'):
 			return
 
 		if self.gst_applicable and self.gst_number:
 			from crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings import (
-				validate_deal_gstin,
+				validate_gstin_format,
 				check_gstin_duplicates
 			)
 
-			# Validate GSTIN format and check digit
-			result = validate_deal_gstin(self.gst_number)
+			# Validate GSTIN format offline (no India Compliance API call)
+			is_valid, error_message = validate_gstin_format(self.gst_number)
 
-			if not result['is_valid']:
+			if not is_valid:
 				frappe.throw(
-					_(result['error_message']),
+					_(error_message),
 					title=_("Invalid GST Number")
 				)
 
-			# Display warning if using basic validation only
-			if result['warning_message']:
-				frappe.msgprint(
-					_(result['warning_message']),
-					indicator='orange',
-					alert=True
-				)
-
-			# Check for duplicates
+			# Check for duplicates (database query only)
 			duplicates = check_gstin_duplicates(
 				self.gst_number,
 				exclude_doctype="CRM Lead",
@@ -658,6 +650,20 @@ def convert_to_deal(lead, doc=None, deal=None, existing_contact=None, existing_o
 		frappe.throw(_("Not allowed to convert Lead to Deal"), frappe.PermissionError)
 
 	lead = frappe.get_cached_doc("CRM Lead", lead)
+
+	# Initialize deal dict if not provided
+	if deal is None:
+		deal = {}
+
+	# Validate and fetch GST details using India Compliance API (only during deal conversion)
+	gst_address = None
+	if hasattr(lead, 'gst_applicable') and lead.gst_applicable and hasattr(lead, 'gst_number') and lead.gst_number:
+		gst_address = _validate_and_fetch_gst_for_conversion(lead)
+
+	# Set GST address on deal if fetched from API
+	if gst_address:
+		deal["gst_address"] = gst_address
+
 	if frappe.db.exists("CRM Lead Status", "Qualified"):
 		lead.db_set("status", "Qualified")
 	lead.db_set("converted", 1)
@@ -668,6 +674,127 @@ def convert_to_deal(lead, doc=None, deal=None, existing_contact=None, existing_o
 	_deal = lead.create_deal(contact, organization, deal)
 	return _deal
 
+
+def _validate_and_fetch_gst_for_conversion(lead):
+	"""
+	Validate GSTIN using India Compliance API and auto-fetch organization details.
+	This is only called during deal conversion, not during lead save.
+
+	Returns:
+		str: Formatted GST address from the GST Portal, or None if not available
+	"""
+	from crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings import (
+		validate_deal_gstin,
+		fetch_gstin_details
+	)
+
+	# Validate GSTIN using India Compliance API
+	result = validate_deal_gstin(lead.gst_number)
+
+	if not result['is_valid']:
+		frappe.throw(
+			_(result['error_message']),
+			title=_("Invalid GST Number")
+		)
+
+	# Display warning if using basic validation only
+	if result.get('warning_message'):
+		frappe.msgprint(
+			_(result['warning_message']),
+			indicator='orange',
+			alert=True
+		)
+
+	gst_address = None
+
+	# Auto-fetch organization details from GSTIN
+	try:
+		fetch_result = fetch_gstin_details(lead.gst_number)
+
+		if fetch_result.get("success") and fetch_result.get("data"):
+			gstin_data = fetch_result["data"]
+			updated_fields = []
+
+			# Auto-populate organization name if empty
+			if not lead.organization and gstin_data.get("organization"):
+				lead.db_set("organization", gstin_data["organization"])
+				updated_fields.append("Organization")
+
+			# Auto-populate company type if empty
+			if not lead.company_type and gstin_data.get("company_type"):
+				lead.db_set("company_type", gstin_data["company_type"])
+				updated_fields.append("Company Type")
+
+			# Build GST address from API response
+			gst_address = _format_gst_address(gstin_data)
+
+			if gst_address:
+				updated_fields.append("GST Address")
+
+			# Show success message if any fields were updated
+			if updated_fields:
+				frappe.msgprint(
+					_("Auto-filled from GSTIN: {0}").format(", ".join(updated_fields)),
+					indicator="green",
+					alert=True
+				)
+
+	except Exception as e:
+		# Don't block conversion if GSTIN fetch fails
+		frappe.log_error(
+			frappe.get_traceback(),
+			f"GST API Fetch Failed during deal conversion for Lead {lead.name}"
+		)
+		frappe.msgprint(
+			_("Could not fetch details from GSTIN API: {0}").format(str(e)),
+			indicator="orange",
+			alert=True
+		)
+
+	return gst_address
+
+
+def _format_gst_address(gstin_data):
+	"""
+	Format the GST address from API response into a single string.
+
+	Args:
+		gstin_data: Dict containing address fields from GST Portal API
+
+	Returns:
+		str: Formatted address string, or None if no address data
+	"""
+	address_parts = []
+
+	# Add address lines
+	if gstin_data.get("address_line1"):
+		address_parts.append(gstin_data["address_line1"])
+
+	if gstin_data.get("address_line2"):
+		address_parts.append(gstin_data["address_line2"])
+
+	# Add city, state, pincode
+	city_state_parts = []
+	if gstin_data.get("city"):
+		city_state_parts.append(gstin_data["city"])
+
+	if gstin_data.get("state"):
+		city_state_parts.append(gstin_data["state"])
+
+	if city_state_parts:
+		address_parts.append(", ".join(city_state_parts))
+
+	if gstin_data.get("pincode"):
+		address_parts.append(f"PIN: {gstin_data['pincode']}")
+
+	if gstin_data.get("country"):
+		address_parts.append(gstin_data["country"])
+
+	if address_parts:
+		return "\n".join(address_parts)
+
+	return None
+
 @frappe.whitelist()
 def get_leads_data():
     return frappe.get_all(
@@ -675,3 +802,240 @@ def get_leads_data():
         fields=["status", "annual_revenue", "converted"],
         filters={}
     )
+
+
+@frappe.whitelist()
+def check_lead_duplicates(organization=None, email=None, mobile_no=None):
+    """
+    Check for potential duplicate leads, organizations, and contacts.
+
+    This helps prevent creating duplicate records by checking:
+    1. Existing leads (not yet converted to deals) with matching organization, email, or mobile
+    2. Existing organizations (from converted leads/deals) with matching name
+    3. Existing contacts with matching email or mobile number
+
+    Args:
+        organization: Organization name to search for (partial match)
+        email: Email address to search for (exact match)
+        mobile_no: Mobile number to search for (exact match)
+
+    Returns:
+        dict: Contains 'leads', 'organizations', and 'contacts' lists with potential duplicates
+    """
+    duplicates = {
+        "leads": [],
+        "organizations": [],
+        "contacts": [],
+        "has_duplicates": False
+    }
+
+    # Skip if no search criteria provided
+    if not organization and not email and not mobile_no:
+        return duplicates
+
+    # Build filters for lead search
+    lead_filters = [["converted", "=", 0]]  # Only non-converted leads
+    lead_or_filters = []
+
+    if organization and len(organization) >= 2:
+        # Partial match on organization name (case-insensitive)
+        lead_or_filters.append(["organization", "like", f"%{organization}%"])
+
+    if email:
+        lead_or_filters.append(["email", "=", email])
+
+    if mobile_no:
+        # Normalize mobile number - remove common formatting characters
+        normalized_mobile = mobile_no.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+        lead_or_filters.append(["mobile_no", "like", f"%{normalized_mobile[-10:]}%"])
+
+    # Search for existing leads
+    if lead_or_filters:
+        existing_leads = frappe.get_all(
+            "CRM Lead",
+            filters=lead_filters,
+            or_filters=lead_or_filters,
+            fields=[
+                "name", "lead_name", "organization", "email",
+                "mobile_no", "status", "lead_owner", "first_name", "last_name"
+            ],
+            limit=10
+        )
+
+        for lead in existing_leads:
+            match_reasons = []
+            if organization and lead.organization and organization.lower() in lead.organization.lower():
+                match_reasons.append("organization")
+            if email and lead.email and email.lower() == lead.email.lower():
+                match_reasons.append("email")
+            if mobile_no and lead.mobile_no:
+                normalized_search = mobile_no.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+                normalized_lead = lead.mobile_no.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+                if normalized_search[-10:] in normalized_lead or normalized_lead[-10:] in normalized_search:
+                    match_reasons.append("mobile")
+
+            duplicates["leads"].append({
+                "name": lead.name,
+                "lead_name": lead.lead_name or f"{lead.first_name or ''} {lead.last_name or ''}".strip(),
+                "organization": lead.organization,
+                "email": lead.email,
+                "mobile_no": lead.mobile_no,
+                "status": lead.status,
+                "lead_owner": lead.lead_owner,
+                "match_reasons": match_reasons
+            })
+
+    # Search for existing organizations (from converted leads)
+    if organization and len(organization) >= 2:
+        existing_orgs = frappe.get_all(
+            "CRM Organization",
+            filters=[["organization_name", "like", f"%{organization}%"]],
+            fields=["name", "organization_name", "website", "industry", "lead"],
+            limit=10
+        )
+
+        for org in existing_orgs:
+            # Get the associated deal if any
+            deal = frappe.db.get_value(
+                "CRM Deal",
+                {"organization": org.name},
+                ["name", "status", "deal_owner"],
+                as_dict=True
+            )
+
+            duplicates["organizations"].append({
+                "name": org.name,
+                "organization_name": org.organization_name,
+                "website": org.website,
+                "industry": org.industry,
+                "lead": org.lead,
+                "deal": deal.get("name") if deal else None,
+                "deal_status": deal.get("status") if deal else None
+            })
+
+    # Search for existing contacts by email or mobile
+    if email or mobile_no:
+        contact_names = set()
+
+        # Search by email
+        if email:
+            email_contacts = frappe.get_all(
+                "Contact Email",
+                filters={"email_id": email},
+                fields=["parent"],
+                limit=10
+            )
+            for ec in email_contacts:
+                contact_names.add(ec.parent)
+
+        # Search by mobile number
+        if mobile_no:
+            normalized_mobile = mobile_no.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+            # Search for contacts with matching phone numbers
+            phone_contacts = frappe.get_all(
+                "Contact Phone",
+                filters=[["phone", "like", f"%{normalized_mobile[-10:]}%"]],
+                fields=["parent"],
+                limit=10
+            )
+            for pc in phone_contacts:
+                contact_names.add(pc.parent)
+
+        # Get contact details
+        for contact_name in list(contact_names)[:10]:
+            contact = frappe.db.get_value(
+                "Contact",
+                contact_name,
+                ["name", "first_name", "last_name", "email_id", "mobile_no", "company_name"],
+                as_dict=True
+            )
+            if contact:
+                match_reasons = []
+
+                # Check email match - also check against all email addresses in Contact Email
+                if email:
+                    # Check primary email
+                    if contact.email_id and email.lower() == contact.email_id.lower():
+                        match_reasons.append("email")
+                    else:
+                        # Check all emails in Contact Email child table
+                        email_exists = frappe.db.exists(
+                            "Contact Email",
+                            {"parent": contact_name, "email_id": email}
+                        )
+                        if email_exists:
+                            match_reasons.append("email")
+
+                # Check mobile match - also check against all phones in Contact Phone
+                if mobile_no:
+                    normalized_search = mobile_no.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+                    matched_mobile = False
+
+                    # Check primary mobile
+                    if contact.mobile_no:
+                        normalized_contact = contact.mobile_no.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+                        if normalized_search[-10:] in normalized_contact or normalized_contact[-10:] in normalized_search:
+                            matched_mobile = True
+
+                    # If not matched, check all phones in Contact Phone child table
+                    if not matched_mobile:
+                        contact_phones = frappe.get_all(
+                            "Contact Phone",
+                            filters={"parent": contact_name},
+                            fields=["phone"]
+                        )
+                        for cp in contact_phones:
+                            if cp.phone:
+                                normalized_phone = cp.phone.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+                                if normalized_search[-10:] in normalized_phone or normalized_phone[-10:] in normalized_search:
+                                    matched_mobile = True
+                                    break
+
+                    if matched_mobile:
+                        match_reasons.append("mobile")
+
+                # Only add contacts that have at least one match reason
+                if match_reasons:
+                    # Get linked lead or deal if any
+                    linked_lead = frappe.db.get_value("Contact", contact_name, "lead")
+                    linked_deals = frappe.get_all(
+                        "CRM Contacts",
+                        filters={"contact": contact_name},
+                        fields=["parent"],
+                        limit=1
+                    )
+
+                    # Get the actual email and mobile to display (from child tables if primary is empty)
+                    display_email = contact.email_id
+                    display_mobile = contact.mobile_no
+
+                    if not display_email:
+                        primary_email = frappe.db.get_value(
+                            "Contact Email",
+                            {"parent": contact_name, "is_primary": 1},
+                            "email_id"
+                        )
+                        display_email = primary_email
+
+                    if not display_mobile:
+                        primary_mobile = frappe.db.get_value(
+                            "Contact Phone",
+                            {"parent": contact_name, "is_primary_mobile_no": 1},
+                            "phone"
+                        )
+                        display_mobile = primary_mobile
+
+                    duplicates["contacts"].append({
+                        "name": contact.name,
+                        "full_name": f"{contact.first_name or ''} {contact.last_name or ''}".strip() or contact.name,
+                        "email": display_email,
+                        "mobile_no": display_mobile,
+                        "company_name": contact.company_name,
+                        "linked_lead": linked_lead,
+                        "linked_deal": linked_deals[0].parent if linked_deals else None,
+                        "match_reasons": match_reasons
+                    })
+
+    duplicates["has_duplicates"] = bool(duplicates["leads"] or duplicates["organizations"] or duplicates["contacts"])
+
+    return duplicates

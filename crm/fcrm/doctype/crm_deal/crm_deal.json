@@ -31,16 +31,18 @@
   "lead_name",
   "organization_details_section",
   "organization_name",
-   "organization_gstin",
+  "organization_gstin",
   "website",
   "no_of_employees",
   "job_title",
+  "address",
   "column_break_xbyf",
   "territory",
   "currency",
   "annual_revenue",
   "industry",
   "line_of_business",
+  "gst_address",
   "person_section",
   "salutation",
   "first_name",
@@ -307,12 +309,12 @@
    "options": "CRM Industry"
   },
   {
+   "description": "Business line for service team assignment",
    "fetch_from": "lead.line_of_business",
    "fieldname": "line_of_business",
    "fieldtype": "Link",
    "label": "Line of Business",
-   "options": "CRM Line of Business",
-   "description": "Business line for service team assignment"
+   "options": "CRM Line of Business"
   },
   {
    "fieldname": "person_section",
@@ -391,11 +393,11 @@
    "options": "currency",
    "read_only": 1
   },
-   {
-     "fieldname": "organization_gstin",
-     "fieldtype": "Autocomplete",
-     "label": "Organization GSTIN",
-     "reqd": 1
+  {
+   "fieldname": "organization_gstin",
+   "fieldtype": "Autocomplete",
+   "label": "Organization GSTIN",
+   "reqd": 1
   },
   {
    "fieldname": "section_break_jgpm",
@@ -423,12 +425,22 @@
    "fieldtype": "Text",
    "label": "Lost Notes",
    "mandatory_depends_on": "eval: doc.lost_reason == \"Other\""
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Small Text",
+   "label": "Address"
+  },
+  {
+   "fieldname": "gst_address",
+   "fieldtype": "Small Text",
+   "label": "GST Address"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-02 11:07:50.192089",
+ "modified": "2026-01-20 11:41:18.274436",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Deal",
