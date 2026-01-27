@@ -807,12 +807,13 @@ def get_leads_data():
 @frappe.whitelist()
 def check_lead_duplicates(organization=None, email=None, mobile_no=None):
     """
-    Check for potential duplicate leads, organizations, and contacts.
+    Check for potential duplicate leads, organizations, contacts, and customers.
 
     This helps prevent creating duplicate records by checking:
     1. Existing leads (not yet converted to deals) with matching organization, email, or mobile
     2. Existing organizations (from converted leads/deals) with matching name
     3. Existing contacts with matching email or mobile number
+    4. Existing customers with matching email or mobile number
 
     Args:
         organization: Organization name to search for (partial match)
@@ -820,12 +821,13 @@ def check_lead_duplicates(organization=None, email=None, mobile_no=None):
         mobile_no: Mobile number to search for (exact match)
 
     Returns:
-        dict: Contains 'leads', 'organizations', and 'contacts' lists with potential duplicates
+        dict: Contains 'leads', 'organizations', 'contacts', and 'customers' lists with potential duplicates
     """
     duplicates = {
         "leads": [],
         "organizations": [],
         "contacts": [],
+        "customers": [],
         "has_duplicates": False
     }
 
@@ -1036,6 +1038,54 @@ def check_lead_duplicates(organization=None, email=None, mobile_no=None):
                         "match_reasons": match_reasons
                     })
 
-    duplicates["has_duplicates"] = bool(duplicates["leads"] or duplicates["organizations"] or duplicates["contacts"])
+    # Search for existing customers by email or mobile
+    if email or mobile_no:
+        customer_or_filters = []
+
+        if email:
+            customer_or_filters.append(["email_id", "=", email])
+
+        if mobile_no:
+            normalized_mobile = mobile_no.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+            customer_or_filters.append(["mobile_no", "like", f"%{normalized_mobile[-10:]}%"])
+
+        if customer_or_filters:
+            existing_customers = frappe.get_all(
+                "Customer",
+                or_filters=customer_or_filters,
+                fields=[
+                    "name", "customer_name", "email_id", "mobile_no",
+                    "customer_type", "territory", "lead_name"
+                ],
+                limit=10
+            )
+
+            for customer in existing_customers:
+                match_reasons = []
+
+                # Check email match
+                if email and customer.email_id and email.lower() == customer.email_id.lower():
+                    match_reasons.append("email")
+
+                # Check mobile match
+                if mobile_no and customer.mobile_no:
+                    normalized_search = mobile_no.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+                    normalized_customer = customer.mobile_no.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+                    if normalized_search[-10:] in normalized_customer or normalized_customer[-10:] in normalized_search:
+                        match_reasons.append("mobile")
+
+                if match_reasons:
+                    duplicates["customers"].append({
+                        "name": customer.name,
+                        "customer_name": customer.customer_name,
+                        "email": customer.email_id,
+                        "mobile_no": customer.mobile_no,
+                        "customer_type": customer.customer_type,
+                        "territory": customer.territory,
+                        "linked_lead": customer.lead_name,
+                        "match_reasons": match_reasons
+                    })
+
+    duplicates["has_duplicates"] = bool(duplicates["leads"] or duplicates["organizations"] or duplicates["contacts"] or duplicates["customers"])
 
     return duplicates

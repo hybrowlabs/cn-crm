@@ -560,13 +560,28 @@ def create_customer_in_erpnext(doc, method):
 
 	contacts = get_contacts(doc)
 	address = get_organization_address(doc.organization)
+
+	# Get default customer group from Selling Settings or use the root customer group
+	default_customer_group = frappe.db.get_single_value("Selling Settings", "customer_group")
+	if not default_customer_group:
+		# Fallback to root customer group (one with no parent - check for null/None)
+		default_customer_group = frappe.db.get_value(
+			"Customer Group",
+			{"parent_customer_group": ("is", "not set")},
+			"name"
+		)
+	if not default_customer_group:
+		# Last resort - get any customer group that is a group (can have children)
+		default_customer_group = frappe.db.get_value("Customer Group", {"is_group": 1}, "name")
+
 	customer = {
 		"customer_name": doc.organization,
-		"customer_group": "All Customer Groups",
+		"customer_group": default_customer_group,
 		"customer_type": "Company",
 		"territory": doc.territory,
 		"default_currency": doc.currency,
 		"industry": doc.industry,
+        "disabled": 1,
 		"website": doc.website,
 		"crm_deal": doc.name,
 		"contacts": json.dumps(contacts),

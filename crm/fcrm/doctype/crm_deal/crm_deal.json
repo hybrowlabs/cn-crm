@@ -233,7 +233,7 @@
    "fieldname": "territory",
    "fieldtype": "Link",
    "label": "Territory",
-   "options": "CRM Territory"
+   "options": "Territory"
   },
   {
    "fieldname": "source",
@@ -396,8 +396,7 @@
   {
    "fieldname": "organization_gstin",
    "fieldtype": "Autocomplete",
-   "label": "Organization GSTIN",
-   "reqd": 1
+   "label": "Organization GSTIN"
   },
   {
    "fieldname": "section_break_jgpm",
@@ -440,7 +439,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-20 11:41:18.274436",
+ "modified": "2026-01-23 12:24:55.557561",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Deal",

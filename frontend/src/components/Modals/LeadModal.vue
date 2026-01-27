@@ -213,6 +213,63 @@
               </div>
             </div>
 
+            <!-- Existing Customers -->
+            <div v-if="duplicateWarning.customers.length > 0" class="mt-3">
+              <p class="text-xs font-medium text-amber-800 uppercase tracking-wide mb-2">
+                {{ __('Existing Customers') }}
+              </p>
+              <div class="space-y-2">
+                <div
+                  v-for="customer in duplicateWarning.customers"
+                  :key="customer.name"
+                  class="bg-white rounded-md p-3 border border-amber-200"
+                >
+                  <!-- Mobile: Stacked layout -->
+                  <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-medium text-ink-gray-9 break-words">
+                        {{ customer.customer_name }}
+                      </p>
+                      <div class="mt-1 text-xs text-ink-gray-5 space-y-0.5 sm:space-y-0">
+                        <p v-if="customer.customer_type" class="sm:inline">
+                          {{ customer.customer_type }}
+                          <span class="hidden sm:inline" v-if="customer.email || customer.mobile_no"> · </span>
+                        </p>
+                        <p v-if="customer.email" class="sm:inline break-all">
+                          {{ customer.email }}
+                          <span class="hidden sm:inline" v-if="customer.mobile_no"> · </span>
+                        </p>
+                        <p v-if="customer.mobile_no" class="sm:inline">
+                          {{ customer.mobile_no }}
+                        </p>
+                      </div>
+                      <p class="text-xs text-amber-600 mt-1">
+                        {{ __('Matched by:') }} {{ customer.match_reasons.join(', ') }}
+                        <span v-if="customer.territory" class="text-ink-gray-5">
+                          · {{ customer.territory }}
+                        </span>
+                      </p>
+                    </div>
+                    <!-- Mobile: Full-width action row -->
+                    <div class="flex items-center justify-between sm:justify-end gap-2 pt-2 sm:pt-0 border-t border-amber-100 sm:border-0 sm:ml-3">
+                      <Badge
+                        :label="__('Customer')"
+                        variant="subtle"
+                        theme="purple"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        :label="__('View Customer')"
+                        class="flex-1 sm:flex-initial"
+                        @click="openCustomerInNewTab(customer.name)"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <p class="mt-3 text-xs text-amber-600 italic text-center sm:text-left">
               {{ __('You can still create this lead if it is not a duplicate.') }}
             </p>
@@ -280,6 +337,7 @@ const duplicateWarning = reactive({
   leads: [],
   organizations: [],
   contacts: [],
+  customers: [],
 })
 
 // Debounce timer for duplicate checking
@@ -293,6 +351,7 @@ const checkDuplicates = createResource({
       duplicateWarning.leads = data.leads || []
       duplicateWarning.organizations = data.organizations || []
       duplicateWarning.contacts = data.contacts || []
+      duplicateWarning.customers = data.customers || []
       duplicateWarning.show = true
 
       // On mobile, scroll to the warning banner so user sees it
@@ -309,6 +368,7 @@ const checkDuplicates = createResource({
       duplicateWarning.leads = []
       duplicateWarning.organizations = []
       duplicateWarning.contacts = []
+      duplicateWarning.customers = []
     }
   },
 })
@@ -337,6 +397,7 @@ function debouncedDuplicateCheck() {
       duplicateWarning.leads = []
       duplicateWarning.organizations = []
       duplicateWarning.contacts = []
+      duplicateWarning.customers = []
     }
   }, 500) // 500ms debounce
 }
@@ -364,6 +425,11 @@ function openOrganizationInNewTab(orgName) {
 function openContactInNewTab(contactName) {
   // Open contact in Frappe desk since contacts may not have a dedicated CRM page
   window.open(`/app/contact/${contactName}`, '_blank')
+}
+
+function openCustomerInNewTab(customerName) {
+  // Open customer in Frappe desk
+  window.open(`/app/customer/${customerName}`, '_blank')
 }
 
 const leadStatuses = computed(() => {

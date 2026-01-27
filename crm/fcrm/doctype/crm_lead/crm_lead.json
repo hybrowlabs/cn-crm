@@ -30,6 +30,7 @@
   "last_name",
   "email",
   "mobile_no",
+  "designation",
   "organization_tab",
   "section_break_uixv",
   "naming_series",
@@ -374,13 +375,18 @@
    "fieldname": "address",
    "fieldtype": "Small Text",
    "label": "Address"
+  },
+  {
+   "fieldname": "designation",
+   "fieldtype": "Data",
+   "label": "Designation"
   }
  ],
  "grid_page_length": 50,
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-20 11:09:46.182718",
+ "modified": "2026-01-22 11:25:40.689118",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Lead",
