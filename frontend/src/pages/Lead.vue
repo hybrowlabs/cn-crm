@@ -50,10 +50,17 @@
         </template>
       </Dropdown>
       <Button
-        :label="__('Convert to Deal')"
+        :label="__('Create Meeting')"
         variant="solid"
+        @click="showCreateMeetingModal = true"
+      />
+      <!-- Convert to Deal button hidden - new workflow: Lead → Meeting → Opportunity
+      <Button
+        :label="__('Convert to Deal')"
+        variant="outline"
         @click="showConvertToDealModal = true"
       />
+      -->
     </template>
   </LayoutHeader>
   <div v-if="lead?.data" class="flex h-full overflow-hidden">
@@ -226,6 +233,11 @@
     v-model="showConvertToDealModal"
     :lead="lead.data"
   />
+  <MeetingModal
+    v-if="showCreateMeetingModal"
+    v-model="showCreateMeetingModal"
+    :lead="lead.data"
+  />
   <FilesUploader
     v-if="lead.data?.name"
     v-model="showFilesUploader"
@@ -272,6 +284,7 @@ import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import ConvertToDealModal from '@/components/Modals/ConvertToDealModal.vue'
+import MeetingModal from '@/components/Modals/MeetingModal.vue'
 import {
   openWebsite,
   setupCustomizations,
@@ -320,6 +333,7 @@ const errorTitle = ref('')
 const errorMessage = ref('')
 const showDeleteLinkedDocModal = ref(false)
 const showConvertToDealModal = ref(false)
+const showCreateMeetingModal = ref(false)
 
 const { triggerOnChange, assignees, document } = useDocument(
   'CRM Lead',

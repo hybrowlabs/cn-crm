@@ -42,6 +42,12 @@ def after_install(force=False):
 	add_standard_dropdown_items()
 	add_default_scripts()
 	add_default_spanco_views()
+	# Precious Alloys master data
+	add_default_meeting_types()
+	add_default_pain_categories()
+	add_default_decision_criteria()
+	add_default_customer_roles()
+	add_default_trial_outcomes()
 	frappe.db.commit()
 
 
@@ -164,7 +170,7 @@ def add_default_fields_layout(force=False):
 	quick_entry_layouts = {
 		"CRM Lead-Quick Entry": {
 			"doctype": "CRM Lead",
-			"layout": '[{"name": "person_section", "columns": [{"name": "column_5jrk", "fields": ["salutation", "email"]}, {"name": "column_5CPV", "fields": ["first_name", "mobile_no"]}, {"name": "column_gXOy", "fields": ["last_name", "gender"]}]}, {"name": "organization_section", "columns": [{"name": "column_GHfX", "fields": ["organization", "territory"]}, {"name": "column_hXjS", "fields": ["website", "annual_revenue"]}, {"name": "column_RDNA", "fields": ["no_of_employees", "industry"]}]}, {"name": "lead_section", "columns": [{"name": "column_EO1H", "fields": ["status"]}, {"name": "column_RWBe", "fields": ["lead_owner"]}]}]',
+			"layout": '[{"name":"first_tab","sections":[{"name":"person_section","columns":[{"name":"column_5jrk","fields":["salutation","email"]},{"name":"column_5CPV","fields":["first_name","mobile_no"]},{"name":"column_gXOy","fields":["last_name","gender"]}]},{"name":"organization_section","columns":[{"name":"column_GHfX","fields":["organization","territory","engagement_type","product_interest"]},{"name":"column_hXjS","fields":["website","annual_revenue","customer_segment"]},{"name":"column_RDNA","fields":["source","industry","application"]}]},{"name":"lead_section","columns":[{"name":"column_EO1H","fields":["status"]},{"name":"column_RWBe","fields":["lead_owner"]}]}]}]',
 		},
 		"CRM Deal-Quick Entry": {
 			"doctype": "CRM Deal",
@@ -194,6 +200,10 @@ def add_default_fields_layout(force=False):
 			"doctype": "CRM Task",
 			"layout": '[{"name":"reference_section","columns":[{"name":"column_ref1","fields":["reference_doctype"]},{"name":"column_ref2","fields":["reference_docname"]}]},{"name":"task_section","columns":[{"name":"column_title","fields":["title"]},{"name":"column_priority","fields":["priority"]}]},{"name":"assignment_section","columns":[{"name":"column_assigned","fields":["assigned_to"]},{"name":"column_status","fields":["status"]}]},{"name":"dates_section","columns":[{"name":"column_start","fields":["start_date"]},{"name":"column_due","fields":["due_date"]}]},{"name":"description_section","columns":[{"name":"column_desc","fields":["description"]}]}]',
 		},
+		"CRM Meeting-Quick Entry": {
+			"doctype": "CRM Meeting",
+			"layout": '[{"name":"meeting_tab","sections":[{"name":"details_section","label":"Meeting Details","columns":[{"name":"column_lead","fields":["lead","meeting_type"]},{"name":"column_date","fields":["meeting_date","meeting_owner"]}]},{"name":"discovery_section","label":"Discovery","columns":[{"name":"column_prod","fields":["product_discussed","primary_pain_category"]},{"name":"column_vol","fields":["volume_range","pain_description"]}]},{"name":"qualification_section","label":"Qualification","columns":[{"name":"column_role","fields":["customer_role_type","current_supplier"]},{"name":"column_decision","fields":["decision_process","next_action_date"]}]},{"name":"gate_section","label":"Gate Criteria","columns":[{"name":"column_dm","fields":["decision_maker_identified"]},{"name":"column_trial","fields":["agrees_to_trial"]}]}]}]',
+		},
 	}
 
 	sidebar_fields_layouts = {
@@ -213,16 +223,24 @@ def add_default_fields_layout(force=False):
 			"doctype": "CRM Organization",
 			"layout": '[{"label": "Details", "name": "details_section", "opened": true, "columns": [{"name": "column_IJOV", "fields": ["organization_name", "website", "territory", "industry", "no_of_employees", "address"]}]}]',
 		},
+		"CRM Meeting-Side Panel": {
+			"doctype": "CRM Meeting",
+			"layout": '[{"label": "Meeting Details", "name": "details_section", "opened": true, "columns": [{"name": "column_mtg1", "fields": ["lead", "meeting_type", "meeting_date", "meeting_owner", "status"]}]}, {"label": "Discovery", "name": "discovery_section", "opened": true, "columns": [{"name": "column_disc", "fields": ["product_discussed", "volume_range", "primary_pain_category", "current_supplier"]}]}, {"label": "Qualification", "name": "qual_section", "opened": true, "columns": [{"name": "column_qual", "fields": ["customer_role_type", "decision_maker_identified", "agrees_to_trial", "next_action_date"]}]}]',
+		},
 	}
 
 	data_fields_layouts = {
 		"CRM Lead-Data Fields": {
 			"doctype": "CRM Lead",
-			"layout": '[{"label": "Details", "name": "details_section", "opened": true, "columns": [{"name": "column_ZgLG", "fields": ["organization", "industry", "lead_owner"]}, {"name": "column_TbYq", "fields": ["website", "job_title"]}, {"name": "column_OKSX", "fields": ["territory", "source"]}]}, {"label": "Person", "name": "person_section", "opened": true, "columns": [{"name": "column_6c5g", "fields": ["salutation", "email"]}, {"name": "column_1n7Q", "fields": ["first_name", "mobile_no"]}, {"name": "column_cT6C", "fields": ["last_name"]}]}]',
+			"layout": '[{"name":"first_tab","sections":[{"label":"Details","name":"details_section","opened":true,"columns":[{"name":"column_ZgLG","fields":["organization","industry","lead_owner","engagement_type"]},{"name":"column_TbYq","fields":["website","job_title","product_interest","customer_segment"]},{"name":"column_OKSX","fields":["territory","source","application"]}]},{"label":"Person","name":"person_section","opened":true,"columns":[{"name":"column_6c5g","fields":["salutation","email"]},{"name":"column_1n7Q","fields":["first_name","mobile_no"]},{"name":"column_cT6C","fields":["last_name"]}]}]}]',
 		},
 		"CRM Deal-Data Fields": {
 			"doctype": "CRM Deal",
 			"layout": '[{"label": "Details", "name": "details_section", "opened": true, "columns": [{"name": "column_z9XL", "fields": ["organization", "annual_revenue", "next_step"]}, {"name": "column_gM4w", "fields": ["website", "close_date", "deal_owner"]}, {"name": "column_gWmE", "fields": ["territory", "probability"]}]}]',
+		},
+		"CRM Meeting-Data Fields": {
+			"doctype": "CRM Meeting",
+			"layout": '[{"name":"meeting_tab","sections":[{"label":"Meeting Details","name":"details_section","opened":true,"columns":[{"name":"column_mtg1","fields":["lead","meeting_type"]},{"name":"column_mtg2","fields":["meeting_date","meeting_owner"]},{"name":"column_mtg3","fields":["status"]}]},{"label":"Discovery Information","name":"discovery_section","opened":true,"columns":[{"name":"column_disc1","fields":["product_discussed","primary_pain_category"]},{"name":"column_disc2","fields":["volume_range","pain_description"]},{"name":"column_disc3","fields":["current_supplier"]}]},{"label":"Qualification","name":"qualification_section","opened":true,"columns":[{"name":"column_qual1","fields":["customer_role_type","decision_maker_identified"]},{"name":"column_qual2","fields":["decision_process","agrees_to_trial"]},{"name":"column_qual3","fields":["next_action_date"]}]},{"label":"Notes","name":"notes_section","opened":true,"columns":[{"name":"column_notes","fields":["notes"]}]}]}]',
 		},
 	}
 
@@ -450,6 +468,103 @@ def add_default_lost_reasons():
 		doc = frappe.new_doc("CRM Lost Reason")
 		doc.lost_reason = reason["reason"]
 		doc.description = reason["description"]
+		doc.insert()
+
+
+def add_default_meeting_types():
+	"""Master 1: Meeting Type choices for Precious Alloys"""
+	types = [
+		"Call",
+		"Face-to-Face",
+		"Site Visit",
+		"Event Follow-up",
+		"Video Call",
+	]
+
+	for meeting_type in types:
+		if frappe.db.exists("CRM Meeting Type", meeting_type):
+			continue
+
+		doc = frappe.new_doc("CRM Meeting Type")
+		doc.meeting_type = meeting_type
+		doc.insert()
+
+
+def add_default_pain_categories():
+	"""Master 2: Pain Category choices (LOCKED) for Precious Alloys"""
+	categories = [
+		"Quality Consistency",
+		"Reliability / Supply",
+		"Technical Support",
+		"Payment / Credit Terms",
+		"Custom Formulation",
+		"Cost / Margin Pressure",
+		"Other",
+	]
+
+	for cat in categories:
+		if frappe.db.exists("CRM Pain Catagory", cat):
+			continue
+
+		doc = frappe.new_doc("CRM Pain Catagory")
+		doc.pain_catagory = cat
+		doc.insert()
+
+
+def add_default_decision_criteria():
+	"""Master 3: Decision Criteria choices for Precious Alloys"""
+	criteria = [
+		"Price",
+		"Alloy Quality",
+		"Batch Consistency",
+		"Yield / Recovery",
+		"Delivery Reliability",
+		"Technical Support",
+		"Credit Terms",
+		"Custom Formulation Capability",
+	]
+
+	for crit in criteria:
+		if frappe.db.exists("CRM Decision Criteria", crit):
+			continue
+
+		doc = frappe.new_doc("CRM Decision Criteria")
+		doc.decision_criteria = crit
+		doc.insert()
+
+
+def add_default_customer_roles():
+	"""Master 4: Customer Role choices for Precious Alloys"""
+	roles = [
+		"User",
+		"Influencer",
+		"Decision Maker",
+		"Purchaser",
+	]
+
+	for role in roles:
+		if frappe.db.exists("CRM Customer Role", role):
+			continue
+
+		doc = frappe.new_doc("CRM Customer Role")
+		doc.customer_role = role
+		doc.insert()
+
+
+def add_default_trial_outcomes():
+	"""Master 5: Trial Outcome choices for Precious Alloys"""
+	outcomes = [
+		"Pass",
+		"Fail",
+		"Extend",
+	]
+
+	for outcome in outcomes:
+		if frappe.db.exists("CRM Trial Outcome", outcome):
+			continue
+
+		doc = frappe.new_doc("CRM Trial Outcome")
+		doc.trial_outcome = outcome
 		doc.insert()
 
 

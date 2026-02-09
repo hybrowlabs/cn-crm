@@ -1,0 +1,235 @@
+{
+    "actions": [],
+    "allow_import": 1,
+    "allow_rename": 1,
+    "autoname": "naming_series:",
+    "creation": "2026-02-09 21:25:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "details_tab",
+        "naming_series",
+        "lead",
+        "meeting_date",
+        "column_break_basic",
+        "meeting_type",
+        "status",
+        "meeting_owner",
+        "discovery_section",
+        "product_discussed",
+        "volume_range",
+        "column_break_discovery",
+        "primary_pain_category",
+        "pain_description",
+        "qualification_section",
+        "customer_role_type",
+        "decision_process",
+        "column_break_qualification",
+        "current_supplier",
+        "next_action_date",
+        "gate_section",
+        "decision_maker_identified",
+        "column_break_gate",
+        "agrees_to_trial",
+        "notes_section",
+        "notes"
+    ],
+    "fields": [
+        {
+            "fieldname": "details_tab",
+            "fieldtype": "Tab Break",
+            "label": "Details"
+        },
+        {
+            "default": "CRM-MTG-.YYYY.-",
+            "fieldname": "naming_series",
+            "fieldtype": "Select",
+            "label": "Series",
+            "options": "CRM-MTG-.YYYY.-"
+        },
+        {
+            "fieldname": "lead",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Lead",
+            "options": "CRM Lead",
+            "reqd": 1
+        },
+        {
+            "fieldname": "meeting_date",
+            "fieldtype": "Datetime",
+            "in_list_view": 1,
+            "label": "Meeting Date & Time",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_basic",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "meeting_type",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Meeting Type",
+            "options": "CRM Meeting Type",
+            "reqd": 1
+        },
+        {
+            "default": "Open",
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "Open\nCompleted\nCancelled"
+        },
+        {
+            "fieldname": "meeting_owner",
+            "fieldtype": "Link",
+            "label": "Meeting Owner",
+            "options": "User"
+        },
+        {
+            "fieldname": "discovery_section",
+            "fieldtype": "Section Break",
+            "label": "Discovery Information"
+        },
+        {
+            "fieldname": "product_discussed",
+            "fieldtype": "Link",
+            "label": "Product Discussed",
+            "options": "CRM Product",
+            "reqd": 1
+        },
+        {
+            "fieldname": "volume_range",
+            "fieldtype": "Float",
+            "label": "Volume Range (kg/month)",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_discovery",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "primary_pain_category",
+            "fieldtype": "Link",
+            "label": "Primary Pain Category",
+            "options": "CRM Pain Catagory",
+            "reqd": 1
+        },
+        {
+            "fieldname": "pain_description",
+            "fieldtype": "Text",
+            "label": "Pain Description",
+            "mandatory_depends_on": "eval:doc.primary_pain_category=='Other'",
+            "reqd": 1
+        },
+        {
+            "fieldname": "qualification_section",
+            "fieldtype": "Section Break",
+            "label": "Qualification"
+        },
+        {
+            "fieldname": "customer_role_type",
+            "fieldtype": "Link",
+            "label": "Customer Role Type",
+            "options": "CRM Customer Role",
+            "reqd": 1
+        },
+        {
+            "fieldname": "decision_process",
+            "fieldtype": "Text",
+            "label": "Decision Process (high-level)",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_qualification",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "current_supplier",
+            "fieldtype": "Data",
+            "label": "Current Supplier",
+            "reqd": 1
+        },
+        {
+            "fieldname": "next_action_date",
+            "fieldtype": "Date",
+            "label": "Next Action Date",
+            "reqd": 1
+        },
+        {
+            "fieldname": "gate_section",
+            "fieldtype": "Section Break",
+            "label": "Meeting → Opportunity Gate"
+        },
+        {
+            "default": "No",
+            "fieldname": "decision_maker_identified",
+            "fieldtype": "Select",
+            "label": "Decision Maker / Buyer Identified?",
+            "options": "Yes\nNo",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_gate",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "No",
+            "fieldname": "agrees_to_trial",
+            "fieldtype": "Select",
+            "label": "Customer Agrees to Evaluate Trial?",
+            "options": "Yes\nNo",
+            "reqd": 1
+        },
+        {
+            "fieldname": "notes_section",
+            "fieldtype": "Section Break",
+            "label": "Notes"
+        },
+        {
+            "fieldname": "notes",
+            "fieldtype": "Text Editor",
+            "label": "Meeting Notes"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-02-09 21:25:00.000000",
+    "modified_by": "Administrator",
+    "module": "FCRM",
+    "name": "CRM Meeting",
+    "naming_rule": "By \"Naming Series\" field",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Sales User",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Sales Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "title_field": "lead",
+    "track_changes": 1
+}
