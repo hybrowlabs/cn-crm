@@ -14,7 +14,7 @@
       />
       <Button
         variant="solid"
-        :label="__('Edit Visit')"
+        :label="__('Edit Meeting')"
         @click="showEditModal = true"
       >
         <template #prefix>
@@ -330,7 +330,7 @@ function validateRequired(fieldname, value) {
 }
 
 const breadcrumbs = computed(() => {
-  let items = [{ label: __('Visits'), route: { name: 'Visits' } }]
+  let items = [{ label: __('Meetings'), route: { name: 'Visits' } }]
 
   if (route.query.view || route.query.viewType) {
     let view = getView(route.query.view, route.query.viewType, 'CRM Site Visit')

@@ -632,7 +632,7 @@ const tabs = computed(() => {
     },
     {
       name: 'Visits',
-      label: __('Visits'),
+      label: __('Meetings'),
       icon: VisitsIcon
     },
     {

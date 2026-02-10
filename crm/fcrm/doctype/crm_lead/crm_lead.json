@@ -46,6 +46,8 @@
   "converted",
   "products_tab",
   "products",
+  "product_interest",
+  "application__use_case",
   "section_break_ggwh",
   "total",
   "column_break_uisv",
@@ -165,13 +167,31 @@
    "fieldname": "source",
    "fieldtype": "Link",
    "label": "Source",
-   "options": "CRM Lead Source"
+   "options": "CRM Lead Source",
+   "reqd": 1
+  },
+  {
+   "fieldname": "engagement_type",
+   "fieldtype": "Select",
+   "insert_after": "source",
+   "label": "Engagement Type",
+   "options": "Inbound\nOutbound\nReferral\nEvent\nPartner",
+   "reqd": 1
+  },
+  {
+   "fieldname": "customer_segment",
+   "fieldtype": "Select",
+   "insert_after": "engagement_type",
+   "label": "Customer Segment",
+   "options": "Foundry\nDie Casting\nContinuous Casting\nGravity Casting\nOEM\nTrader\nOther",
+   "reqd": 1
   },
   {
    "fieldname": "industry",
    "fieldtype": "Link",
    "label": "Industry",
-   "options": "CRM Industry"
+   "options": "CRM Industry",
+   "reqd": 1
   },
   {
    "fieldname": "line_of_business",
@@ -379,14 +399,28 @@
   {
    "fieldname": "designation",
    "fieldtype": "Data",
-   "label": "Designation"
+   "label": "Designation",
+   "reqd": 1
+  },
+  {
+   "fieldname": "product_interest",
+   "fieldtype": "Link",
+   "label": "Product Interest",
+   "options": "CRM Product",
+   "reqd": 1
+  },
+  {
+   "fieldname": "application__use_case",
+   "fieldtype": "Data",
+   "label": "Application / Use Case",
+   "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-22 11:25:40.689118",
+ "modified": "2026-02-10 11:35:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Lead",

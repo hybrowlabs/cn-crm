@@ -42,6 +42,11 @@ def after_install(force=False):
 	add_standard_dropdown_items()
 	add_default_scripts()
 	add_default_spanco_views()
+	add_default_meeting_types()
+	add_default_pain_categories()
+	add_default_customer_roles()
+	add_default_decision_criteria()
+	add_default_trial_outcomes()
 	frappe.db.commit()
 
 
@@ -162,9 +167,13 @@ def add_default_communication_statuses():
 
 def add_default_fields_layout(force=False):
 	quick_entry_layouts = {
+		"CRM Site Visit-Quick Entry": {
+			"doctype": "CRM Site Visit",
+			"layout": '[{"name":"tab_MhVC","sections":[{"name":"section_LjPM","columns":[{"name":"column_2NhV","fields":["naming_series","visit_date","meeting_type","visit_type","company"]},{"name":"column_kxsz","fields":["planned_start_time","planned_end_time","amended_from","status","priority"]}]},{"name":"section_m4Tv","columns":[{"name":"column_zoLk","fields":["reference_type","reference_name","reference_title"]},{"name":"column_1ivw","fields":["customer_address","contact_phone","contact_email"]}]},{"name":"discovery_section","label":"Discovery & Qualification","columns":[{"name":"column_disc1","fields":["primary_pain_category","pain_description","customer_role_type"]},{"name":"column_disc2","fields":["decision_process","current_supplier","next_action_date","volume_rangekg"]}]},{"name":"section_sh2k","columns":[{"name":"column_9qik","fields":["visit_purpose"]},{"name":"column_07iv","fields":["visit_agenda","visit_summary"]}]},{"name":"section_uVtY","columns":[{"name":"column_1ggc","fields":["visit_address","city","state","country","pincode"]},{"name":"column_j2ph","fields":["check_in_time","check_in_location","check_in_latitude","check_in_longitude","location_accuracy"]}]},{"name":"section_Mxla","columns":[{"name":"column_6rYC","fields":["check_out_time","check_out_location","check_out_latitude","check_out_longitude","total_duration"]}]},{"name":"section_0z8d","columns":[{"name":"column_wHhm","fields":["lead_quality","feedback","key_points"]},{"name":"column_5JSK","fields":["next_steps","follow_up_required","follow_up_date"]}]},{"name":"section_ZbgY","columns":[{"name":"column_LId8","fields":["potential_value","probability_percentage","expected_closure_date"]}]},{"name":"section_uw5r","columns":[{"name":"column_DKmn","fields":["calendar_event","sync_with_calendar"]}]}]}]',
+		},
 		"CRM Lead-Quick Entry": {
 			"doctype": "CRM Lead",
-			"layout": '[{"name": "person_section", "columns": [{"name": "column_5jrk", "fields": ["salutation", "email"]}, {"name": "column_5CPV", "fields": ["first_name", "mobile_no"]}, {"name": "column_gXOy", "fields": ["last_name", "gender"]}]}, {"name": "organization_section", "columns": [{"name": "column_GHfX", "fields": ["organization", "territory"]}, {"name": "column_hXjS", "fields": ["website", "annual_revenue"]}, {"name": "column_RDNA", "fields": ["no_of_employees", "industry"]}]}, {"name": "lead_section", "columns": [{"name": "column_EO1H", "fields": ["status"]}, {"name": "column_RWBe", "fields": ["lead_owner"]}]}]',
+			"layout": '[{"name":"first_tab","sections":[{"name":"person_section","columns":[{"name":"column_5jrk","fields":["salutation","email"]},{"name":"column_5CPV","fields":["first_name","mobile_no"]},{"name":"column_gXOy","fields":["last_name","gender"]}]},{"name":"organization_section","columns":[{"name":"column_GHfX","fields":["organization","territory","product_interest"]},{"name":"column_hXjS","fields":["website","annual_revenue","application__use_case"]},{"name":"column_RDNA","fields":["source","industry","designation"]}]},{"name":"lead_section","columns":[{"name":"column_EO1H","fields":["status"]},{"name":"column_RWBe","fields":["lead_owner"]}]}]}]',
 		},
 		"CRM Deal-Quick Entry": {
 			"doctype": "CRM Deal",
@@ -218,11 +227,11 @@ def add_default_fields_layout(force=False):
 	data_fields_layouts = {
 		"CRM Lead-Data Fields": {
 			"doctype": "CRM Lead",
-			"layout": '[{"label": "Details", "name": "details_section", "opened": true, "columns": [{"name": "column_ZgLG", "fields": ["organization", "industry", "lead_owner"]}, {"name": "column_TbYq", "fields": ["website", "job_title"]}, {"name": "column_OKSX", "fields": ["territory", "source"]}]}, {"label": "Person", "name": "person_section", "opened": true, "columns": [{"name": "column_6c5g", "fields": ["salutation", "email"]}, {"name": "column_1n7Q", "fields": ["first_name", "mobile_no"]}, {"name": "column_cT6C", "fields": ["last_name"]}]}]',
+			"layout": '[{"name":"first_tab","sections":[{"label":"Details","name":"details_section","opened":true,"columns":[{"name":"column_ZgLG","fields":["organization","industry","lead_owner","application__use_case"]},{"name":"column_TbYq","fields":["website","job_title","product_interest"]},{"name":"column_OKSX","fields":["territory","source","designation"]}]},{"label":"Person","name":"person_section","opened":true,"columns":[{"name":"column_6c5g","fields":["salutation","email"]},{"name":"column_1n7Q","fields":["first_name","mobile_no"]},{"name":"column_cT6C","fields":["last_name"]}]}]}]',
 		},
 		"CRM Deal-Data Fields": {
 			"doctype": "CRM Deal",
-			"layout": '[{"label": "Details", "name": "details_section", "opened": true, "columns": [{"name": "column_z9XL", "fields": ["organization", "annual_revenue", "next_step"]}, {"name": "column_gM4w", "fields": ["website", "close_date", "deal_owner"]}, {"name": "column_gWmE", "fields": ["territory", "probability"]}]}]',
+			"layout": '[{"name":"first_tab","sections":[{"label":"Details","name":"details_section","opened":true,"columns":[{"name":"column_z9XL","fields":["organization","annual_revenue","next_step"]},{"name":"column_gM4w","fields":["website","close_date","deal_owner"]},{"name":"column_gWmE","fields":["territory","probability"]}]},{"label":"Opportunity","name":"opportunity_section","opened":true,"columns":[{"name":"column_opp1","fields":["product_alloy_type","expected_monthly_volume","first_order_volume","primary_pain_category","decision_criteria_list"]},{"name":"column_opp2","fields":["economic_buyer_name","custom_formulation_required","decision_timeline","opportunity_owner"]}]},{"label":"Trial","name":"trial_section","opened":true,"columns":[{"name":"column_trial1","fields":["trial_product_type","trial_volume","trial_start_date","trial_end_date"]},{"name":"column_trial2","fields":["trial_success_criteria","trial_outcome","trial_outcome_notes","trial_owner"]}]}]}]',
 		},
 	}
 
@@ -592,3 +601,70 @@ def add_default_spanco_views():
 		fcrm_settings.order = view_ids["orderbooking"]
 
 	fcrm_settings.save()
+
+
+def add_default_meeting_types():
+	"""Seed Meeting Type master with locked blueprint values."""
+	types = ["Call", "Face-to-Face", "Site Visit", "Event Follow-up", "Video Call"]
+	for mt in types:
+		if not frappe.db.exists("CRM Meeting Type", mt):
+			doc = frappe.new_doc("CRM Meeting Type")
+			doc.meeting_type = mt
+			doc.insert()
+
+
+def add_default_pain_categories():
+	"""Seed Pain Category master with locked blueprint values."""
+	categories = [
+		"Quality Consistency",
+		"Reliability / Supply",
+		"Technical Support",
+		"Payment / Credit Terms",
+		"Custom Formulation",
+		"Cost / Margin Pressure",
+		"Other",
+	]
+	for cat in categories:
+		if not frappe.db.exists("CRM Pain Category", cat):
+			doc = frappe.new_doc("CRM Pain Category")
+			doc.pain_category = cat
+			doc.insert()
+
+
+def add_default_customer_roles():
+	"""Seed Customer Role master with locked blueprint values."""
+	roles = ["User", "Influencer", "Decision Maker", "Purchaser"]
+	for role in roles:
+		if not frappe.db.exists("Customer Role", role):
+			doc = frappe.new_doc("Customer Role")
+			doc.customer_role = role
+			doc.insert()
+
+
+def add_default_decision_criteria():
+	"""Seed Decision Criteria master with locked blueprint values."""
+	criteria = [
+		"Price",
+		"Alloy Quality",
+		"Batch Consistency",
+		"Yield / Recovery",
+		"Delivery Reliability",
+		"Technical Support",
+		"Credit Terms",
+		"Custom Formulation Capability",
+	]
+	for c in criteria:
+		if not frappe.db.exists("Decision Criteria", c):
+			doc = frappe.new_doc("Decision Criteria")
+			doc.decision_criteria = c
+			doc.insert()
+
+
+def add_default_trial_outcomes():
+	"""Seed Trial Outcome master with locked blueprint values."""
+	outcomes = ["Pass", "Fail", "Extend"]
+	for outcome in outcomes:
+		if not frappe.db.exists("Trial Outcome", outcome):
+			doc = frappe.new_doc("Trial Outcome")
+			doc.trial_outcome = outcome
+			doc.insert()

@@ -5,7 +5,7 @@
         <div class="mb-5 flex items-center justify-between">
           <div>
             <h3 class="text-2xl font-semibold leading-6 text-ink-gray-9">
-              {{ isEditMode ? __('Edit Site Visit') : __('Create Site Visit') }}
+              {{ isEditMode ? __('Edit Meeting') : __('Create Meeting') }}
             </h3>
             <p v-if="isEditMode && visitId" class="mt-1 text-sm text-ink-gray-6">
               {{ visitId }}
@@ -234,6 +234,37 @@ function getStatusColor(status) {
   return statusObj?.color || 'gray'
 }
 
+function validateForm() {
+  const missingFields = []
+  
+  if (tabs.data) {
+    tabs.data.forEach(tab => {
+      tab.sections?.forEach(section => {
+        section.columns?.forEach(column => {
+          column.fields?.forEach(field => {
+            if (field.reqd && !visit.doc[field.fieldname]) {
+              missingFields.push(field.label)
+            }
+          })
+        })
+      })
+    })
+  } else {
+    // Fallback if tabs not loaded yet (though button should be disabled ideally)
+    if (!visit.doc.visit_date) missingFields.push(__('Visit Date'))
+    if (!visit.doc.visit_type) missingFields.push(__('Visit Type'))
+    if (!visit.doc.reference_name) missingFields.push(__('Reference'))
+    if (!visit.doc.sales_person) missingFields.push(__('Sales Person'))
+    if (!visit.doc.visit_purpose) missingFields.push(__('Visit Purpose'))
+  }
+
+  if (missingFields.length > 0) {
+    error.value = __('Missing mandatory fields: {0}', [missingFields.join(', ')])
+    return false
+  }
+  return true
+}
+
 async function createVisit() {
   error.value = null
   
@@ -248,30 +279,7 @@ async function createVisit() {
   }
 
   // Pre-validation - check required fields before API call
-  if (!visit.doc.visit_date) {
-    error.value = __('Visit Date is required')
-    return
-  }
-
-  if (!visit.doc.visit_type) {
-    error.value = __('Visit Type is required')
-    return
-  }
-
-  if (!visit.doc.reference_type || !visit.doc.reference_name) {
-    error.value = __('Reference Type and Reference Name are required')
-    return
-  }
-
-  if (!visit.doc.sales_person) {
-    error.value = __('Sales Person is required')
-    return
-  }
-
-  if (!visit.doc.visit_purpose) {
-    error.value = __('Visit Purpose is required')
-    return
-  }
+  if (!validateForm()) return
 
   // Additional validations
   if (visit.doc.contact_phone && isNaN(visit.doc.contact_phone.replace(/[-+() ]/g, ''))) {
@@ -331,26 +339,26 @@ async function createVisit() {
     isVisitCreating.value = false
     
     // Use global error handler for comprehensive error processing
-    handleResourceError(err, 'create site visit')
+    handleResourceError(err, 'create Meeting')
     
     // Set specific local error message
     if (err._server_messages) {
       try {
         const messages = JSON.parse(err._server_messages)
-        error.value = messages[0]?.message || 'Failed to create site visit'
+        error.value = messages[0]?.message || 'Failed to create Meeting'
       } catch {
-        error.value = 'Server error occurred while creating visit'
+        error.value = 'Server error occurred while creating Meeting'
       }
     } else if (err.exception) {
       error.value = 'Please check all required fields and try again'
     } else if (err.exc_type) {
-      error.value = 'Validation error - please check your input'
+      error.value = err.message || 'Validation error - please check your input'
     } else if (err.messages && Array.isArray(err.messages)) {
       error.value = err.messages.join('\n')
     } else if (err.message) {
       error.value = err.message
     } else {
-      error.value = 'Failed to create site visit. Please try again.'
+      error.value = 'Failed to create Meeting. Please try again.'
     }
   }
 }
@@ -358,6 +366,8 @@ async function createVisit() {
 async function saveChanges() {
   error.value = null
   
+  if (!validateForm()) return
+
   try {
     isVisitCreating.value = true
     

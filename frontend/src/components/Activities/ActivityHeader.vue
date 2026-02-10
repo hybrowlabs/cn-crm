@@ -4,7 +4,7 @@
     class="mx-4 my-3 flex items-center justify-between text-lg font-medium sm:mx-10 sm:mb-4 sm:mt-8"
   >
     <div class="flex h-8 items-center text-xl font-semibold text-ink-gray-8">
-      {{ __(title) }}
+      {{ __(title === 'Visits' ? 'Meetings' : title) }}
     </div>
     <Button
       v-if="title == 'Emails'"
@@ -82,7 +82,7 @@
       <template #prefix>
         <FeatherIcon name="plus" class="h-4 w-4" />
       </template>
-      <span>{{ __('New Visit') }}</span>
+      <span>{{ __('New Meeting') }}</span>
     </Button>
     <Dropdown v-else :options="defaultActions" @click.stop>
       <template v-slot="{ open }">
@@ -172,7 +172,7 @@ const defaultActions = computed(() => {
     },
     {
       icon: h(VisitsIcon, { class: 'h-4 w-4' }),
-      label: __('New Visit'),
+      label: __('New Meeting'),
       onClick: () => props.modalRef.showVisit(),
     },
     {

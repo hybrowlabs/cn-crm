@@ -645,7 +645,7 @@ def get_mobile_quick_actions(user):
     actions = [
         {
             'action': 'create_visit',
-            'label': 'New Visit',
+            'label': 'New Meeting',
             'icon': 'plus',
             'color': '#3498db'
         },

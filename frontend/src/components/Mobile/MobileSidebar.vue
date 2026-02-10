@@ -141,7 +141,7 @@ const links = [
     to: 'Quotations',
   },
   {
-    label: 'Visits',
+    label: 'Meetings',
     icon: VisitsIcon,
     to: 'Visits',
   },

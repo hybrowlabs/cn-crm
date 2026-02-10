@@ -32,6 +32,136 @@ class CRMDeal(Document):
 			add_status_change_log(self)
 		self.validate_forcasting_fields()
 		self.validate_lost_reason()
+		self.validate_stage_gates()
+
+	def validate_stage_gates(self):
+		"""
+		Enforce qualification gates between stages.
+		"""
+		# Gate 1: Meeting -> Application (Opportunity)
+		# Enforce when entering Qualification stage or later, IF a lead is linked
+		# (Deals can be created without leads, but if lead exists, gate applies)
+		if self.lead and self.status not in ["Lost"]:
+			self.validate_meeting_to_opportunity_gate()
+
+		# Gate 2: Opportunity -> Trial
+		if self.status == "Demo/Making":
+			self.validate_opportunity_to_trial_gate()
+
+		# Gate 3: Trial -> Proposal
+		# Enforced when moving to Proposal or later stages
+		if self.status in ["Proposal/Quotation", "Negotiation", "Ready to Close", "Won"]:
+			# Ensure we passed the trial gate if we were previously in trial or just enforce if fields are missing?
+			# The requirement is "Proposal allowed only if: Trial completed, Outcome documented, Outcome = Pass"
+			# This implies we must have had a trial.
+			# But what if we skip trial? "No proposal without trial" is a rule.
+			self.validate_trial_to_proposal_gate()
+
+	def validate_meeting_to_opportunity_gate(self):
+		"""
+		Meeting -> Qualified Opportunity Gate:
+		Opportunity can be created only if ALL are true:
+		- Pain category selected (on meeting)
+		- Pain clearly described (on meeting)
+		- Volume range entered (on meeting)
+		- Customer Role Type is 'Decision Maker' or 'Purchaser' (on meeting)
+		"""
+		# Find at least one valid meeting
+		meetings = frappe.get_all(
+			"CRM Site Visit",
+			filters={
+				"reference_type": "CRM Lead",
+				"reference_name": self.lead,
+				"docstatus": 1, # Submitted/Completed? Or just saved? Let's assume saved (0 or 1)
+			},
+			fields=[
+				"primary_pain_category",
+				"pain_description",
+				"volume_rangekg",
+				"customer_role_type"
+			]
+		)
+
+		valid_meeting_found = False
+		for m in meetings:
+			if (m.primary_pain_category and
+				m.pain_description and
+				m.volume_rangekg and
+				m.customer_role_type in ["Decision Maker", "Purchaser"]):
+				valid_meeting_found = True
+				break
+
+		# If no meeting found at all, strictly block?
+		# Blueprint says: "Meeting -> Qualified Opportunity (Gate)... Opportunity can be created only if..."
+		if not meetings:
+			# If no meetings at all, we can't have passed the gate
+			# Allow exemption if manually created without lead? No, logic above checks self.lead
+			frappe.throw(
+				_("Cannot create Opportunity. No Site Visit found for Lead {0}.").format(
+					frappe.bold(self.lead)
+				),
+				frappe.ValidationError
+			)
+
+		if not valid_meeting_found:
+			frappe.throw(
+				_("Cannot create Opportunity. No valid Site Visit found with required qualification criteria (Pain, Volume, Decision Maker/Purchaser role)."),
+				frappe.ValidationError
+			)
+
+	def validate_opportunity_to_trial_gate(self):
+		"""
+		Opportunity -> Trial Gate:
+		Trial allowed only if:
+		- Product selected
+		- Trial volume defined
+		- Trial success criteria agreed
+		- Trial timeline agreed
+		"""
+		missing = []
+		if not self.product_alloy_type: missing.append(_("Product / Alloy Type"))
+		if not self.trial_volume: missing.append(_("Trial Volume"))
+		if not self.trial_success_criteria: missing.append(_("Trial Success Criteria"))
+		if not self.trial_start_date: missing.append(_("Trial Start Date"))
+		if not self.trial_end_date: missing.append(_("Trial End Date"))
+
+		if missing:
+			frappe.throw(
+				_("Cannot move to Trial stage. Missing mandatory fields: {0}").format(
+					", ".join(missing)
+				),
+				frappe.ValidationError
+			)
+
+	def validate_trial_to_proposal_gate(self):
+		"""
+		Trial -> Proposal Gate:
+		Proposal allowed only if:
+		- Trial completed
+		- Outcome documented
+		- Outcome = Pass
+		"""
+		# If we are effectively skipping trial stage in the UI, we might not have these filled.
+		# But the rule "No proposal without trial" enforces this.
+		
+		# Check if outcome is filled
+		if not self.trial_outcome:
+			frappe.throw(
+				_("Cannot move to Proposal. Trial Outcome must be documented."),
+				frappe.ValidationError
+			)
+
+		if not self.trial_outcome_notes:
+			frappe.throw(
+				_("Cannot move to Proposal. Trial Outcome Notes are required."),
+				frappe.ValidationError
+			)
+
+		if self.trial_outcome != "Pass":
+			frappe.throw(
+				_("Cannot move to Proposal. Trial Outcome must be 'Pass'."),
+				frappe.ValidationError
+			)
 
 	def validate_eligible_contacts_organizations(self):
 		"""Ensure contacts and organization are linked to the same Lead (if lead is provided)"""

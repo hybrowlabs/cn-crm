@@ -13,6 +13,7 @@ def get_lead(name):
 
 	lead["fields_meta"] = get_fields_meta("CRM Lead")
 	lead["_form_script"] = get_form_script("CRM Lead")
+	lead["linked_visits"] = get_lead_visits(name)
 	return lead
 
 @frappe.whitelist()

@@ -50,6 +50,7 @@
         </template>
       </Dropdown>
       <Button
+        v-if="linkedVisits?.length > 0"
         :label="__('Convert to Deal')"
         variant="solid"
         @click="showConvertToDealModal = true"
@@ -340,11 +341,7 @@ const visits = createResource({
     errorTitle.value = ''
     errorMessage.value = ''
     
-    // Update reactive ref
-    linkedVisits.value = data
-    
     if (lead.data) {
-      // Also assign to lead.data for consistency
       lead.data.linked_visits = data
     }
   },
@@ -403,17 +400,7 @@ onMounted(() => {
 const reload = ref(false)
 const showFilesUploader = ref(false)
 const pendingVisitsData = ref(null)
-const linkedVisits = ref([])
-
-// Use watchEffect to reactively update the lead object with visits
-watchEffect(() => {
-  if (lead.data && linkedVisits.value.length > 0) {
-    // Force Vue reactivity by replacing the entire data object
-    const currentData = { ...lead.data }
-    currentData.linked_visits = [...linkedVisits.value]
-    lead.data = currentData
-  }
-})
+const linkedVisits = computed(() => lead.data?.linked_visits || [])
 
 function updateLead(fieldname, value, callback) {
   value = Array.isArray(fieldname) ? '' : value
@@ -545,7 +532,7 @@ const tabs = computed(() => {
     },
     {
       name: 'Visits',
-      label: __('Visits'),
+      label: __('Meeting'),
       icon: VisitsIcon,
     },
     {

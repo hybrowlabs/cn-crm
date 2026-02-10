@@ -8,13 +8,13 @@
         v-if="visitsListView?.customListActions"
         :actions="visitsListView.customListActions"
       />
-      <Button
+      <!-- <Button
         variant="solid"
         :label="__('Create')"
         @click="showVisitModal = true"
       >
         <template #prefix><FeatherIcon name="plus" class="h-4" /></template>
-      </Button>
+      </Button> -->
     </template>
   </LayoutHeader>
   <ViewControls
@@ -57,10 +57,10 @@
       class="flex flex-col items-center gap-3 text-xl font-medium text-ink-gray-4"
     >
       <VisitsIcon class="h-10 w-10" />
-      <span>{{ __('No {0} Found', [__('Visits')]) }}</span>
-      <Button :label="__('Create')" @click="showVisitModal = true">
+      <span>{{ __('No {0} Found', [__('Meetings')]) }}</span>
+      <!-- <Button :label="__('Create')" @click="showVisitModal = true">
         <template #prefix><FeatherIcon name="plus" class="h-4" /></template>
-      </Button>
+      </Button> -->
     </div>
   </div>
   <VisitModal

@@ -169,6 +169,7 @@ declare module 'vue' {
     MapView: typeof import('./src/components/MapView.vue')['default']
     MarkAsDoneIcon: typeof import('./src/components/Icons/MarkAsDoneIcon.vue')['default']
     MaximizeIcon: typeof import('./src/components/Icons/MaximizeIcon.vue')['default']
+    MeetingModal: typeof import('./src/components/Modals/MeetingModal.vue')['default']
     MenuIcon: typeof import('./src/components/Icons/MenuIcon.vue')['default']
     MinimizeIcon: typeof import('./src/components/Icons/MinimizeIcon.vue')['default']
     MissedCallIcon: typeof import('./src/components/Icons/MissedCallIcon.vue')['default']

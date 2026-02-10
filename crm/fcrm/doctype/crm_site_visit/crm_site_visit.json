@@ -11,6 +11,7 @@
   "basic_info_section",
   "naming_series",
   "visit_date",
+  "meeting_type",
   "visit_type",
   "status",
   "priority",
@@ -19,6 +20,8 @@
   "planned_start_time",
   "planned_end_time",
   "amended_from",
+  "product_discussed",
+  "volume_rangekg",
   "reference_section",
   "reference_type",
   "reference_name",
@@ -98,7 +101,7 @@
    "fieldname": "visit_type",
    "fieldtype": "Select",
    "in_list_view": 1,
-   "label": "Visit Type",
+   "label": "Meeting Category",
    "options": "Initial Meeting\nDemo/Presentation\nNegotiation\nContract Signing\nFollow-up\nSupport\nOther",
    "reqd": 1
   },
@@ -219,18 +222,18 @@
    "options": "User"
   },
   {
+   "description": "Business line for service team assignment",
    "fieldname": "line_of_business",
    "fieldtype": "Link",
    "label": "Line of Business",
-   "options": "CRM Line of Business",
-   "description": "Business line for service team assignment"
+   "options": "CRM Line of Business"
   },
   {
+   "description": "Engineer assigned to this service visit",
    "fieldname": "service_engineer",
    "fieldtype": "Link",
    "label": "Service Engineer",
-   "options": "User",
-   "description": "Engineer assigned to this service visit"
+   "options": "User"
   },
   {
    "fieldname": "location_address_section",
@@ -362,6 +365,60 @@
    "label": "Visit Summary"
   },
   {
+   "fieldname": "discovery_section",
+   "fieldtype": "Section Break",
+   "label": "Discovery & Qualification"
+  },
+  {
+   "fieldname": "primary_pain_category",
+   "fieldtype": "Link",
+   "insert_after": "discovery_section",
+   "label": "Primary Pain Category",
+   "options": "CRM Pain Category",
+   "reqd": 1
+  },
+  {
+   "fieldname": "pain_description",
+   "fieldtype": "Small Text",
+   "insert_after": "primary_pain_category",
+   "label": "Pain Description",
+   "reqd": 1
+  },
+  {
+   "fieldname": "customer_role_type",
+   "fieldtype": "Link",
+   "insert_after": "pain_description",
+   "label": "Customer Role Type",
+   "options": "Customer Role",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_discovery",
+   "fieldtype": "Column Break",
+   "label": ""
+  },
+  {
+   "fieldname": "decision_process",
+   "fieldtype": "Small Text",
+   "insert_after": "column_break_discovery",
+   "label": "Decision Process",
+   "reqd": 1
+  },
+  {
+   "fieldname": "current_supplier",
+   "fieldtype": "Data",
+   "insert_after": "decision_process",
+   "label": "Current Supplier",
+   "reqd": 1
+  },
+  {
+   "fieldname": "next_action_date",
+   "fieldtype": "Date",
+   "insert_after": "current_supplier",
+   "label": "Next Action Date",
+   "reqd": 1
+  },
+  {
    "fieldname": "visit_outcome_section",
    "fieldtype": "Section Break",
    "label": "Visit Outcome"
@@ -440,12 +497,32 @@
    "fieldname": "sync_with_calendar",
    "fieldtype": "Check",
    "label": "Sync with Calendar"
+  },
+  {
+   "fieldname": "meeting_type",
+   "fieldtype": "Select",
+   "label": "Meeting Type",
+   "options": "Call\nFace-to-Face\nSite Visit\nEvent Follow-up\nVideo Call",
+   "reqd": 1
+  },
+  {
+   "fieldname": "product_discussed",
+   "fieldtype": "Link",
+   "label": "Product Discussed",
+   "options": "CRM Product",
+   "reqd": 1
+  },
+  {
+   "fieldname": "volume_rangekg",
+   "fieldtype": "Float",
+   "label": "Volume Range(KG)",
+   "reqd": 1
   }
  ],
  "icon": "fa fa-map-marker",
  "is_submittable": 1,
  "links": [],
- "modified": "2025-06-16 15:26:46.196363",
+ "modified": "2026-02-10 11:36:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Site Visit",

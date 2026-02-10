@@ -285,7 +285,6 @@ function updateVisit(fieldname, value, callback) {
 }
 
 function validateRequired(fieldname, value) {
-  let meta = visit.data.fields_meta || {}
   if (meta[fieldname]?.reqd && !value) {
     toast.error(__('{0} is a required field', [meta[fieldname].label]))
     return true
@@ -293,8 +292,26 @@ function validateRequired(fieldname, value) {
   return false
 }
 
+function validateMandatoryFields() {
+  const meta = visit.data.fields_meta || {}
+  const missingFields = []
+
+  // Check all fields defined in meta
+  for (const [fieldname, fieldMeta] of Object.entries(meta)) {
+    if (fieldMeta.reqd && !visit.data[fieldname]) {
+      missingFields.push(fieldMeta.label)
+    }
+  }
+
+  if (missingFields.length > 0) {
+    toast.error(__('Cannot proceed. Missing mandatory fields: {0}', [missingFields.join(', ')]))
+    return false
+  }
+  return true
+}
+
 const breadcrumbs = computed(() => {
-  let items = [{ label: __('Visits'), route: { name: 'Visits' } }]
+  let items = [{ label: __('Meetings'), route: { name: 'Visits' } }]
 
   if (route.query.view || route.query.viewType) {
     let view = getView(route.query.view, route.query.viewType, 'CRM Site Visit')
@@ -516,6 +533,8 @@ async function checkOut() {
     return
   }
 
+  if (!validateMandatoryFields()) return
+
   checkoutLocationLoading.value = true
   try {
     // Call native interface to get location first
@@ -606,6 +625,8 @@ async function confirmCheckout() {
 }
 
 async function submit() {
+  if (!validateMandatoryFields()) return
+
   try {
     await call('crm.fcrm.doctype.crm_site_visit.crm_site_visit.submit_visit', {visit_id: props.visitId})
     // Reload both resources to ensure UI updates

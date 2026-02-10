@@ -36,6 +36,55 @@ class CRMSiteVisit(Document):
         self.calculate_duration()
         self.validate_follow_up_date()
         self.validate_submission_workflow()
+        self.validate_meeting_creation_gate()
+
+    def validate_meeting_creation_gate(self):
+        """
+        Lead -> Meeting Gate:
+        Meeting can be created only if:
+        - Named contact (first_name)
+        - Relevant role (designation)
+        - Clear application (application__use_case)
+        - Next action date (next_action_date)
+        """
+        lead_name = None
+        if self.reference_type == "CRM Lead":
+            lead_name = self.reference_name
+        elif self.reference_type == "CRM Deal":
+            lead_name = frappe.db.get_value("CRM Deal", self.reference_name, "lead")
+
+        if not lead_name:
+            return
+
+        # Check mandatory Lead fields
+        lead_fields = ["first_name", "designation", "application__use_case"]
+        lead_data = frappe.db.get_value("CRM Lead", lead_name, lead_fields, as_dict=True)
+
+        if not lead_data:
+            return
+
+        missing_fields = []
+        if not lead_data.get("first_name"):
+            missing_fields.append(_("Lead Contact Name"))
+        if not lead_data.get("designation"):
+            missing_fields.append(_("Lead Designation"))
+        if not lead_data.get("application__use_case"):
+            missing_fields.append(_("Lead Application / Use Case"))
+
+        if missing_fields:
+            frappe.throw(
+                _("Cannot create Meeting. The linked Lead is missing required fields: {0}").format(
+                    ", ".join(missing_fields)
+                ),
+                frappe.ValidationError
+            )
+
+        # Check mandatory Meeting fields
+        if not self.next_action_date:
+             frappe.throw(
+                _("Cannot create Meeting. 'Next Action Date' is required."),
+                frappe.ValidationError
+            )
 
     def validate_lead_reference(self):
         """Ensure Visit references Lead or Deal (and Deal must have Lead)"""
@@ -475,6 +524,29 @@ class CRMSiteVisit(Document):
 
         except Exception as e:
             frappe.log_error(f"Failed to log visit completion: {str(e)}")
+
+    def after_insert(self):
+        """Actions after a new visit is created"""
+        self.update_lead_status_on_creation()
+
+    def update_lead_status_on_creation(self):
+        """Change lead status from 'New' to 'Contacted' when a visit is created"""
+        if self.reference_type != "CRM Lead" or not self.reference_name:
+            return
+
+        try:
+            current_status = frappe.db.get_value("CRM Lead", self.reference_name, "status")
+            if current_status == "New":
+                frappe.db.set_value("CRM Lead", self.reference_name, "status", "Contacted")
+                frappe.logger().info(
+                    f"Lead {self.reference_name} status changed from 'New' to 'Contacted' "
+                    f"after site visit {self.name} was created"
+                )
+        except Exception as e:
+            frappe.log_error(
+                title=f"Failed to update lead status for {self.reference_name}",
+                message=str(e)
+            )
 
     def on_update(self):
         """Actions after document update"""

@@ -59,6 +59,7 @@
         :actions="document.actions"
       />
       <Button
+        v-if="visits.data?.length > 0"
         :label="__('Convert')"
         variant="solid"
         @click="showConvertToDealModal = true"
@@ -373,7 +374,7 @@ const tabs = computed(() => {
     },
     {
       name: 'Visits',
-      label: __('Visits'),
+      label: __('Meetings'),
       icon: VisitsIcon,
     },
     {

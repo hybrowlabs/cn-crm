@@ -360,6 +360,150 @@
    "options": "Currency"
   },
   {
+   "fieldname": "opportunity_tab",
+   "fieldtype": "Tab Break",
+   "label": "Opportunity"
+  },
+  {
+   "fieldname": "opportunity_section",
+   "fieldtype": "Section Break",
+   "label": "Opportunity Details"
+  },
+  {
+   "fieldname": "product_alloy_type",
+   "fieldtype": "Link",
+   "label": "Product / Alloy Type",
+   "options": "CRM Product",
+   "reqd": 0
+  },
+  {
+   "fieldname": "expected_monthly_volume",
+   "fieldtype": "Float",
+   "label": "Expected Monthly Volume (kg)",
+   "reqd": 0
+  },
+  {
+   "fieldname": "first_order_volume",
+   "fieldtype": "Float",
+   "label": "First Order Volume (kg)",
+   "reqd": 0
+  },
+  {
+   "fieldname": "primary_pain_category",
+   "fieldtype": "Link",
+   "label": "Primary Pain Category",
+   "options": "CRM Pain Category",
+   "reqd": 0
+  },
+  {
+   "fieldname": "column_break_opp1",
+   "fieldtype": "Column Break",
+   "label": ""
+  },
+  {
+   "fieldname": "economic_buyer_name",
+   "fieldtype": "Data",
+   "label": "Economic Buyer Name",
+   "reqd": 0
+  },
+  {
+   "fieldname": "custom_formulation_required",
+   "fieldtype": "Check",
+   "label": "Custom Formulation Required",
+   "reqd": 0
+  },
+  {
+   "fieldname": "decision_timeline",
+   "fieldtype": "Date",
+   "label": "Decision Timeline",
+   "reqd": 0
+  },
+  {
+   "fieldname": "opportunity_owner",
+   "fieldtype": "Link",
+   "label": "Opportunity Owner",
+   "options": "User",
+   "reqd": 0
+  },
+  {
+   "fieldname": "decision_criteria_section",
+   "fieldtype": "Section Break",
+   "label": "Decision Criteria"
+  },
+  {
+   "fieldname": "decision_criteria_list",
+   "fieldtype": "Table MultiSelect",
+   "label": "Decision Criteria",
+   "options": "CRM Decision Criteria",
+   "reqd": 0
+  },
+  {
+   "fieldname": "trial_tab",
+   "fieldtype": "Tab Break",
+   "label": "Trial"
+  },
+  {
+   "fieldname": "trial_section",
+   "fieldtype": "Section Break",
+   "label": "Trial Details"
+  },
+  {
+   "fieldname": "trial_product_type",
+   "fieldtype": "Link",
+   "label": "Trial Product Type",
+   "options": "CRM Product",
+   "reqd": 0
+  },
+  {
+   "fieldname": "trial_volume",
+   "fieldtype": "Float",
+   "label": "Trial Volume (kg)",
+   "reqd": 0
+  },
+  {
+   "fieldname": "trial_start_date",
+   "fieldtype": "Date",
+   "label": "Trial Start Date",
+   "reqd": 0
+  },
+  {
+   "fieldname": "trial_end_date",
+   "fieldtype": "Date",
+   "label": "Trial End Date",
+   "reqd": 0
+  },
+  {
+   "fieldname": "column_break_trial1",
+   "fieldtype": "Column Break",
+   "label": ""
+  },
+  {
+   "fieldname": "trial_success_criteria",
+   "fieldtype": "Small Text",
+   "label": "Trial Success Criteria",
+   "reqd": 0
+  },
+  {
+   "fieldname": "trial_outcome",
+   "fieldtype": "Link",
+   "label": "Trial Outcome",
+   "options": "Trial Outcome",
+   "reqd": 0
+  },
+  {
+   "fieldname": "trial_outcome_notes",
+   "fieldtype": "Small Text",
+   "label": "Trial Outcome Notes",
+   "reqd": 0
+  },
+  {
+   "fieldname": "trial_owner",
+   "fieldtype": "Link",
+   "label": "Trial Owner",
+   "options": "User",
+   "reqd": 0
+  },
+  {
    "fieldname": "products_tab",
    "fieldtype": "Tab Break",
    "label": "Products"
@@ -439,7 +583,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-23 12:24:55.557561",
+ "modified": "2026-02-10 11:37:00.000000",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Deal",

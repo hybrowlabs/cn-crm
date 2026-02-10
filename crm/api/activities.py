@@ -320,7 +320,7 @@ def get_visit_activities(name):
 			"activity_type": "creation",
 			"creation": doc[0],
 			"owner": doc[1],
-			"data": "created this visit",
+			"data": "created this Meeting",
 			"is_visit": True,
 		}
 	]
