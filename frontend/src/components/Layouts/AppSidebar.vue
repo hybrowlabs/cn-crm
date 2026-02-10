@@ -239,6 +239,11 @@ const links = [
     to: 'Visits',
   },
   {
+    label: 'Meetings',
+    icon: CalenderIcon,
+    to: 'Meetings',
+  },
+  {
     label: 'Contacts',
     icon: ContactsIcon,
     to: 'Contacts',

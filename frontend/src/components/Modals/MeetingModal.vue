@@ -34,6 +34,7 @@
             v-if="tabs.data"
             :tabs="tabs.data"
             :data="meeting.doc"
+            doctype="CRM Meeting"
           />
           <ErrorMessage class="mt-4" v-if="error" :message="__(error)" />
         </div>
@@ -89,7 +90,7 @@ const tabs = createResource({
   params: { doctype: 'CRM Meeting', type: 'Quick Entry' },
   auto: true,
   transform: (_tabs) => {
-    return _tabs.forEach((tab) => {
+    _tabs.forEach((tab) => {
       if (!tab.sections) return
       tab.sections.forEach((section) => {
         section.columns.forEach((column) => {
@@ -102,6 +103,7 @@ const tabs = createResource({
         })
       })
     })
+    return _tabs
   },
 })
 

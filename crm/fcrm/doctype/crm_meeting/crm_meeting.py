@@ -4,11 +4,37 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from frappe.utils import get_datetime
 
 
 class CRMMeeting(Document):
     def validate(self):
+        self.normalize_datetime_fields()
         self.validate_lead_fields()
+
+    def normalize_datetime_fields(self):
+        """Convert datetime fields from human-readable formats to MySQL-compatible format"""
+        from dateutil import parser as dateutil_parser
+
+        datetime_fields = ["meeting_date"]
+        for field in datetime_fields:
+            value = self.get(field)
+            if value and isinstance(value, str):
+                try:
+                    # Try frappe's parser first
+                    parsed = get_datetime(value)
+                    self.set(field, parsed.strftime("%Y-%m-%d %H:%M:%S"))
+                except Exception:
+                    try:
+                        # Fallback to dateutil for formats like '2026-02-10 3:23 am'
+                        parsed = dateutil_parser.parse(value)
+                        self.set(field, parsed.strftime("%Y-%m-%d %H:%M:%S"))
+                    except Exception:
+                        frappe.throw(
+                            _("Invalid date/time format for {0}: {1}").format(
+                                _(self.meta.get_label(field)), value
+                            )
+                        )
     
     def validate_lead_fields(self):
         """Validate that the linked Lead has required fields for Meeting creation"""
@@ -52,3 +78,58 @@ class CRMMeeting(Document):
         if errors:
             return False, errors
         return True, []
+
+    @staticmethod
+    def default_list_data():
+        columns = [
+            {
+                "label": "Lead",
+                "type": "Link",
+                "key": "lead",
+                "options": "CRM Lead",
+                "width": "12rem",
+            },
+            {
+                "label": "Status",
+                "type": "Select",
+                "key": "status",
+                "width": "10rem",
+            },
+            {
+                "label": "Meeting Date & Time",
+                "type": "Datetime",
+                "key": "meeting_date",
+                "width": "12rem",
+            },
+            {
+                "label": "Meeting Type",
+                "type": "Link",
+                "key": "meeting_type",
+                "options": "CRM Meeting Type",
+                "width": "10rem",
+            },
+            {
+                "label": "Meeting Owner",
+                "type": "Link",
+                "key": "meeting_owner",
+                "options": "User",
+                "width": "10rem",
+            },
+            {
+                "label": "Last Modified",
+                "type": "Datetime",
+                "key": "modified",
+                "width": "8rem",
+            },
+        ]
+        rows = [
+            "name",
+            "lead",
+            "status",
+            "meeting_date",
+            "meeting_type",
+            "meeting_owner",
+            "modified",
+            "_assign",
+        ]
+        return {"columns": columns, "rows": rows}

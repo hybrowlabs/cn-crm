@@ -77,6 +77,18 @@ const routes = [
     props: true,
   },
   {
+    alias: '/meetings',
+    path: '/meetings/view/:viewType?',
+    name: 'Meetings',
+    component: () => import('@/pages/Meetings.vue'),
+  },
+  {
+    path: '/meetings/:meetingId',
+    name: 'Meeting',
+    component: () => import('@/pages/Meeting.vue'),
+    props: true,
+  },
+  {
     alias: '/notes',
     path: '/notes/view/:viewType?',
     name: 'Notes',
