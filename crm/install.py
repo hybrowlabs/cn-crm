@@ -222,7 +222,7 @@ def add_default_fields_layout(force=False):
 		},
 		"CRM Deal-Data Fields": {
 			"doctype": "CRM Deal",
-			"layout": '[{"label": "Details", "name": "details_section", "opened": true, "columns": [{"name": "column_z9XL", "fields": ["organization", "annual_revenue", "next_step"]}, {"name": "column_gM4w", "fields": ["website", "close_date", "deal_owner"]}, {"name": "column_gWmE", "fields": ["territory", "probability"]}]}]',
+			"layout": '[{"name":"first_tab","sections":[{"label":"Details","name":"details_section","opened":true,"columns":[{"name":"column_z9XL","fields":["organization","annual_revenue","next_step","first_order_volume","decision_criteria","custom_formulation_required"]},{"name":"column_gM4w","fields":["website","close_date","deal_owner","expected_monthly_volume","economic_buyer_name"]},{"name":"column_gWmE","fields":["territory","probability","product_alloy_type","primary_pain_category","decision_timeline"]}]}]}]',
 		},
 	}
 

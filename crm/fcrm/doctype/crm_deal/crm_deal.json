@@ -11,16 +11,24 @@
   "naming_series",
   "organization",
   "next_step",
+  "product_alloy_type",
+  "expected_monthly_volume",
+  "first_order_volume",
+  "primary_pain_category",
+  "economic_buyer_name",
+  "decision_timeline",
   "column_break_ijan",
   "status",
   "deal_owner",
   "lost_reason",
   "lost_notes",
+  "custom_formulation_required",
   "section_break_jgpm",
   "probability",
   "deal_value",
   "column_break_kpxa",
   "close_date",
+  "decision_criteria",
   "contacts_tab",
   "contacts",
   "contact",
@@ -434,12 +442,58 @@
    "fieldname": "gst_address",
    "fieldtype": "Small Text",
    "label": "GST Address"
+  },
+  {
+   "fetch_from": "lead.product_discussed",
+   "fieldname": "product_alloy_type",
+   "fieldtype": "Link",
+   "label": "Product /Alloy type",
+   "options": "CRM Product"
+  },
+  {
+   "fieldname": "expected_monthly_volume",
+   "fieldtype": "Float",
+   "label": "Expected monthly volume"
+  },
+  {
+   "fieldname": "first_order_volume",
+   "fieldtype": "Float",
+   "label": "First Order Volume"
+  },
+  {
+   "fetch_from": "lead.primary_pain_category",
+   "fieldname": "primary_pain_category",
+   "fieldtype": "Link",
+   "label": "Primary Pain Category",
+   "options": "CRM Pain Category"
+  },
+  {
+   "fieldname": "decision_criteria",
+   "fieldtype": "Table MultiSelect",
+   "label": "Decision Criteria",
+   "options": "CRM Decision Criteria Multi select"
+  },
+  {
+   "fieldname": "economic_buyer_name",
+   "fieldtype": "Data",
+   "label": "Economic Buyer Name"
+  },
+  {
+   "fieldname": "custom_formulation_required",
+   "fieldtype": "Select",
+   "label": "Custom Formulation Required",
+   "options": "Yes\nNo"
+  },
+  {
+   "fieldname": "decision_timeline",
+   "fieldtype": "Date",
+   "label": "Decision Timeline"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-23 12:24:55.557561",
+ "modified": "2026-02-11 12:05:31.007101",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Deal",

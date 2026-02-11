@@ -1,170 +1,116 @@
 <template>
-  <LayoutHeader v-if="lead.data">
-    <header
-      class="relative flex h-10.5 items-center justify-between gap-2 py-2.5 pl-2"
-    >
-      <Breadcrumbs :items="breadcrumbs">
-        <template #prefix="{ item }">
-          <Icon v-if="item.icon" :icon="item.icon" class="mr-2 h-4" />
-        </template>
-      </Breadcrumbs>
-      <div class="absolute right-0">
-        <Dropdown
-          v-if="document.doc"
-          :options="
-            statusOptions(
-              'lead',
-              document.statuses?.length
-                ? document.statuses
-                : lead.data._customStatuses,
-              triggerStatusChange,
-            )
-          "
-        >
-          <template #default="{ open }">
-            <Button :label="document.doc.status">
-              <template #prefix>
-                <IndicatorIcon
-                  :class="getLeadStatus(document.doc.status).color"
-                />
-              </template>
-              <template #suffix>
-                <FeatherIcon
-                  :name="open ? 'chevron-up' : 'chevron-down'"
-                  class="h-4"
-                />
-              </template>
-            </Button>
-          </template>
-        </Dropdown>
+  <div v-if="document.doc" class="flex flex-col h-full bg-white">
+    <div class="flex items-center justify-between h-12 border-b px-3 py-2.5">
+      <div class="flex items-center gap-2">
+        <CustomActions
+          v-if="lead.data._customActions?.length"
+          :actions="lead.data._customActions"
+        />
+        <CustomActions
+          v-if="document.actions?.length"
+          :actions="document.actions"
+        />
       </div>
-    </header>
-  </LayoutHeader>
-  <div
-    v-if="lead.data"
-    class="flex h-12 items-center justify-between gap-2 border-b px-3 py-2.5"
-  >
-    <AssignTo
-      v-model="assignees.data"
-      :data="document.doc"
-      doctype="CRM Lead"
-    />
-    <div class="flex items-center gap-2">
-      <CustomActions
-        v-if="lead.data._customActions?.length"
-        :actions="lead.data._customActions"
-      />
-      <CustomActions
-        v-if="document.actions?.length"
-        :actions="document.actions"
-      />
-      <Button
-        v-if="['Contacted', 'Nurture'].includes(document.doc?.status)"
-        :label="__('Convert')"
-        variant="solid"
-        @click="showConvertToDealModal = true"
-      />
-    </div>
-  </div>
-  <div v-if="lead?.data" class="flex h-full overflow-hidden">
-    <Tabs as="div" v-model="tabIndex" :tabs="tabs" class="overflow-auto">
-      <template #tab-panel="{ tab }">
-        <div v-if="tab.name == 'Details'">
-          <SLASection
-            v-if="lead.data.sla_status"
-            v-model="lead.data"
-            @updateField="updateField"
-          />
-          <div
-            v-if="sections.data"
-            class="flex flex-1 flex-col justify-between overflow-hidden"
+      <div class="flex items-center gap-2">
+        <div v-if="document.doc && ['Contacted', 'Nurture'].includes(document.doc.status)" class="flex items-center gap-2">
+          <span class="text-sm text-ink-gray-5">{{ __('Meeting Outcome') }}:</span>
+          <Dropdown
+            :options="meetingOutcomeOptions"
           >
-            <SidePanelLayout
-              :sections="sections.data"
+            <template #default>
+              <Button icon="more-horizontal">
+                <template #prefix v-if="document.doc.meeting_outcomes">
+                  <IndicatorIcon
+                    :class="getOutcomeColor(document.doc.meeting_outcomes)"
+                  />
+                </template>
+              </Button>
+            </template>
+          </Dropdown>
+        </div>
+        <Button
+          v-if="['Contacted', 'Nurture'].includes(document.doc?.status) && document.doc?.meeting_outcomes === 'Qualified'"
+          :label="__('Convert')"
+          variant="solid"
+          @click="showConvertToDealModal = true"
+        />
+      </div>
+    </div>
+    <div v-if="lead?.data" class="flex h-full overflow-hidden">
+      <Tabs as="div" v-model="tabIndex" :tabs="tabs" class="overflow-auto">
+        <template #tab-panel="{ tab }">
+          <div v-if="tab.name == 'Details'">
+            <SLASection
+              v-if="lead.data.sla_status"
+              v-model="lead.data"
+              @updateField="updateField"
+            />
+            <div class="flex flex-col gap-3 p-3">
+              <FieldLayout
+                v-for="section in sections"
+                :key="section.label"
+                :label="section.label"
+                :fields="section.fields"
+              />
+            </div>
+          </div>
+          <div v-else-if="tab.name == 'Activities'" class="h-full flex-1 overflow-auto">
+            <Activities
+              class="p-3"
               doctype="CRM Lead"
-              :docname="lead.data.name"
-              @reload="sections.reload"
-              @afterFieldChange="reloadAssignees"
+              :docname="document.doc.name"
             />
           </div>
-        </div>
-        <Activities
-          v-else
-          doctype="CRM Lead"
-          :tabs="tabs"
-          v-model:reload="reload"
-          v-model:tabIndex="tabIndex"
-          v-model="lead"
-        />
-      </template>
-    </Tabs>
+          <div v-else-if="tab.name == 'Attachments'" class="h-full flex-1 overflow-auto">
+            <FilesUploader
+              class="p-3"
+              doctype="CRM Lead"
+              :docname="document.doc.name"
+              @upload-complete="() => document.reload()"
+            />
+          </div>
+        </template>
+      </Tabs>
+    </div>
   </div>
-  <Dialog
-    v-model="showConvertToDealModal"
-    :options="{
-      title: __('Convert to Deal'),
-      size: 'xl',
-      actions: [
-        {
-          label: __('Convert'),
-          variant: 'solid',
-          onClick: convertToDeal,
-        },
-      ],
-    }"
-  >
-    <template #body-content>
-      <div class="mb-4 flex items-center gap-2 text-ink-gray-5">
-        <OrganizationsIcon class="h-4 w-4" />
-        <label class="block text-base">{{ __('Organization') }}</label>
+  <div v-else-if="lead.error" class="flex h-full items-center justify-center p-4">
+    <div class="text-center">
+      <div class="mb-4 flex justify-center text-ink-gray-4">
+        <Icon name="alert-circle" class="h-10 w-10" />
       </div>
-      <div class="ml-6">
-        <div class="flex items-center justify-between text-base">
-          <div>{{ __('Choose Existing') }}</div>
-          <Switch v-model="existingOrganizationChecked" />
-        </div>
-        <Link
-          v-if="existingOrganizationChecked"
-          class="form-control mt-2.5"
-          variant="outline"
-          size="md"
-          :value="existingOrganization"
-          doctype="CRM Organization"
-          @change="(data) => (existingOrganization = data)"
-        />
-        <div v-else class="mt-2.5 text-base">
-          {{
-            __(
-              'New quotations will be created based on the data in details section',
-            )
-          }}
-        </div>
-      </div>
+      <h3 class="mb-2 text-lg font-bold text-ink-gray-9">
+        {{ __("Couldn't find Lead") }}
+      </h3>
+      <p class="mb-6 text-sm text-ink-gray-5">
+        {{ lead.error.message || __("The lead you're looking for doesn't exist or you don't have permission to view it.") }}
+      </p>
+      <Button :label="__('Go Back')" @click="router.back()" />
+    </div>
+  </div>
+  <div v-else class="flex h-full items-center justify-center p-4">
+    <Icon name="loader" class="h-6 w-6 animate-spin text-ink-gray-4" />
+  </div>
 
-      <div class="mb-4 mt-6 flex items-center gap-2 text-ink-gray-5">
-        <ContactsIcon class="h-4 w-4" />
-        <label class="block text-base">{{ __('Contact') }}</label>
-      </div>
-      <div class="ml-6">
-        <div class="flex items-center justify-between text-base">
-          <div>{{ __('Choose Existing') }}</div>
-          <Switch v-model="existingContactChecked" />
-        </div>
-        <Link
-          v-if="existingContactChecked"
-          class="form-control mt-2.5"
-          variant="outline"
-          size="md"
-          :value="existingContact"
-          doctype="Contact"
-          @change="(data) => (existingContact = data)"
-        />
-        <div v-else class="mt-2.5 text-base">
-          {{ __("New contact will be created based on the person's details") }}
-        </div>
-      </div>
-    </template>
-  </Dialog>
+  <ConvertToDealModal
+    v-if="showConvertToDealModal"
+    v-model="showConvertToDealModal"
+    :lead="lead.data"
+    @next="
+      (data) => {
+        conversionData = data
+        showConvertToDealModal = false
+        showDealDetailModal = true
+      }
+    "
+  />
+  <DealDetailModal
+    v-if="showDealDetailModal"
+    v-model="showDealDetailModal"
+    :lead="lead.data"
+    :deal="conversionData.deal"
+    :existingContact="conversionData.existingContact"
+    :existingOrganization="conversionData.existingOrganization"
+  />
   <StatusValidationModal
     v-if="statusValidation.show"
     v-model="statusValidation.show"
@@ -195,42 +141,30 @@ import AssignTo from '@/components/AssignTo.vue'
 import Link from '@/components/Controls/Link.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import SLASection from '@/components/SLASection.vue'
+import FieldLayout from '@/components/FieldLayout/FieldLayout.vue'
+import FilesUploader from '@/components/FilesUploader/FilesUploader.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import StatusValidationModal from '@/components/Modals/StatusValidationModal.vue'
+import DealDetailModal from '@/components/Modals/DealDetailModal.vue'
 import { getFieldsForValidation } from '@/utils/validation'
 import { setupCustomizations } from '@/utils'
-import { getView } from '@/utils/view'
+import { capture } from '@/telemetry'
+import {
+  Button,
+  Dropdown,
+  Tabs,
+  Dialog,
+  call,
+  toast,
+  createResource,
+} from 'frappe-ui'
+import { ref, h, computed, reactive, provide } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { getSettings } from '@/stores/settings'
 import { globalStore } from '@/stores/global'
 import { statusesStore } from '@/stores/statuses'
 import { getMeta } from '@/stores/meta'
 import { useDocument } from '@/data/document'
-import {
-  whatsappEnabled,
-  callEnabled,
-  isMobileView,
-} from '@/composables/settings'
-import { capture } from '@/telemetry'
-import { useActiveTabManager } from '@/composables/useActiveTabManager'
-import {
-  createResource,
-  Dropdown,
-  Tabs,
-  Switch,
-  Breadcrumbs,
-  call,
-  usePageMeta,
-  toast,
-} from 'frappe-ui'
-import { ref, computed, onMounted, watch, reactive, provide } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-
-const { brand } = getSettings()
-const { $dialog, $socket } = globalStore()
-const { statusOptions, getLeadStatus } = statusesStore()
-const { doctypeMeta } = getMeta('CRM Lead')
-const route = useRoute()
-const router = useRouter()
 
 const props = defineProps({
   leadId: {
@@ -239,10 +173,57 @@ const props = defineProps({
   },
 })
 
+const route = useRoute()
+const router = useRouter()
+
+const { assignees, document, triggerOnChange } = useDocument(
+  'CRM Lead',
+  props.leadId,
+)
+
+provide('data', document.doc)
+provide('doctype', 'CRM Lead')
+provide('preview', ref(false))
+provide('isGridRow', false)
+
+const { brand } = getSettings()
+const { $dialog, $socket } = globalStore()
+const { statusOptions, getLeadStatus } = statusesStore()
+const { doctypeMeta } = getMeta('CRM Lead')
+
+const meetingOutcomeColorMap = {
+  Qualified: 'text-green-500',
+  'Follow-up Required': 'text-blue-500',
+  Nurture: 'text-orange-500',
+  Disqualified: 'text-red-500',
+  Closed: 'text-gray-500',
+}
+
+function getOutcomeColor(outcome) {
+  return meetingOutcomeColorMap[outcome] || 'text-gray-500'
+}
+
+const meetingOutcomeOptions = computed(() => {
+  const fields = doctypeMeta['CRM Lead']?.fields || []
+  const field = fields.find((f) => f.fieldname === 'meeting_outcomes')
+  if (!field || !field.options) return []
+
+  return field.options.split('\n').map((option) => ({
+    label: option,
+    value: option,
+    icon: () => h(IndicatorIcon, { class: getOutcomeColor(option) }),
+    onClick: () => {
+      triggerOnChange('meeting_outcomes', option)
+      document.save.submit()
+    },
+  }))
+})
+
 const lead = createResource({
   url: 'crm.fcrm.doctype.crm_lead.api.get_lead',
   params: { name: props.leadId },
   cache: ['lead', props.leadId],
+  auto: true,
   onSuccess: (data) => {
     setupCustomizations(lead, {
       doc: data,
@@ -262,249 +243,51 @@ const lead = createResource({
   },
 })
 
-const visits = createResource({
-  url: 'crm.fcrm.doctype.crm_lead.api.get_lead_visits',
-  params: { name: props.leadId },
-  cache: ['lead', 'visits', props.leadId],
-  auto: true,
-  onSuccess: (data) => {
-    if (lead.data) {
-      lead.data.linked_visits = data
-    }
-  },
-})
-
-onMounted(() => {
-  if (lead.data) return
-  lead.fetch()
-  visits.fetch()
-})
-
-const reload = ref(false)
-
-function updateLead(fieldname, value, callback) {
-  value = Array.isArray(fieldname) ? '' : value
-
-  if (!Array.isArray(fieldname) && validateRequired(fieldname, value)) return
-
-  createResource({
-    url: 'frappe.client.set_value',
-    params: {
-      doctype: 'CRM Lead',
-      name: props.leadId,
-      fieldname,
-      value,
-    },
-    auto: true,
-    onSuccess: () => {
-      lead.reload()
-      reload.value = true
-      toast.success(__('Lead updated successfully'))
-      callback?.()
-    },
-    onError: (err) => {
-      toast.error(__(err.messages?.[0] || 'Error updating lead'))
-    },
-  })
-}
-
-function validateRequired(fieldname, value) {
-  let meta = lead.data.fields_meta || {}
-  if (meta[fieldname]?.reqd && !value) {
-    toast.error(__('{0} is a required field', [meta[fieldname].label]))
-    return true
-  }
-  return false
-}
-
-const breadcrumbs = computed(() => {
-  let items = [{ label: __('Leads'), route: { name: 'Leads' } }]
-
-  if (route.query.view || route.query.viewType) {
-    let view = getView(route.query.view, route.query.viewType, 'CRM Lead')
-    if (view) {
-      items.push({
-        label: __(view.label),
-        icon: view.icon,
-        route: {
-          name: 'Leads',
-          params: { viewType: route.query.viewType },
-          query: { view: route.query.view },
-        },
-      })
-    }
-  }
-
-  items.push({
-    label: title.value,
-    route: { name: 'Lead', params: { leadId: lead.data.name } },
-  })
-  return items
-})
-
-const title = computed(() => {
-  let t = doctypeMeta['CRM Lead']?.title_field || 'name'
-  return lead.data?.[t] || props.leadId
-})
-
-usePageMeta(() => {
-  return {
-    title: title.value,
-    icon: brand.favicon,
-  }
-})
-
+const tabIndex = ref(0)
 const tabs = computed(() => {
-  let tabOptions = [
+  let list = [
     {
       name: 'Details',
       label: __('Details'),
       icon: DetailsIcon,
-      condition: () => isMobileView.value,
     },
     {
-      name: 'Activity',
-      label: __('Activity'),
+      name: 'Activities',
+      label: __('Activities'),
       icon: ActivityIcon,
-    },
-    {
-      name: 'Emails',
-      label: __('Emails'),
-      icon: EmailIcon,
-    },
-    {
-      name: 'Comments',
-      label: __('Comments'),
-      icon: CommentIcon,
-    },
-    {
-      name: 'Data',
-      label: __('Data'),
-      icon: DetailsIcon,
-    },
-    {
-      name: 'Visits',
-      label: __('Visits'),
-      icon: VisitsIcon,
-    },
-    {
-      name: 'Calls',
-      label: __('Calls'),
-      icon: PhoneIcon,
-      condition: () => callEnabled.value,
-    },
-    {
-      name: 'Tasks',
-      label: __('Tasks'),
-      icon: TaskIcon,
-    },
-    {
-      name: 'Notes',
-      label: __('Notes'),
-      icon: NoteIcon,
     },
     {
       name: 'Attachments',
       label: __('Attachments'),
       icon: AttachmentIcon,
     },
-    {
-      name: 'WhatsApp',
-      label: __('WhatsApp'),
-      icon: WhatsAppIcon,
-      condition: () => whatsappEnabled.value,
-    },
   ]
-  return tabOptions.filter((tab) => (tab.condition ? tab.condition() : true))
-})
-const { tabIndex } = useActiveTabManager(tabs, 'lastLeadTab')
-
-watch(tabs, (value) => {
-  if (value && route.params.tabName) {
-    let index = value.findIndex(
-      (tab) => tab.name.toLowerCase() === route.params.tabName.toLowerCase(),
-    )
-    if (index !== -1) {
-      tabIndex.value = index
-    }
-  }
+  return list
 })
 
-const sections = createResource({
-  url: 'crm.fcrm.doctype.crm_fields_layout.crm_fields_layout.get_sidepanel_sections',
-  cache: ['sidePanelSections', 'CRM Lead'],
-  params: { doctype: 'CRM Lead' },
-  auto: true,
+const sections = computed(() => {
+  if (!lead.data) return []
+  return lead.data._sections || []
 })
 
-function updateField(name, value, callback) {
-  updateLead(name, value, () => {
-    lead.data[name] = value
-    callback?.()
-  })
+const showConvertToDealModal = ref(false)
+const showDealDetailModal = ref(false)
+const conversionData = ref({})
+
+async function updateField(fieldname, value) {
+  await triggerOnChange(fieldname, value)
+  document.reload()
 }
 
-async function deleteLead(name) {
+async function deleteLead() {
   await call('frappe.client.delete', {
     doctype: 'CRM Lead',
-    name,
+    name: props.leadId,
   })
   router.push({ name: 'Leads' })
 }
 
-// Convert to Deal
-const showConvertToDealModal = ref(false)
-const existingContactChecked = ref(false)
-const existingOrganizationChecked = ref(false)
 
-const existingContact = ref('')
-const existingOrganization = ref('')
-
-async function convertToDeal() {
-  if (existingContactChecked.value && !existingContact.value) {
-    toast.error(__('Please select an existing contact'))
-    return
-  }
-
-  if (existingOrganizationChecked.value && !existingOrganization.value) {
-    toast.error(__('Please select an existing quotations'))
-    return
-  }
-
-  if (!existingContactChecked.value && existingContact.value) {
-    existingContact.value = ''
-  }
-
-  if (!existingOrganizationChecked.value && existingOrganization.value) {
-    existingOrganization.value = ''
-  }
-
-  let deal = await call('crm.fcrm.doctype.crm_lead.crm_lead.convert_to_deal', {
-    lead: lead.data.name,
-    deal: {},
-    existing_contact: existingContact.value,
-    existing_organization: existingOrganization.value,
-  })
-  if (deal) {
-    showConvertToDealModal.value = false
-    existingContactChecked.value = false
-    existingOrganizationChecked.value = false
-    existingContact.value = ''
-    existingOrganization.value = ''
-    capture('convert_lead_to_deal')
-    router.push({ name: 'Deal', params: { dealId: deal } })
-  }
-}
-
-const { assignees, document, triggerOnChange } = useDocument(
-  'CRM Lead',
-  props.leadId,
-)
-
-provide('data', document.doc)
-provide('doctype', 'CRM Lead')
-provide('preview', ref(false))
-provide('isGridRow', false)
 
 const statusValidation = reactive({
   show: false,
@@ -540,11 +323,5 @@ async function triggerStatusChange(value) {
   }
   await triggerOnChange('status', value)
   document.save.submit()
-}
-
-function reloadAssignees(data) {
-  if (data?.hasOwnProperty('lead_owner')) {
-    assignees.reload()
-  }
 }
 </script>

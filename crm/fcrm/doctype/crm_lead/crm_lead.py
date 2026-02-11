@@ -53,7 +53,6 @@ class CRMLead(Document):
 		# Validate mandatory fields for specific statuses
 		if self.status in ["Contacted", "Nurture"]:
 			mandatory_fields = [
-				("website", _("Website")),
 				("meeting_type", _("Meeting Type")),
 				("product_discussed", _("Product Discussed")),
 				("volume_rangekg", _("Volume Range (kg)")),

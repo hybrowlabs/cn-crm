@@ -5,9 +5,9 @@
       size: 'xl',
       actions: [
         {
-          label: __('Convert'),
+          label: __('Next'),
           variant: 'solid',
-          onClick: convertToDeal,
+          onClick: goToNextStep,
         },
       ],
     }"
@@ -174,7 +174,9 @@ watch(() => show.value, (isOpen) => {
   }
 })
 
-async function convertToDeal() {
+const emit = defineEmits(['next'])
+
+async function goToNextStep() {
   error.value = ''
 
   if (existingContactChecked.value && !existingContact.value) {
@@ -195,44 +197,12 @@ async function convertToDeal() {
     existingOrganization.value = ''
   }
 
-  await triggerConvertToDeal?.(props.lead, deal.doc, () => (show.value = false))
-
-  let _deal = await call('crm.fcrm.doctype.crm_lead.crm_lead.convert_to_deal', {
-    lead: props.lead.name,
+  // Pass necessary data to the next step
+  emit('next', {
     deal: deal.doc,
-    existing_contact: existingContact.value,
-    existing_organization: existingOrganization.value,
-  }).catch((err) => {
-    if (err.exc_type == 'MandatoryError') {
-      const errorMessage = err.messages
-        .map((msg) => {
-          let arr = msg.split(': ')
-          return arr[arr.length - 1].trim()
-        })
-        .join(', ')
-
-      if (errorMessage.toLowerCase().includes('required')) {
-        error.value = __(errorMessage)
-      } else {
-        error.value = __('{0} is required', [errorMessage])
-      }
-      return
-    }
-    error.value = __('Error converting to deal: {0}', [err.messages?.[0]])
+    existingContact: existingContact.value,
+    existingOrganization: existingOrganization.value
   })
-  if (_deal) {
-    show.value = false
-    existingContactChecked.value = false
-    existingOrganizationChecked.value = false
-    existingContact.value = ''
-    existingOrganization.value = ''
-    error.value = ''
-    updateOnboardingStep('convert_lead_to_deal', true, false, () => {
-      localStorage.setItem('firstDeal' + user, _deal)
-    })
-    capture('convert_lead_to_deal')
-    router.push({ name: 'Deal', params: { dealId: _deal } })
-  }
 }
 
 const dealStatuses = computed(() => {
