@@ -77,13 +77,65 @@ export const statusesStore = defineStore('crm-statuses', () => {
     return communicationStatuses[name]
   }
 
-  function statusOptions(doctype, statuses = [], triggerStatusChange = null) {
+  function statusOptions(
+    doctype,
+    statuses = [],
+    triggerStatusChange = null,
+    currentStatus = null,
+    visibilityMap = null,
+    doc = null,
+  ) {
+    const defaultVisibilityMaps = {
+      deal: {
+        Qualification: [
+          'Qualification',
+          'Demo/Making',
+          'Ready to Close',
+          'Lost',
+        ],
+        'Demo/Making': [
+          'Qualification',
+          'Demo/Making',
+          'Proposal/Quotation',
+          'Negotiation',
+          'Ready to Close',
+          'Lost',
+        ],
+      },
+      lead: {},
+    }
+
+    if (!visibilityMap && defaultVisibilityMaps[doctype]) {
+      visibilityMap = defaultVisibilityMaps[doctype]
+    }
+
     let statusesByName =
       doctype == 'deal' ? dealStatusesByName : leadStatusesByName
 
     if (statuses?.length) {
       statusesByName = statuses.reduce((acc, status) => {
         acc[status] = statusesByName[status]
+        return acc
+      }, {})
+    }
+
+    if (currentStatus && visibilityMap?.[currentStatus]) {
+      let allowedStatuses = [...visibilityMap[currentStatus]]
+
+      if (
+        doctype === 'deal' &&
+        currentStatus === 'Demo/Making' &&
+        doc?.trial_outcome !== 'Qualified'
+      ) {
+        allowedStatuses = allowedStatuses.filter(
+          (s) => !['Proposal/Quotation', 'Negotiation'].includes(s),
+        )
+      }
+
+      statusesByName = Object.keys(statusesByName).reduce((acc, status) => {
+        if (allowedStatuses.includes(status)) {
+          acc[status] = statusesByName[status]
+        }
         return acc
       }, {})
     }

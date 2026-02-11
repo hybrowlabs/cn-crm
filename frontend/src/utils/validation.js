@@ -5,6 +5,9 @@ export const MANDATORY_FIELDS_BY_STATUS = {
         Contacted: ['meeting_type', 'product_discussed', 'volume_rangekg', 'primary_pain_category', 'pain_description', 'customer_role_type', 'current_supplier', 'decision_process', 'next_action_date'],
         Nurture: ['meeting_type', 'product_discussed', 'volume_rangekg', 'primary_pain_category', 'pain_description', 'customer_role_type', 'current_supplier', 'decision_process', 'next_action_date'],
     },
+    'CRM Deal': {
+        'Demo/Making': ['trial_product', 'trial_volume_kg', 'trial_start_date', 'trial_end_date', 'trial_success_criteria'],
+    }
 }
 
 export function getFieldsForValidation(doctype, status) {

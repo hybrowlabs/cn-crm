@@ -53,6 +53,10 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  doctype: {
+    type: String,
+    default: 'CRM Lead',
+  },
 })
 
 const show = defineModel()
@@ -61,7 +65,7 @@ const loading = ref(false)
 
 // Provide context for Field.vue
 provide('data', computed(() => props.doc))
-provide('doctype', 'CRM Lead')
+provide('doctype', props.doctype)
 provide('preview', ref(false))
 provide('isGridRow', false)
 

@@ -21,6 +21,23 @@
         :data="document.doc"
         doctype="CRM Deal"
       />
+      <div v-if="document.doc?.status === 'Demo/Making'" class="flex items-center gap-2">
+        <span class="text-sm text-ink-gray-5">{{ __('Trial Outcome') }}:</span>
+        <Dropdown
+          :options="trialOutcomeOptions"
+        >
+          <template #default="{ open }">
+            <Button :label="document.doc.trial_outcome || __('Select Outcome')">
+              <template #suffix>
+                <FeatherIcon
+                  :name="open ? 'chevron-up' : 'chevron-down'"
+                  class="h-4"
+                />
+              </template>
+            </Button>
+          </template>
+        </Dropdown>
+      </div>
       <Dropdown
         v-if="document.doc"
         :options="
@@ -30,6 +47,9 @@
               ? document.statuses
               : deal.data._customStatuses,
             triggerStatusChange,
+            document.doc.status,
+            null,
+            document.doc,
           )
         "
       >
@@ -337,6 +357,15 @@
     v-model="showLostReasonModal"
     :deal="document"
   />
+  <StatusValidationModal
+    v-if="statusValidation.show"
+    v-model="statusValidation.show"
+    :fields="statusValidation.fields"
+    :targetStatus="statusValidation.targetStatus"
+    :doc="document.doc"
+    doctype="CRM Deal"
+    @proceed="proceedWithStatusChange"
+  />
 </template>
 <script setup>
 import ErrorPage from '@/components/ErrorPage.vue'
@@ -362,6 +391,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import OrganizationModal from '@/components/Modals/OrganizationModal.vue'
 import LostReasonModal from '@/components/Modals/LostReasonModal.vue'
+import StatusValidationModal from '@/components/Modals/StatusValidationModal.vue'
 import AssignTo from '@/components/AssignTo.vue'
 import FilesUploader from '@/components/FilesUploader/FilesUploader.vue'
 import ContactModal from '@/components/Modals/ContactModal.vue'
@@ -370,6 +400,7 @@ import Section from '@/components/Section.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
+import { getFieldsForValidation } from '@/utils/validation'
 import { openWebsite,
   setupCustomizations,
   copyToClipboard
@@ -396,6 +427,7 @@ import { useOnboarding } from 'frappe-ui/frappe'
 import { ref, computed, h, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useActiveTabManager } from '@/composables/useActiveTabManager'
+import { reactive, provide } from 'vue'
 
 const { brand } = getSettings()
 const { $dialog, $socket, makeCall } = globalStore()
@@ -407,6 +439,23 @@ const { updateOnboardingStep, isOnboardingStepsCompleted } =
 
 const route = useRoute()
 const router = useRouter()
+
+
+const trialOutcomeOptions = computed(() => {
+  const fields = doctypeMeta['CRM Deal']?.fields || []
+  const field = fields.find((f) => f.fieldname === 'trial_outcome')
+  if (!field || !field.options) return []
+
+  return field.options.split('\n').map((option) => ({
+    label: option || __('Select Outcome'),
+    value: option,
+    onClick: () => {
+      updateField('trial_outcome', option, () => {
+        document.doc.trial_outcome = option
+      })
+    },
+  }))
+})
 
 const props = defineProps({
   dealId: {
@@ -822,7 +871,42 @@ const { assignees, document, triggerOnChange } = useDocument(
   props.dealId,
 )
 
+provide('data', document.doc)
+provide('doctype', 'CRM Deal')
+provide('preview', ref(false))
+provide('isGridRow', false)
+
+const statusValidation = reactive({
+  show: false,
+  fields: [],
+  targetStatus: '',
+})
+
+function getMissingFields(targetStatus) {
+  const mandatoryFields = getFieldsForValidation('CRM Deal', targetStatus)
+  return mandatoryFields.filter((f) => !document.doc?.[f.fieldname])
+}
+
+async function proceedWithStatusChange() {
+  const missingFields = getMissingFields(statusValidation.targetStatus)
+  if (missingFields.length) {
+    toast.error(__('Please fill all required fields'))
+    return
+  }
+  await triggerOnChange('status', statusValidation.targetStatus)
+  await document.save.submit()
+  statusValidation.show = false
+}
+
 async function triggerStatusChange(value) {
+  const missingFields = getMissingFields(value)
+
+  if (missingFields.length) {
+    statusValidation.fields = missingFields
+    statusValidation.targetStatus = value
+    statusValidation.show = true
+    return
+  }
   await triggerOnChange('status', value)
   setLostReason()
 }

@@ -78,7 +78,16 @@
   "first_response_time",
   "first_responded_on",
   "log_tab",
-  "status_change_log"
+  "status_change_log",
+  "trial_fields_tab",
+  "trial_product",
+  "trial_volume_kg",
+  "trial_start_date",
+  "trial_end_date",
+  "column_break_hehz",
+  "trial_success_criteria",
+  "trial_outcome",
+  "trial_outcome_notes"
  ],
  "fields": [
   {
@@ -488,12 +497,58 @@
    "fieldname": "decision_timeline",
    "fieldtype": "Date",
    "label": "Decision Timeline"
+  },
+  {
+   "fieldname": "trial_fields_tab",
+   "fieldtype": "Tab Break",
+   "label": "Trial Fields"
+  },
+  {
+   "fieldname": "trial_product",
+   "fieldtype": "Link",
+   "label": "Trial Product",
+   "options": "CRM Product"
+  },
+  {
+   "fieldname": "trial_volume_kg",
+   "fieldtype": "Float",
+   "label": "Trial Volume (kg)"
+  },
+  {
+   "fieldname": "trial_start_date",
+   "fieldtype": "Date",
+   "label": "Trial Start Date"
+  },
+  {
+   "fieldname": "trial_end_date",
+   "fieldtype": "Date",
+   "label": "Trial End Date"
+  },
+  {
+   "fieldname": "column_break_hehz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "trial_success_criteria",
+   "fieldtype": "Data",
+   "label": "Trial Success Criteria"
+  },
+  {
+   "fieldname": "trial_outcome",
+   "fieldtype": "Select",
+   "label": "Trial Outcome",
+   "options": "\nQualified\nOn Hold\nDisqualified\nLost"
+  },
+  {
+   "fieldname": "trial_outcome_notes",
+   "fieldtype": "Data",
+   "label": "Trial Outcome Notes"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-11 12:05:31.007101",
+ "modified": "2026-02-11 14:57:10.581865",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Deal",
