@@ -13,17 +13,26 @@
   "details",
   "organization",
   "company_type",
+  "lead_owner",
+  "engagement_type",
+  "industry",
+  "meeting_type",
+  "decision_process",
+  "next_action_date",
+  "column_break_hshw",
+  "source",
+  "territory",
+  "website",
+  "job_title",
+  "product_discussed",
+  "volume_rangekg",
+  "customer_role_type",
+  "current_supplier",
   "gst_section",
   "gst_applicable",
   "gst_number",
-  "website",
   "address",
-  "territory",
-  "industry",
   "line_of_business",
-  "job_title",
-  "source",
-  "lead_owner",
   "person_tab",
   "salutation",
   "first_name",
@@ -38,14 +47,18 @@
   "middle_name",
   "gender",
   "phone",
+  "primary_pain_category",
   "column_break_dbsv",
   "status",
   "no_of_employees",
   "annual_revenue",
   "image",
   "converted",
+  "pain_description",
   "products_tab",
   "products",
+  "product_interested",
+  "applicationusage",
   "section_break_ggwh",
   "total",
   "column_break_uisv",
@@ -165,13 +178,15 @@
    "fieldname": "source",
    "fieldtype": "Link",
    "label": "Source",
-   "options": "CRM Lead Source"
+   "options": "CRM Lead Source",
+   "reqd": 1
   },
   {
    "fieldname": "industry",
    "fieldtype": "Link",
    "label": "Industry",
-   "options": "CRM Industry"
+   "options": "CRM Industry",
+   "reqd": 1
   },
   {
    "fieldname": "line_of_business",
@@ -379,14 +394,88 @@
   {
    "fieldname": "designation",
    "fieldtype": "Data",
-   "label": "Designation"
+   "label": "Designation",
+   "reqd": 1
+  },
+  {
+   "fieldname": "product_interested",
+   "fieldtype": "Link",
+   "label": "Product Interested",
+   "options": "CRM Product",
+   "reqd": 1
+  },
+  {
+   "fieldname": "applicationusage",
+   "fieldtype": "Data",
+   "label": "Application/usage",
+   "reqd": 1
+  },
+  {
+   "fieldname": "engagement_type",
+   "fieldtype": "Select",
+   "label": "Engagement Type",
+   "options": "Inbound Enquiry\nOutbound Prospecting\nReferral\nExisting Customer\nEvent / Exhibition\nPartner / Channel\nReactivation",
+   "reqd": 1
+  },
+  {
+   "fieldname": "meeting_type",
+   "fieldtype": "Link",
+   "label": "Meeting Type",
+   "options": "CRM Meeting Type"
+  },
+  {
+   "fieldname": "product_discussed",
+   "fieldtype": "Link",
+   "label": "Product Discussed",
+   "options": "CRM Product"
+  },
+  {
+   "fieldname": "column_break_hshw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "volume_rangekg",
+   "fieldtype": "Float",
+   "label": "Volume Range(KG)"
+  },
+  {
+   "fieldname": "primary_pain_category",
+   "fieldtype": "Link",
+   "label": "Primary Pain Category",
+   "options": "CRM Pain Category"
+  },
+  {
+   "fieldname": "pain_description",
+   "fieldtype": "Small Text",
+   "label": "Pain Description"
+  },
+  {
+   "fieldname": "customer_role_type",
+   "fieldtype": "Link",
+   "label": "Customer Role Type",
+   "options": "CRM Customer Role"
+  },
+  {
+   "fieldname": "decision_process",
+   "fieldtype": "Data",
+   "label": "Decision Process"
+  },
+  {
+   "fieldname": "current_supplier",
+   "fieldtype": "Data",
+   "label": "Current Supplier"
+  },
+  {
+   "fieldname": "next_action_date",
+   "fieldtype": "Date",
+   "label": "Next Action Date"
   }
  ],
  "grid_page_length": 50,
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-22 11:25:40.689118",
+ "modified": "2026-02-11 08:46:25.285719",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Lead",

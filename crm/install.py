@@ -164,7 +164,7 @@ def add_default_fields_layout(force=False):
 	quick_entry_layouts = {
 		"CRM Lead-Quick Entry": {
 			"doctype": "CRM Lead",
-			"layout": '[{"name": "person_section", "columns": [{"name": "column_5jrk", "fields": ["salutation", "email"]}, {"name": "column_5CPV", "fields": ["first_name", "mobile_no"]}, {"name": "column_gXOy", "fields": ["last_name", "gender"]}]}, {"name": "organization_section", "columns": [{"name": "column_GHfX", "fields": ["organization", "territory"]}, {"name": "column_hXjS", "fields": ["website", "annual_revenue"]}, {"name": "column_RDNA", "fields": ["no_of_employees", "industry"]}]}, {"name": "lead_section", "columns": [{"name": "column_EO1H", "fields": ["status"]}, {"name": "column_RWBe", "fields": ["lead_owner"]}]}]',
+			"layout": '[{"name":"first_tab","sections":[{"name":"person_section","columns":[{"name":"column_5jrk","fields":["salutation","email","designation"]},{"name":"column_5CPV","fields":["first_name","mobile_no"]},{"name":"column_gXOy","fields":["last_name","gender"]}]},{"name":"organization_section","columns":[{"name":"column_GHfX","fields":["organization","territory","engagement_type"]},{"name":"column_hXjS","fields":["website","annual_revenue","product_interested"]},{"name":"column_RDNA","fields":["source","industry","applicationusage"]}]},{"name":"lead_section","columns":[{"name":"column_EO1H","fields":["status"]},{"name":"column_RWBe","fields":["lead_owner"]}]}]}]',
 		},
 		"CRM Deal-Quick Entry": {
 			"doctype": "CRM Deal",
@@ -218,7 +218,7 @@ def add_default_fields_layout(force=False):
 	data_fields_layouts = {
 		"CRM Lead-Data Fields": {
 			"doctype": "CRM Lead",
-			"layout": '[{"label": "Details", "name": "details_section", "opened": true, "columns": [{"name": "column_ZgLG", "fields": ["organization", "industry", "lead_owner"]}, {"name": "column_TbYq", "fields": ["website", "job_title"]}, {"name": "column_OKSX", "fields": ["territory", "source"]}]}, {"label": "Person", "name": "person_section", "opened": true, "columns": [{"name": "column_6c5g", "fields": ["salutation", "email"]}, {"name": "column_1n7Q", "fields": ["first_name", "mobile_no"]}, {"name": "column_cT6C", "fields": ["last_name"]}]}]',
+			"layout": '[{"name":"first_tab","sections":[{"label":"Details","name":"details_section","opened":true,"columns":[{"name":"column_ZgLG","fields":["organization","industry","lead_owner","engagement_type"]},{"name":"column_TbYq","fields":["website","job_title","company_type","product_interested"]},{"name":"column_OKSX","fields":["territory","source","company_type","applicationusage"]}]},{"label":"Person","name":"person_section","opened":true,"columns":[{"name":"column_6c5g","fields":["salutation","email"]},{"name":"column_1n7Q","fields":["first_name","mobile_no"]},{"name":"column_cT6C","fields":["last_name","designation"]}]}]}]',
 		},
 		"CRM Deal-Data Fields": {
 			"doctype": "CRM Deal",

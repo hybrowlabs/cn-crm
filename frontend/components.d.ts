@@ -231,6 +231,7 @@ declare module 'vue' {
     SortIcon: typeof import('./src/components/Icons/SortIcon.vue')['default']
     SpancoWidget: typeof import('./src/components/Dashboard Elements/SpancoWidget.vue')['default']
     SquareAsterisk: typeof import('./src/components/Icons/SquareAsterisk.vue')['default']
+    StatusValidationModal: typeof import('./src/components/Modals/StatusValidationModal.vue')['default']
     StepsIcon: typeof import('./src/components/Icons/StepsIcon.vue')['default']
     SuccessIcon: typeof import('./src/components/Icons/SuccessIcon.vue')['default']
     TableMultiselectInput: typeof import('./src/components/Controls/TableMultiselectInput.vue')['default']

@@ -59,6 +59,7 @@
         :actions="document.actions"
       />
       <Button
+        v-if="['Contacted', 'Nurture'].includes(document.doc?.status)"
         :label="__('Convert')"
         variant="solid"
         @click="showConvertToDealModal = true"
@@ -164,6 +165,14 @@
       </div>
     </template>
   </Dialog>
+  <StatusValidationModal
+    v-if="statusValidation.show"
+    v-model="statusValidation.show"
+    :fields="statusValidation.fields"
+    :targetStatus="statusValidation.targetStatus"
+    :doc="document.doc"
+    @proceed="proceedWithStatusChange"
+  />
 </template>
 <script setup>
 import Icon from '@/components/Icon.vue'
@@ -187,6 +196,8 @@ import Link from '@/components/Controls/Link.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
+import StatusValidationModal from '@/components/Modals/StatusValidationModal.vue'
+import { getFieldsForValidation } from '@/utils/validation'
 import { setupCustomizations } from '@/utils'
 import { getView } from '@/utils/view'
 import { getSettings } from '@/stores/settings'
@@ -211,7 +222,7 @@ import {
   usePageMeta,
   toast,
 } from 'frappe-ui'
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, reactive, provide } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 const { brand } = getSettings()
@@ -490,7 +501,43 @@ const { assignees, document, triggerOnChange } = useDocument(
   props.leadId,
 )
 
+provide('data', document.doc)
+provide('doctype', 'CRM Lead')
+provide('preview', ref(false))
+provide('isGridRow', false)
+
+const statusValidation = reactive({
+  show: false,
+  fields: [],
+  targetStatus: '',
+})
+
+function getMissingFields(targetStatus) {
+  const mandatoryFields = getFieldsForValidation('CRM Lead', targetStatus)
+  return mandatoryFields.filter((f) => !document.doc?.[f.fieldname])
+}
+
+async function proceedWithStatusChange() {
+  const missingFields = getMissingFields(statusValidation.targetStatus)
+  if (missingFields.length) {
+    toast.error(__('Please fill all required fields'))
+    return
+  }
+  await triggerOnChange('status', statusValidation.targetStatus)
+  await document.save.submit()
+  statusValidation.show = false
+}
+
+//add validation for meeting stage here 
 async function triggerStatusChange(value) {
+  const missingFields = getMissingFields(value)
+
+  if (missingFields.length) {
+    statusValidation.fields = missingFields
+    statusValidation.targetStatus = value
+    statusValidation.show = true
+    return
+  }
   await triggerOnChange('status', value)
   document.save.submit()
 }

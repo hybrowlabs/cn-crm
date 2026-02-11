@@ -50,6 +50,28 @@ class CRMLead(Document):
 				title=_("Missing Status")
 			)
 
+		# Validate mandatory fields for specific statuses
+		if self.status in ["Contacted", "Nurture"]:
+			mandatory_fields = [
+				("website", _("Website")),
+				("meeting_type", _("Meeting Type")),
+				("product_discussed", _("Product Discussed")),
+				("volume_rangekg", _("Volume Range (kg)")),
+				("primary_pain_category", _("Primary Pain Category")),
+				("pain_description", _("Pain Description")),
+				("customer_role_type", _("Customer Role Type")),
+				("current_supplier", _("Current Supplier")),
+				("decision_process", _("Decision Process")),
+				("next_action_date", _("Next Action Date"))
+			]
+
+			for fieldname, label in mandatory_fields:
+				if not self.get(fieldname):
+					frappe.throw(
+						_("{0} is mandatory for '{1}' status").format(label, self.status),
+						title=_("Missing Required Information")
+					)
+
 		# Validate GST Number when GST Applicable is checked
 		if hasattr(self, 'gst_applicable') and self.gst_applicable:
 			if not hasattr(self, 'gst_number') or not self.gst_number:
