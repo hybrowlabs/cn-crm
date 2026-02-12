@@ -11,16 +11,24 @@
   "naming_series",
   "organization",
   "next_step",
+  "product_alloy_type",
+  "expected_monthly_volume",
+  "first_order_volume",
+  "primary_pain_category",
+  "economic_buyer_name",
+  "decision_timeline",
   "column_break_ijan",
   "status",
   "deal_owner",
   "lost_reason",
   "lost_notes",
+  "custom_formulation_required",
   "section_break_jgpm",
   "probability",
   "deal_value",
   "column_break_kpxa",
   "close_date",
+  "decision_criteria",
   "contacts_tab",
   "contacts",
   "contact",
@@ -70,7 +78,24 @@
   "first_response_time",
   "first_responded_on",
   "log_tab",
-  "status_change_log"
+  "status_change_log",
+  "trial_fields_tab",
+  "trial_product",
+  "trial_volume_kg",
+  "trial_start_date",
+  "trial_end_date",
+  "column_break_hehz",
+  "trial_success_criteria",
+  "trial_outcome",
+  "trial_outcome_notes",
+  "trial_outcome_note",
+  "proposal_fields_tab",
+  "final_volume_kg",
+  "final_price__kg",
+  "approval_authority",
+  "commercial_acceptance",
+  "paper_process_status",
+  "proposal_acknowledged"
  ],
  "fields": [
   {
@@ -434,12 +459,147 @@
    "fieldname": "gst_address",
    "fieldtype": "Small Text",
    "label": "GST Address"
+  },
+  {
+   "fetch_from": "lead.product_discussed",
+   "fieldname": "product_alloy_type",
+   "fieldtype": "Link",
+   "label": "Product /Alloy type",
+   "options": "CRM Product"
+  },
+  {
+   "fieldname": "expected_monthly_volume",
+   "fieldtype": "Float",
+   "label": "Expected monthly volume"
+  },
+  {
+   "fieldname": "first_order_volume",
+   "fieldtype": "Float",
+   "label": "First Order Volume"
+  },
+  {
+   "fetch_from": "lead.primary_pain_category",
+   "fieldname": "primary_pain_category",
+   "fieldtype": "Link",
+   "label": "Primary Pain Category",
+   "options": "CRM Pain Category"
+  },
+  {
+   "fieldname": "decision_criteria",
+   "fieldtype": "Table MultiSelect",
+   "label": "Decision Criteria",
+   "options": "CRM Decision Criteria Multi select"
+  },
+  {
+   "fieldname": "economic_buyer_name",
+   "fieldtype": "Data",
+   "label": "Economic Buyer Name"
+  },
+  {
+   "fieldname": "custom_formulation_required",
+   "fieldtype": "Select",
+   "label": "Custom Formulation Required",
+   "options": "Yes\nNo"
+  },
+  {
+   "fieldname": "decision_timeline",
+   "fieldtype": "Date",
+   "label": "Decision Timeline"
+  },
+  {
+   "fieldname": "trial_fields_tab",
+   "fieldtype": "Tab Break",
+   "label": "Trial Fields"
+  },
+  {
+   "fieldname": "trial_product",
+   "fieldtype": "Link",
+   "label": "Trial Product",
+   "options": "CRM Product"
+  },
+  {
+   "fieldname": "trial_volume_kg",
+   "fieldtype": "Float",
+   "label": "Trial Volume (kg)"
+  },
+  {
+   "fieldname": "trial_start_date",
+   "fieldtype": "Date",
+   "label": "Trial Start Date"
+  },
+  {
+   "fieldname": "trial_end_date",
+   "fieldtype": "Date",
+   "label": "Trial End Date"
+  },
+  {
+   "fieldname": "column_break_hehz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "trial_success_criteria",
+   "fieldtype": "Data",
+   "label": "Trial Success Criteria"
+  },
+  {
+   "fieldname": "trial_outcome",
+   "fieldtype": "Select",
+   "label": "Trial Outcome",
+   "options": "\nQualified\nOn Hold\nDisqualified\nLost"
+  },
+  {
+   "fieldname": "trial_outcome_notes",
+   "fieldtype": "Data",
+   "label": "Trial Outcome Notes"
+  },
+  {
+   "fieldname": "trial_outcome_note",
+   "fieldtype": "Small Text",
+   "label": "Trial Outcome note"
+  },
+  {
+   "fieldname": "proposal_fields_tab",
+   "fieldtype": "Tab Break",
+   "label": "Proposal Fields"
+  },
+  {
+   "fieldname": "final_volume_kg",
+   "fieldtype": "Float",
+   "label": "Final Volume (kg)"
+  },
+  {
+   "fieldname": "final_price__kg",
+   "fieldtype": "Currency",
+   "label": "Final Price / kg"
+  },
+  {
+   "fieldname": "approval_authority",
+   "fieldtype": "Data",
+   "label": "Approval Authority"
+  },
+  {
+   "fieldname": "commercial_acceptance",
+   "fieldtype": "Select",
+   "label": "Commercial Acceptance",
+   "options": "\nYes\nNo"
+  },
+  {
+   "fieldname": "proposal_acknowledged",
+   "fieldtype": "Select",
+   "label": "Proposal Acknowledged",
+   "options": "\nYes\nNo"
+  },
+  {
+   "fieldname": "paper_process_status",
+   "fieldtype": "Select",
+   "label": "Paper Process Status",
+   "options": "\nIn Progress\nCompleted\nFailed"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-23 12:24:55.557561",
+ "modified": "2026-02-12 09:27:47.032376",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Deal",

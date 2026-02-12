@@ -1,172 +1,179 @@
 {
- "actions": [],
- "allow_rename": 1,
- "creation": "2024-09-29 13:48:02.715924",
- "doctype": "DocType",
- "engine": "InnoDB",
- "field_order": [
-  "defaults_tab",
-  "restore_defaults",
-  "quotation_section",
-  "quotation_print_format",
-  "enable_forecasting",
-  "branding_tab",
-  "brand_name",
-  "brand_logo",
-  "favicon",
-  "dropdown_items_tab",
-  "dropdown_items",
-  "tab_4_tab",
-  "suspects",
-  "prospects",
-  "analysis",
-  "negotiation",
-  "closed",
-  "order"
- ],
- "fields": [
-  {
-   "fieldname": "restore_defaults",
-   "fieldtype": "Button",
-   "label": "Restore Defaults"
-  },
-  {
-   "fieldname": "dropdown_items",
-   "fieldtype": "Table",
-   "options": "CRM Dropdown Item"
-  },
-  {
-   "fieldname": "defaults_tab",
-   "fieldtype": "Tab Break",
-   "label": "Settings"
-  },
-  {
-   "fieldname": "branding_tab",
-   "fieldtype": "Tab Break",
-   "label": "Branding"
-  },
-  {
-   "description": "An image with 1:1 & 2:1 ratio is preferred",
-   "fieldname": "brand_logo",
-   "fieldtype": "Attach",
-   "label": "Logo"
-  },
-  {
-   "fieldname": "dropdown_items_tab",
-   "fieldtype": "Tab Break",
-   "label": "Dropdown Items"
-  },
-  {
-   "fieldname": "brand_name",
-   "fieldtype": "Data",
-   "label": "Name"
-  },
-  {
-   "description": "An icon file with .ico extension. Should be 16 x 16 px. Generated using a favicon generator. [favicon-generator.org]",
-   "fieldname": "favicon",
-   "fieldtype": "Attach",
-   "label": "Favicon"
-  },
-  {
-   "default": "0",
-   "description": "It will make deal's \"Close Date\" & \"Deal Value\" mandatory to get accurate forecasting insights",
-   "fieldname": "enable_forecasting",
-   "fieldtype": "Check",
-   "label": "Enable Forecasting"
-  },
-  {
-   "fieldname": "quotation_section",
-   "fieldtype": "Section Break",
-   "label": "Quotation"
-  },
-  {
-   "fieldname": "quotation_print_format",
-   "fieldtype": "Link",
-   "label": "Quotation Print Format",
-   "link_filters": "[[\"Print Format\",\"doc_type\",\"=\",\"Quotation\"]]",
-   "options": "Print Format"
-  },
-  {
-   "fieldname": "tab_4_tab",
-   "fieldtype": "Tab Break",
-   "label": "LMOTPO Settings"
-  },
-  {
-   "fieldname": "suspects",
-   "fieldtype": "Link",
-   "label": "Lead Stage",
-   "options": "CRM View Settings"
-  },
-  {
-   "fieldname": "prospects",
-   "fieldtype": "Link",
-   "label": "Meetings Stage",
-   "options": "CRM View Settings"
-  },
-  {
-   "fieldname": "analysis",
-   "fieldtype": "Link",
-   "label": "Opportunities Stage",
-   "options": "CRM View Settings"
-  },
-  {
-   "fieldname": "negotiation",
-   "fieldtype": "Link",
-   "label": "Trial Stage",
-   "options": "CRM View Settings"
-  },
-  {
-   "fieldname": "closed",
-   "fieldtype": "Link",
-   "label": "Pricing Discussion Stage",
-   "options": "CRM View Settings"
-  },
-  {
-   "fieldname": "order",
-   "fieldtype": "Link",
-   "label": "Order Booking Stage",
-   "options": "CRM View Settings"
-  }
- ],
- "index_web_pages_for_search": 1,
- "issingle": 1,
- "links": [],
- "modified": "2025-07-01 13:20:48.757603",
- "modified_by": "Administrator",
- "module": "FCRM",
- "name": "FCRM Settings",
- "owner": "Administrator",
- "permissions": [
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "print": 1,
-   "read": 1,
-   "role": "System Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "print": 1,
-   "read": 1,
-   "role": "Sales Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "email": 1,
-   "print": 1,
-   "read": 1,
-   "role": "All",
-   "share": 1
-  }
- ],
- "row_format": "Dynamic",
- "sort_field": "creation",
- "sort_order": "DESC",
- "states": []
+    "actions": [],
+    "allow_rename": 1,
+    "creation": "2024-09-29 13:48:02.715924",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "defaults_tab",
+        "restore_defaults",
+        "quotation_section",
+        "quotation_print_format",
+        "enable_forecasting",
+        "branding_tab",
+        "brand_name",
+        "brand_logo",
+        "favicon",
+        "dropdown_items_tab",
+        "dropdown_items",
+        "tab_4_tab",
+        "suspects",
+        "prospects",
+        "analysis",
+        "negotiation",
+        "proposal",
+        "closed",
+        "order"
+    ],
+    "fields": [
+        {
+            "fieldname": "restore_defaults",
+            "fieldtype": "Button",
+            "label": "Restore Defaults"
+        },
+        {
+            "fieldname": "dropdown_items",
+            "fieldtype": "Table",
+            "options": "CRM Dropdown Item"
+        },
+        {
+            "fieldname": "defaults_tab",
+            "fieldtype": "Tab Break",
+            "label": "Settings"
+        },
+        {
+            "fieldname": "branding_tab",
+            "fieldtype": "Tab Break",
+            "label": "Branding"
+        },
+        {
+            "description": "An image with 1:1 & 2:1 ratio is preferred",
+            "fieldname": "brand_logo",
+            "fieldtype": "Attach",
+            "label": "Logo"
+        },
+        {
+            "fieldname": "dropdown_items_tab",
+            "fieldtype": "Tab Break",
+            "label": "Dropdown Items"
+        },
+        {
+            "fieldname": "brand_name",
+            "fieldtype": "Data",
+            "label": "Name"
+        },
+        {
+            "description": "An icon file with .ico extension. Should be 16 x 16 px. Generated using a favicon generator. [favicon-generator.org]",
+            "fieldname": "favicon",
+            "fieldtype": "Attach",
+            "label": "Favicon"
+        },
+        {
+            "default": "0",
+            "description": "It will make deal's \"Close Date\" & \"Deal Value\" mandatory to get accurate forecasting insights",
+            "fieldname": "enable_forecasting",
+            "fieldtype": "Check",
+            "label": "Enable Forecasting"
+        },
+        {
+            "fieldname": "quotation_section",
+            "fieldtype": "Section Break",
+            "label": "Quotation"
+        },
+        {
+            "fieldname": "quotation_print_format",
+            "fieldtype": "Link",
+            "label": "Quotation Print Format",
+            "link_filters": "[[\"Print Format\",\"doc_type\",\"=\",\"Quotation\"]]",
+            "options": "Print Format"
+        },
+        {
+            "fieldname": "tab_4_tab",
+            "fieldtype": "Tab Break",
+            "label": "LMOTPO Settings"
+        },
+        {
+            "fieldname": "suspects",
+            "fieldtype": "Link",
+            "label": "Lead Stage",
+            "options": "CRM View Settings"
+        },
+        {
+            "fieldname": "prospects",
+            "fieldtype": "Link",
+            "label": "Meetings Stage",
+            "options": "CRM View Settings"
+        },
+        {
+            "fieldname": "analysis",
+            "fieldtype": "Link",
+            "label": "Opportunities Stage",
+            "options": "CRM View Settings"
+        },
+        {
+            "fieldname": "negotiation",
+            "fieldtype": "Link",
+            "label": "Trial Stage",
+            "options": "CRM View Settings"
+        },
+        {
+            "fieldname": "proposal",
+            "fieldtype": "Link",
+            "label": "Proposal Stage",
+            "options": "CRM View Settings"
+        },
+        {
+            "fieldname": "closed",
+            "fieldtype": "Link",
+            "label": "Pricing Discussion Stage",
+            "options": "CRM View Settings"
+        },
+        {
+            "fieldname": "order",
+            "fieldtype": "Link",
+            "label": "Order Booking Stage",
+            "options": "CRM View Settings"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "issingle": 1,
+    "links": [],
+    "modified": "2025-07-01 13:20:48.757603",
+    "modified_by": "Administrator",
+    "module": "FCRM",
+    "name": "FCRM Settings",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "print": 1,
+            "read": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "print": 1,
+            "read": 1,
+            "role": "Sales Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "email": 1,
+            "print": 1,
+            "read": 1,
+            "role": "All",
+            "share": 1
+        }
+    ],
+    "row_format": "Dynamic",
+    "sort_field": "creation",
+    "sort_order": "DESC",
+    "states": []
 }

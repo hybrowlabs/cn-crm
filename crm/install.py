@@ -164,7 +164,7 @@ def add_default_fields_layout(force=False):
 	quick_entry_layouts = {
 		"CRM Lead-Quick Entry": {
 			"doctype": "CRM Lead",
-			"layout": '[{"name": "person_section", "columns": [{"name": "column_5jrk", "fields": ["salutation", "email"]}, {"name": "column_5CPV", "fields": ["first_name", "mobile_no"]}, {"name": "column_gXOy", "fields": ["last_name", "gender"]}]}, {"name": "organization_section", "columns": [{"name": "column_GHfX", "fields": ["organization", "territory"]}, {"name": "column_hXjS", "fields": ["website", "annual_revenue"]}, {"name": "column_RDNA", "fields": ["no_of_employees", "industry"]}]}, {"name": "lead_section", "columns": [{"name": "column_EO1H", "fields": ["status"]}, {"name": "column_RWBe", "fields": ["lead_owner"]}]}]',
+			"layout": '[{"name":"first_tab","sections":[{"name":"person_section","columns":[{"name":"column_5jrk","fields":["salutation","email","designation"]},{"name":"column_5CPV","fields":["first_name","mobile_no"]},{"name":"column_gXOy","fields":["last_name","gender"]}]},{"name":"organization_section","columns":[{"name":"column_GHfX","fields":["organization","territory","engagement_type"]},{"name":"column_hXjS","fields":["website","annual_revenue","product_interested"]},{"name":"column_RDNA","fields":["source","industry","applicationusage"]}]},{"name":"lead_section","columns":[{"name":"column_EO1H","fields":["status"]},{"name":"column_RWBe","fields":["lead_owner"]}]}]}]',
 		},
 		"CRM Deal-Quick Entry": {
 			"doctype": "CRM Deal",
@@ -218,11 +218,11 @@ def add_default_fields_layout(force=False):
 	data_fields_layouts = {
 		"CRM Lead-Data Fields": {
 			"doctype": "CRM Lead",
-			"layout": '[{"label": "Details", "name": "details_section", "opened": true, "columns": [{"name": "column_ZgLG", "fields": ["organization", "industry", "lead_owner"]}, {"name": "column_TbYq", "fields": ["website", "job_title"]}, {"name": "column_OKSX", "fields": ["territory", "source"]}]}, {"label": "Person", "name": "person_section", "opened": true, "columns": [{"name": "column_6c5g", "fields": ["salutation", "email"]}, {"name": "column_1n7Q", "fields": ["first_name", "mobile_no"]}, {"name": "column_cT6C", "fields": ["last_name"]}]}]',
+			"layout": '[{"name":"first_tab","sections":[{"label":"Details","name":"details_section","opened":true,"columns":[{"name":"column_ZgLG","fields":["organization","industry","lead_owner","engagement_type"]},{"name":"column_TbYq","fields":["website","job_title","company_type","product_interested"]},{"name":"column_OKSX","fields":["territory","source","company_type","applicationusage"]}]},{"label":"Person","name":"person_section","opened":true,"columns":[{"name":"column_6c5g","fields":["salutation","email"]},{"name":"column_1n7Q","fields":["first_name","mobile_no"]},{"name":"column_cT6C","fields":["last_name","designation"]}]}]}]',
 		},
 		"CRM Deal-Data Fields": {
 			"doctype": "CRM Deal",
-			"layout": '[{"label": "Details", "name": "details_section", "opened": true, "columns": [{"name": "column_z9XL", "fields": ["organization", "annual_revenue", "next_step"]}, {"name": "column_gM4w", "fields": ["website", "close_date", "deal_owner"]}, {"name": "column_gWmE", "fields": ["territory", "probability"]}]}]',
+			"layout": '[{"name":"first_tab","sections":[{"label":"Details","name":"details_section","opened":true,"columns":[{"name":"column_z9XL","fields":["organization","annual_revenue","next_step","first_order_volume","decision_criteria","custom_formulation_required"]},{"name":"column_gM4w","fields":["website","close_date","deal_owner","expected_monthly_volume","economic_buyer_name"]},{"name":"column_gWmE","fields":["territory","probability","product_alloy_type","primary_pain_category","decision_timeline"]}]}]}]',
 		},
 	}
 
@@ -507,7 +507,13 @@ def add_default_spanco_views():
 		"pricing": {
 			"label": "Pricing Discussion Stage",
 			"dt": "CRM Deal",
-			"filters": '{"status": ["in", ["Proposal/Quotation", "Negotiation"]]}',
+			"filters": '{"status": ["in", ["Negotiation"]]}',
+			"route_name": "Deals",
+		},
+		"proposal": {
+			"label": "Proposal Stage",
+			"dt": "CRM Deal",
+			"filters": '{"status": ["in", ["Proposal/Quotation"]]}',
 			"route_name": "Deals",
 		},
 		"orderbooking": {
@@ -548,32 +554,34 @@ def add_default_spanco_views():
 				view_ids[key] = doc.name
 				break
 
-	# Create any missing LMOTPO views
+	# Create or Update LMOTPO views
 	for key, config in lmotpo_views.items():
-		if view_ids.get(key):
-			continue
+		doc_name = view_ids.get(key)
 
-		existing_view = frappe.db.get_value(
-			"CRM View Settings",
-			{"label": config["label"], "dt": config["dt"]},
-			"name",
-		)
+		if not doc_name:
+			doc_name = frappe.db.get_value(
+				"CRM View Settings",
+				{"label": config["label"], "dt": config["dt"]},
+				"name",
+			)
 
-		if existing_view:
-			view_ids[key] = existing_view
-			continue
-
-		doc = frappe.new_doc("CRM View Settings")
-		doc.label = config["label"]
-		doc.dt = config["dt"]
-		doc.type = "list"
-		doc.route_name = config["route_name"]
-		doc.filters = config["filters"]
-		doc.is_standard = 1
-		doc.public = 1
-		doc.insert()
-
-		view_ids[key] = doc.name
+		if doc_name:
+			doc = frappe.get_doc("CRM View Settings", doc_name)
+			if doc.filters != config["filters"]:
+				doc.filters = config["filters"]
+				doc.save()
+			view_ids[key] = doc.name
+		else:
+			doc = frappe.new_doc("CRM View Settings")
+			doc.label = config["label"]
+			doc.dt = config["dt"]
+			doc.type = "list"
+			doc.route_name = config["route_name"]
+			doc.filters = config["filters"]
+			doc.is_standard = 1
+			doc.public = 1
+			doc.insert()
+			view_ids[key] = doc.name
 
 	# Update FCRM Settings with the view references
 	fcrm_settings = frappe.get_single("FCRM Settings")
@@ -586,6 +594,8 @@ def add_default_spanco_views():
 		fcrm_settings.analysis = view_ids["opportunities"]
 	if view_ids.get("trial"):
 		fcrm_settings.negotiation = view_ids["trial"]
+	if view_ids.get("proposal"):
+		fcrm_settings.proposal = view_ids["proposal"]
 	if view_ids.get("pricing"):
 		fcrm_settings.closed = view_ids["pricing"]
 	if view_ids.get("orderbooking"):

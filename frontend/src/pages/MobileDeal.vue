@@ -18,6 +18,9 @@
                 ? document.statuses
                 : deal.data._customStatuses,
               triggerStatusChange,
+              document.doc.status,
+              null,
+              document.doc,
             )
           "
         >
@@ -59,6 +62,21 @@
         :actions="document.actions"
       />
     </div>
+  </div>
+  <div
+    v-if="deal.data && document.doc?.status === 'Demo/Making'"
+    class="flex items-center justify-between gap-2 border-b px-3 py-2.5 bg-gray-50"
+  >
+    <span class="text-sm font-medium text-ink-gray-7">{{ __('Trial Outcome') }}:</span>
+    <Dropdown :options="trialOutcomeOptions">
+      <template #default="{ open }">
+        <Button :label="document.doc.trial_outcome || __('Select Outcome')">
+          <template #suffix>
+            <FeatherIcon :name="open ? 'chevron-up' : 'chevron-down'" class="h-4" />
+          </template>
+        </Button>
+      </template>
+    </Dropdown>
   </div>
   <div v-if="deal.data" class="flex h-full overflow-hidden">
     <Tabs as="div" v-model="tabIndex" :tabs="tabs" class="overflow-auto">
@@ -252,6 +270,21 @@
     v-model="showLostReasonModal"
     :deal="document"
   />
+  <StatusValidationModal
+    v-if="statusValidation.show"
+    v-model="statusValidation.show"
+    :fields="statusValidation.fields"
+    :targetStatus="statusValidation.targetStatus"
+    :doc="document.doc"
+    doctype="CRM Deal"
+    @proceed="proceedWithStatusChange"
+  />
+  <TrialOutcomeNoteModal
+    v-if="showTrialOutcomeNoteModal"
+    v-model="showTrialOutcomeNoteModal"
+    :deal="document"
+    :outcome="selectedTrialOutcome"
+  />
 </template>
 <script setup>
 import Icon from '@/components/Icon.vue'
@@ -274,6 +307,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import OrganizationModal from '@/components/Modals/OrganizationModal.vue'
 import LostReasonModal from '@/components/Modals/LostReasonModal.vue'
+import TrialOutcomeNoteModal from '@/components/Modals/TrialOutcomeNoteModal.vue'
 import AssignTo from '@/components/AssignTo.vue'
 import ContactModal from '@/components/Modals/ContactModal.vue'
 import Section from '@/components/Section.vue'
@@ -281,6 +315,8 @@ import Link from '@/components/Controls/Link.vue'
 import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
+import StatusValidationModal from '@/components/Modals/StatusValidationModal.vue'
+import { getFieldsForValidation } from '@/utils/validation'
 import { setupCustomizations } from '@/utils'
 import { getView } from '@/utils/view'
 import { getSettings } from '@/stores/settings'
@@ -304,7 +340,7 @@ import {
   usePageMeta,
   toast,
 } from 'frappe-ui'
-import { ref, computed, h, onMounted } from 'vue'
+import { ref, computed, h, onMounted, reactive, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const { brand } = getSettings()
@@ -313,6 +349,30 @@ const { statusOptions, getDealStatus } = statusesStore()
 const { doctypeMeta } = getMeta('CRM Deal')
 const route = useRoute()
 const router = useRouter()
+
+
+const trialOutcomeOptions = computed(() => {
+  const fields = doctypeMeta['CRM Deal']?.fields || []
+  const field = fields.find((f) => f.fieldname === 'trial_outcome')
+  if (!field || !field.options) return []
+
+  return field.options.split('\n').map((option) => ({
+    label: option || __('Select Outcome'),
+    value: option,
+    onClick: async () => {
+      if (['Qualified', 'Disqualified'].includes(option)) {
+        selectedTrialOutcome.value = option
+        showTrialOutcomeNoteModal.value = true
+      } else {
+        await triggerOnChange('trial_outcome', option)
+        await document.save.submit()
+      }
+    },
+  }))
+})
+
+const showTrialOutcomeNoteModal = ref(false)
+const selectedTrialOutcome = ref('')
 
 const props = defineProps({
   dealId: {
@@ -672,7 +732,50 @@ const { assignees, document, triggerOnChange } = useDocument(
   props.dealId,
 )
 
+provide('data', document.doc)
+provide('doctype', 'CRM Deal')
+provide('preview', ref(false))
+provide('isGridRow', false)
+
+const statusValidation = reactive({
+  show: false,
+  fields: [],
+  targetStatus: '',
+})
+
+function getMissingFields(targetStatus) {
+  const mandatoryFields = getFieldsForValidation('CRM Deal', targetStatus)
+  return mandatoryFields.filter((f) => !document.doc?.[f.fieldname])
+}
+
+async function proceedWithStatusChange() {
+  const missingFields = getMissingFields(statusValidation.targetStatus)
+  if (missingFields.length) {
+    toast.error(__('Please fill all required fields'))
+    return
+  }
+  await triggerOnChange('status', statusValidation.targetStatus)
+  await document.save.submit()
+  statusValidation.show = false
+}
+
 async function triggerStatusChange(value) {
+  const mandatoryFields = getFieldsForValidation('CRM Deal', value)
+  const missingFields = mandatoryFields.filter((f) => !document.doc?.[f.fieldname])
+
+  if (['Proposal/Quotation'].includes(value)) {
+    statusValidation.fields = mandatoryFields
+    statusValidation.targetStatus = value
+    statusValidation.show = true
+    return
+  }
+
+  if (missingFields.length) {
+    statusValidation.fields = missingFields
+    statusValidation.targetStatus = value
+    statusValidation.show = true
+    return
+  }
   await triggerOnChange('status', value)
   setLostReason()
 }

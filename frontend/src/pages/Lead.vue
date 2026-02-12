@@ -33,14 +33,14 @@
           )
         "
       >
-        <template #default="{ open }">
+        <template #default>
           <Button :label="document.doc.status">
             <template #prefix>
               <IndicatorIcon
                 :class="getLeadStatus(document.doc.status).color"
               />
             </template>
-            <template #suffix>
+            <template #suffix="{ open }">
               <FeatherIcon
                 :name="open ? 'chevron-up' : 'chevron-down'"
                 class="h-4"
@@ -49,7 +49,30 @@
           </Button>
         </template>
       </Dropdown>
+      <div v-if="document.doc && ['Contacted', 'Nurture'].includes(document.doc.status)" class="flex items-center gap-2">
+        <span class="text-sm text-ink-gray-5">{{ __('Meeting Outcome') }}:</span>
+        <Dropdown
+          :options="meetingOutcomeOptions"
+        >
+          <template #default="{ open }">
+            <Button :label="document.doc.meeting_outcomes || __('Select Outcome')">
+              <template #prefix v-if="document.doc.meeting_outcomes">
+                <IndicatorIcon
+                  :class="getOutcomeColor(document.doc.meeting_outcomes)"
+                />
+              </template>
+              <template #suffix>
+                <FeatherIcon
+                  :name="open ? 'chevron-up' : 'chevron-down'"
+                  class="h-4"
+                />
+              </template>
+            </Button>
+          </template>
+        </Dropdown>
+      </div>
       <Button
+        v-if="['Contacted', 'Nurture'].includes(document.doc?.status) && document.doc?.meeting_outcomes === 'Qualified'"
         :label="__('Convert to Deal')"
         variant="solid"
         @click="showConvertToDealModal = true"
@@ -225,6 +248,21 @@
     v-if="showConvertToDealModal"
     v-model="showConvertToDealModal"
     :lead="lead.data"
+    @next="
+      (data) => {
+        conversionData = data
+        showConvertToDealModal = false
+        showDealDetailModal = true
+      }
+    "
+  />
+  <DealDetailModal
+    v-if="showDealDetailModal"
+    v-model="showDealDetailModal"
+    :lead="lead.data"
+    :deal="conversionData.deal"
+    :existingContact="conversionData.existingContact"
+    :existingOrganization="conversionData.existingOrganization"
   />
   <FilesUploader
     v-if="lead.data?.name"
@@ -244,6 +282,14 @@
     :doctype="'CRM Lead'"
     :docname="props.leadId"
     name="Leads"
+  />
+  <StatusValidationModal
+    v-if="statusValidation.show"
+    v-model="statusValidation.show"
+    :fields="statusValidation.fields"
+    :targetStatus="statusValidation.targetStatus"
+    :doc="document.doc"
+    @proceed="proceedWithStatusChange"
   />
 </template>
 <script setup>
@@ -272,6 +318,9 @@ import SidePanelLayout from '@/components/SidePanelLayout.vue'
 import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import ConvertToDealModal from '@/components/Modals/ConvertToDealModal.vue'
+import StatusValidationModal from '@/components/Modals/StatusValidationModal.vue'
+import DealDetailModal from '@/components/Modals/DealDetailModal.vue'
+import { getFieldsForValidation } from '@/utils/validation'
 import {
   openWebsite,
   setupCustomizations,
@@ -297,17 +346,9 @@ import {
   usePageMeta,
   toast,
 } from 'frappe-ui'
-import { ref, computed, onMounted, watch, nextTick, watchEffect } from 'vue'
+import { ref, h, computed, onMounted, watch, nextTick, watchEffect, reactive, provide } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useActiveTabManager } from '@/composables/useActiveTabManager'
-
-const { brand } = getSettings()
-const { $dialog, $socket, makeCall } = globalStore()
-const { statusOptions, getLeadStatus } = statusesStore()
-const { doctypeMeta } = getMeta('CRM Lead')
-
-const route = useRoute()
-const router = useRouter()
 
 const props = defineProps({
   leadId: {
@@ -316,17 +357,91 @@ const props = defineProps({
   },
 })
 
-const errorTitle = ref('')
-const errorMessage = ref('')
-const showDeleteLinkedDocModal = ref(false)
-const showConvertToDealModal = ref(false)
+const route = useRoute()
+const router = useRouter()
 
 const { triggerOnChange, assignees, document } = useDocument(
   'CRM Lead',
   props.leadId,
 )
 
+provide('data', document.doc)
+provide('doctype', 'CRM Lead')
+provide('preview', ref(false))
+provide('isGridRow', false)
+
+const { brand } = getSettings()
+const { $dialog, $socket, makeCall } = globalStore()
+const { statusOptions, getLeadStatus } = statusesStore()
+const { doctypeMeta } = getMeta('CRM Lead')
+
+const meetingOutcomeColorMap = {
+  Qualified: 'text-green-500',
+  'Follow-up Required': 'text-blue-500',
+  Nurture: 'text-orange-500',
+  Disqualified: 'text-red-500',
+  Closed: 'text-gray-500',
+}
+
+function getOutcomeColor(outcome) {
+  return meetingOutcomeColorMap[outcome] || 'text-gray-500'
+}
+
+const meetingOutcomeOptions = computed(() => {
+  const fields = doctypeMeta['CRM Lead']?.fields || []
+  const field = fields.find((f) => f.fieldname === 'meeting_outcomes')
+  if (!field || !field.options) return []
+
+  return field.options.split('\n').map((option) => ({
+    label: option,
+    value: option,
+    icon: () => h(IndicatorIcon, { class: getOutcomeColor(option) }),
+    onClick: () => {
+      triggerOnChange('meeting_outcomes', option)
+      document.save.submit()
+    },
+  }))
+})
+
+const errorTitle = ref('')
+const errorMessage = ref('')
+const showDeleteLinkedDocModal = ref(false)
+const showConvertToDealModal = ref(false)
+const showDealDetailModal = ref(false)
+const conversionData = ref({})
+
+const statusValidation = reactive({
+  show: false,
+  fields: [],
+  targetStatus: '',
+})
+
+function getMissingFields(targetStatus) {
+  const mandatoryFields = getFieldsForValidation('CRM Lead', targetStatus)
+  return mandatoryFields.filter((f) => !document.doc?.[f.fieldname])
+}
+
+async function proceedWithStatusChange() {
+  const missingFields = getMissingFields(statusValidation.targetStatus)
+  if (missingFields.length) {
+    toast.error(__('Please fill all required fields'))
+    return
+  }
+  await triggerOnChange('status', statusValidation.targetStatus)
+  await document.save.submit()
+  statusValidation.show = false
+}
+
+// TODO: Add validation for meeting stage here
 async function triggerStatusChange(value) {
+  const missingFields = getMissingFields(value)
+
+  if (missingFields.length) {
+    statusValidation.fields = missingFields
+    statusValidation.targetStatus = value
+    statusValidation.show = true
+    return
+  }
   await triggerOnChange('status', value)
   document.save.submit()
 }
@@ -368,7 +483,6 @@ const lead = createResource({
     if (pendingVisitsData.value) {
       data.linked_visits = pendingVisitsData.value
       pendingVisitsData.value = null
-      console.log('Lead.vue: Assigned pending visits data to lead on lead load')
     }
     
     setupCustomizations(lead, {

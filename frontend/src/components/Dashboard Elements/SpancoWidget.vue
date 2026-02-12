@@ -85,7 +85,7 @@
             <!-- Stage Details Row -->
             <div class="mt-2 grid grid-cols-6 gap-1 text-xs">
               <div
-                v-for="(stage, index) in spancoData"
+                v-for="(stage) in spancoData"
                 :key="`detail-${stage.stage}`"
                 class="text-center"
               >
@@ -520,13 +520,16 @@ const prospectView = computed(() =>
 const analysisView = computed(() =>
   parseView(fcrmSettings.data?.analysis || null),
 )
+const proposalView = computed(() =>
+  parseView(fcrmSettings.data?.proposal || null),
+)
 const negotiationView = computed(() =>
   parseView(fcrmSettings.data?.negotiation || null),
 )
 const closureView = computed(() => parseView(fcrmSettings.data?.closed || null))
 const orderView = computed(() => parseView(fcrmSettings.data?.order || null))
 
-// LMOTPO data (Lead → Meetings → Opportunities → Trial → Pricing Discussion → Order Booking)
+// LMOTPO data (Lead → Meetings → Opportunities → Trial → Proposal → Pricing Discussion → Order Booking)
 
 const spancoData = computed(() => {
   const leads = leadsResource.data || []
@@ -542,8 +545,11 @@ const spancoData = computed(() => {
   const trialStage = deals.filter((d) =>
     ['Demo/Making'].includes(d.status),
   )
+  const proposalStage = deals.filter((d) =>
+    ['Proposal/Quotation'].includes(d.status),
+  )
   const pricingStage = deals.filter((d) =>
-    ['Proposal/Quotation', 'Negotiation'].includes(d.status),
+    ['Negotiation'].includes(d.status),
   )
   const orderStage = deals.filter((d) =>
     ['Ready to Close', 'Won'].includes(d.status),
@@ -555,6 +561,7 @@ const spancoData = computed(() => {
     meetingsStage.length +
     opportunitiesStage.length +
     trialStage.length +
+    proposalStage.length +
     pricingStage.length +
     orderStage.length
 
@@ -566,6 +573,7 @@ const spancoData = computed(() => {
     meetingsStage.length,
     opportunitiesStage.length,
     trialStage.length,
+    proposalStage.length,
     pricingStage.length,
     orderStage.length,
   ]
@@ -573,7 +581,7 @@ const spancoData = computed(() => {
 
   // Adjust last percentage to ensure sum equals exactly 100%
   const sumWithoutLast = rawPercents.slice(0, -1).reduce((a, b) => a + b, 0)
-  rawPercents[5] = Math.max(0, 100 - sumWithoutLast)
+  rawPercents[6] = Math.max(0, 100 - sumWithoutLast)
 
   return [
     {
@@ -631,16 +639,30 @@ const spancoData = computed(() => {
       view: negotiationView.value,
     },
     {
-      stage: 'P',
-      fullName: 'Pricing Discussion Stage',
-      number: pricingStage.length,
+      stage: 'Pr',
+      fullName: 'Proposal Stage',
+      number: proposalStage.length,
       percent: rawPercents[4],
-      valuation: pricingStage.reduce(
+      valuation: proposalStage.reduce(
         (sum, d) => sum + (Number(d.annual_revenue) || 0),
         0,
       ),
       color:
         'bg-gradient-to-br from-emerald-600 to-emerald-700 sm:bg-emerald-600/95',
+      textColor: 'text-white',
+      view: proposalView.value,
+    },
+    {
+      stage: 'P',
+      fullName: 'Pricing Discussion Stage',
+      number: pricingStage.length,
+      percent: rawPercents[5],
+      valuation: pricingStage.reduce(
+        (sum, d) => sum + (Number(d.annual_revenue) || 0),
+        0,
+      ),
+      color:
+        'bg-gradient-to-br from-teal-600 to-teal-700 sm:bg-teal-600/95',
       textColor: 'text-white',
       view: closureView.value,
     },
@@ -648,12 +670,12 @@ const spancoData = computed(() => {
       stage: 'OB',
       fullName: 'Order Booking Stage',
       number: orderStage.length,
-      percent: rawPercents[5],
+      percent: rawPercents[6],
       valuation: orderStage.reduce(
         (sum, d) => sum + (Number(d.annual_revenue) || 0),
         0,
       ),
-      color: 'bg-gradient-to-br from-teal-600 to-teal-700 sm:bg-teal-600/95',
+      color: 'bg-gradient-to-br from-cyan-600 to-cyan-700 sm:bg-cyan-600/95',
       textColor: 'text-white',
       view: orderView.value,
     },
@@ -697,7 +719,7 @@ const totalPipelineValue = computed(() => {
 
 const overallConversionRate = computed(() => {
   const suspects = spancoData.value[0]?.number || 0
-  const orders = spancoData.value[5]?.number || 0
+  const orders = spancoData.value[6]?.number || 0
   if (suspects === 0) return '0.0'
   return ((orders / suspects) * 100).toFixed(1)
 })
