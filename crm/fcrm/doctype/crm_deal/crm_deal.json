@@ -94,8 +94,11 @@
   "final_price__kg",
   "approval_authority",
   "commercial_acceptance",
+  "column_break_anxm",
+  "proposal_acknowledged",
   "paper_process_status",
-  "proposal_acknowledged"
+  "product_type",
+  "order_date"
  ],
  "fields": [
   {
@@ -538,7 +541,7 @@
   },
   {
    "fieldname": "trial_success_criteria",
-   "fieldtype": "Data",
+   "fieldtype": "Small Text",
    "label": "Trial Success Criteria"
   },
   {
@@ -594,12 +597,27 @@
    "fieldtype": "Select",
    "label": "Paper Process Status",
    "options": "\nIn Progress\nCompleted\nFailed"
+  },
+  {
+   "fieldname": "order_date",
+   "fieldtype": "Date",
+   "label": "Order Date"
+  },
+  {
+   "fieldname": "product_type",
+   "fieldtype": "Link",
+   "label": "Product Type",
+   "options": "CRM Product"
+  },
+  {
+   "fieldname": "column_break_anxm",
+   "fieldtype": "Column Break"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-12 09:27:47.032376",
+ "modified": "2026-02-12 14:09:31.769945",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Deal",

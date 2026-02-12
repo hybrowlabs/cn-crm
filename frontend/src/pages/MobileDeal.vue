@@ -761,14 +761,20 @@ async function proceedWithStatusChange() {
 
 async function triggerStatusChange(value) {
   const mandatoryFields = getFieldsForValidation('CRM Deal', value)
-  const missingFields = mandatoryFields.filter((f) => !document.doc?.[f.fieldname])
 
-  if (['Proposal/Quotation'].includes(value)) {
+  if (value === 'Won' && !document.doc.product_type && document.doc.trial_product) {
+    document.doc.product_type = document.doc.trial_product
+  }
+
+  if (['Proposal/Quotation', 'Won'].includes(value)) {
     statusValidation.fields = mandatoryFields
     statusValidation.targetStatus = value
     statusValidation.show = true
     return
   }
+
+
+  const missingFields = mandatoryFields.filter((f) => !document.doc?.[f.fieldname])
 
   if (missingFields.length) {
     statusValidation.fields = missingFields
