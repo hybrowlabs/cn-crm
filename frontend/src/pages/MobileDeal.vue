@@ -279,6 +279,12 @@
     doctype="CRM Deal"
     @proceed="proceedWithStatusChange"
   />
+  <TrialOutcomeNoteModal
+    v-if="showTrialOutcomeNoteModal"
+    v-model="showTrialOutcomeNoteModal"
+    :deal="document"
+    :outcome="selectedTrialOutcome"
+  />
 </template>
 <script setup>
 import Icon from '@/components/Icon.vue'
@@ -301,6 +307,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import OrganizationModal from '@/components/Modals/OrganizationModal.vue'
 import LostReasonModal from '@/components/Modals/LostReasonModal.vue'
+import TrialOutcomeNoteModal from '@/components/Modals/TrialOutcomeNoteModal.vue'
 import AssignTo from '@/components/AssignTo.vue'
 import ContactModal from '@/components/Modals/ContactModal.vue'
 import Section from '@/components/Section.vue'
@@ -352,13 +359,20 @@ const trialOutcomeOptions = computed(() => {
   return field.options.split('\n').map((option) => ({
     label: option || __('Select Outcome'),
     value: option,
-    onClick: () => {
-      updateField('trial_outcome', option, () => {
-        document.doc.trial_outcome = option
-      })
+    onClick: async () => {
+      if (['Qualified', 'Disqualified'].includes(option)) {
+        selectedTrialOutcome.value = option
+        showTrialOutcomeNoteModal.value = true
+      } else {
+        await triggerOnChange('trial_outcome', option)
+        await document.save.submit()
+      }
     },
   }))
 })
+
+const showTrialOutcomeNoteModal = ref(false)
+const selectedTrialOutcome = ref('')
 
 const props = defineProps({
   dealId: {
@@ -746,7 +760,15 @@ async function proceedWithStatusChange() {
 }
 
 async function triggerStatusChange(value) {
-  const missingFields = getMissingFields(value)
+  const mandatoryFields = getFieldsForValidation('CRM Deal', value)
+  const missingFields = mandatoryFields.filter((f) => !document.doc?.[f.fieldname])
+
+  if (['Proposal/Quotation'].includes(value)) {
+    statusValidation.fields = mandatoryFields
+    statusValidation.targetStatus = value
+    statusValidation.show = true
+    return
+  }
 
   if (missingFields.length) {
     statusValidation.fields = missingFields

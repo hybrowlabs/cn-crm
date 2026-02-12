@@ -507,7 +507,13 @@ def add_default_spanco_views():
 		"pricing": {
 			"label": "Pricing Discussion Stage",
 			"dt": "CRM Deal",
-			"filters": '{"status": ["in", ["Proposal/Quotation", "Negotiation"]]}',
+			"filters": '{"status": ["in", ["Negotiation"]]}',
+			"route_name": "Deals",
+		},
+		"proposal": {
+			"label": "Proposal Stage",
+			"dt": "CRM Deal",
+			"filters": '{"status": ["in", ["Proposal/Quotation"]]}',
 			"route_name": "Deals",
 		},
 		"orderbooking": {
@@ -548,32 +554,34 @@ def add_default_spanco_views():
 				view_ids[key] = doc.name
 				break
 
-	# Create any missing LMOTPO views
+	# Create or Update LMOTPO views
 	for key, config in lmotpo_views.items():
-		if view_ids.get(key):
-			continue
+		doc_name = view_ids.get(key)
 
-		existing_view = frappe.db.get_value(
-			"CRM View Settings",
-			{"label": config["label"], "dt": config["dt"]},
-			"name",
-		)
+		if not doc_name:
+			doc_name = frappe.db.get_value(
+				"CRM View Settings",
+				{"label": config["label"], "dt": config["dt"]},
+				"name",
+			)
 
-		if existing_view:
-			view_ids[key] = existing_view
-			continue
-
-		doc = frappe.new_doc("CRM View Settings")
-		doc.label = config["label"]
-		doc.dt = config["dt"]
-		doc.type = "list"
-		doc.route_name = config["route_name"]
-		doc.filters = config["filters"]
-		doc.is_standard = 1
-		doc.public = 1
-		doc.insert()
-
-		view_ids[key] = doc.name
+		if doc_name:
+			doc = frappe.get_doc("CRM View Settings", doc_name)
+			if doc.filters != config["filters"]:
+				doc.filters = config["filters"]
+				doc.save()
+			view_ids[key] = doc.name
+		else:
+			doc = frappe.new_doc("CRM View Settings")
+			doc.label = config["label"]
+			doc.dt = config["dt"]
+			doc.type = "list"
+			doc.route_name = config["route_name"]
+			doc.filters = config["filters"]
+			doc.is_standard = 1
+			doc.public = 1
+			doc.insert()
+			view_ids[key] = doc.name
 
 	# Update FCRM Settings with the view references
 	fcrm_settings = frappe.get_single("FCRM Settings")
@@ -586,6 +594,8 @@ def add_default_spanco_views():
 		fcrm_settings.analysis = view_ids["opportunities"]
 	if view_ids.get("trial"):
 		fcrm_settings.negotiation = view_ids["trial"]
+	if view_ids.get("proposal"):
+		fcrm_settings.proposal = view_ids["proposal"]
 	if view_ids.get("pricing"):
 		fcrm_settings.closed = view_ids["pricing"]
 	if view_ids.get("orderbooking"):

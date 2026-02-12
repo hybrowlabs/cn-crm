@@ -127,7 +127,7 @@ def ensure_lmotpo_widgets():
 			{
 				"widget_type": "LMOTPO",
 				"widget_title": "LMOTPO Pipeline",
-				"widget_description": "Lead → Meetings → Opportunities → Trial → Pricing → Order Booking",
+				"widget_description": "Lead → Meetings → Opportunities → Trial → Proposal → Pricing → Order Booking",
 				"width": 12,
 				"height": 6,
 				"x_position": 0,

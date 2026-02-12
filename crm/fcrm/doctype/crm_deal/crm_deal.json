@@ -87,7 +87,15 @@
   "column_break_hehz",
   "trial_success_criteria",
   "trial_outcome",
-  "trial_outcome_notes"
+  "trial_outcome_notes",
+  "trial_outcome_note",
+  "proposal_fields_tab",
+  "final_volume_kg",
+  "final_price__kg",
+  "approval_authority",
+  "commercial_acceptance",
+  "paper_process_status",
+  "proposal_acknowledged"
  ],
  "fields": [
   {
@@ -543,12 +551,55 @@
    "fieldname": "trial_outcome_notes",
    "fieldtype": "Data",
    "label": "Trial Outcome Notes"
+  },
+  {
+   "fieldname": "trial_outcome_note",
+   "fieldtype": "Small Text",
+   "label": "Trial Outcome note"
+  },
+  {
+   "fieldname": "proposal_fields_tab",
+   "fieldtype": "Tab Break",
+   "label": "Proposal Fields"
+  },
+  {
+   "fieldname": "final_volume_kg",
+   "fieldtype": "Float",
+   "label": "Final Volume (kg)"
+  },
+  {
+   "fieldname": "final_price__kg",
+   "fieldtype": "Currency",
+   "label": "Final Price / kg"
+  },
+  {
+   "fieldname": "approval_authority",
+   "fieldtype": "Data",
+   "label": "Approval Authority"
+  },
+  {
+   "fieldname": "commercial_acceptance",
+   "fieldtype": "Select",
+   "label": "Commercial Acceptance",
+   "options": "\nYes\nNo"
+  },
+  {
+   "fieldname": "proposal_acknowledged",
+   "fieldtype": "Select",
+   "label": "Proposal Acknowledged",
+   "options": "\nYes\nNo"
+  },
+  {
+   "fieldname": "paper_process_status",
+   "fieldtype": "Select",
+   "label": "Paper Process Status",
+   "options": "\nIn Progress\nCompleted\nFailed"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-11 14:57:10.581865",
+ "modified": "2026-02-12 09:27:47.032376",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Deal",
