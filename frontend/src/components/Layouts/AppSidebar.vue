@@ -61,6 +61,7 @@
           <nav class="flex flex-col">
             <SidebarLink
               v-for="link in view.views"
+              :key="link.label"
               :icon="link.icon"
               :label="__(link.label)"
               :to="link.to"
@@ -234,9 +235,9 @@ const links = [
     to: 'Quotations',
   },
   {
-    label: 'Visits',
+    label: 'Meetings',
     icon: VisitsIcon,
-    to: 'Visits',
+    to: 'Meetings',
   },
   {
     label: 'Contacts',

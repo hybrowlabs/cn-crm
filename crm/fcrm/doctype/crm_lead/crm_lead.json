@@ -28,7 +28,6 @@
   "volume_rangekg",
   "customer_role_type",
   "current_supplier",
-  "meeting_outcomes",
   "gst_section",
   "gst_applicable",
   "gst_number",
@@ -470,19 +469,13 @@
    "fieldname": "next_action_date",
    "fieldtype": "Date",
    "label": "Next Action Date"
-  },
-  {
-   "fieldname": "meeting_outcomes",
-   "fieldtype": "Select",
-   "label": "Meeting Outcomes",
-   "options": "\nQualified\nFollow-up Required\nNurture\nDisqualified\nClosed"
   }
  ],
  "grid_page_length": 50,
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-11 12:15:36.949223",
+ "modified": "2026-02-13 22:31:31.110388",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Lead",

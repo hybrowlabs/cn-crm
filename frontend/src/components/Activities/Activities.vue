@@ -40,12 +40,12 @@
         v-else-if="title == 'Notes'"
         class="grid grid-cols-1 gap-4 px-3 pb-3 sm:px-10 sm:pb-5 lg:grid-cols-2 xl:grid-cols-3"
       >
-        <div v-for="note in activities" @click="modalRef.showNote(note)">
+        <div v-for="note in activities" :key="note.name" @click="modalRef.showNote(note)">
           <NoteArea :note="note" v-model="all_activities" />
         </div>
       </div>
       <div v-else-if="title == 'Comments'" class="pb-5">
-        <div v-for="(comment, i) in activities">
+        <div v-for="(comment, i) in activities" :key="comment.name">
           <div
             class="activity grid grid-cols-[30px_minmax(auto,_1fr)] gap-2 px-3 sm:gap-4 sm:px-10"
           >
@@ -67,7 +67,7 @@
         <TaskArea :modalRef="modalRef" :tasks="activities" :doctype="doctype" />
       </div>
       <div v-else-if="title == 'Calls'" class="activity">
-        <div v-for="(call, i) in activities">
+        <div v-for="(call, i) in activities" :key="call.name">
           <div
             class="activity grid grid-cols-[30px_minmax(auto,_1fr)] gap-4 px-3 sm:px-10"
           >
@@ -107,6 +107,7 @@
       <div
         v-else
         v-for="(activity, i) in activities"
+        :key="activity.name"
         class="activity px-3 sm:px-10"
         :class="
           ['Activity', 'Emails'].includes(title)
@@ -303,6 +304,7 @@
           >
             <div
               v-for="activity in [activity, ...activity.other_versions]"
+              :key="activity.name"
               class="flex items-start justify-stretch gap-2 py-1.5 text-base"
             >
               <div class="inline-flex flex-wrap gap-1 text-ink-gray-5">
@@ -370,6 +372,15 @@
         :docname="doc.data.name"
         @beforeSave="(data) => emit('beforeSave', data)"
         @afterSave="(data) => emit('afterSave', data)"
+      />
+    </div>
+    <div v-else-if="title == 'Meeting Data'" class="h-full flex flex-col overflow-y-auto px-3 sm:px-10">
+      <DataFields
+        :doctype="doctype"
+        :docname="doc.data.name"
+        layoutType="Side Data Bar"
+        @beforeSave="(data) => emit('beforeSave', data)"
+        @afterSave="(data) => emit('afterSave', data)" 
       />
     </div>
     <div v-else-if="title == 'Quotations'" class="flex flex-col px-3 pb-3 sm:px-10 sm:pb-5">
@@ -718,6 +729,8 @@ const emptyText = computed(() => {
     text = 'No Comments'
   } else if (title.value == 'Data') {
     text = 'No Data'
+  } else if (title.value == 'Meeting Data') {
+    text = 'No Meeting Data'
   } else if (title.value == 'Calls') {
     text = 'No Call Logs'
   } else if (title.value == 'Notes') {
@@ -739,6 +752,8 @@ const emptyTextIcon = computed(() => {
   } else if (title.value == 'Comments') {
     icon = CommentIcon
   } else if (title.value == 'Data') {
+    icon = DetailsIcon
+  } else if (title.value == 'Meeting Data') {
     icon = DetailsIcon
   } else if (title.value == 'Calls') {
     icon = PhoneIcon

@@ -1,7 +1,7 @@
 <template>
   <LayoutHeader>
     <template #left-header>
-      <ViewBreadcrumbs v-model="viewControls" routeName="Visits" />
+      <ViewBreadcrumbs v-model="viewControls" routeName="Meetings" />
     </template>
     <template #right-header>
       <CustomActions
@@ -57,7 +57,7 @@
       class="flex flex-col items-center gap-3 text-xl font-medium text-ink-gray-4"
     >
       <VisitsIcon class="h-10 w-10" />
-      <span>{{ __('No {0} Found', [__('Visits')]) }}</span>
+      <span>{{ __('No {0} Found', [__('Meetings')]) }}</span>
       <Button :label="__('Create')" @click="showVisitModal = true">
         <template #prefix><FeatherIcon name="plus" class="h-4" /></template>
       </Button>

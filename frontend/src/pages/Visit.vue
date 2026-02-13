@@ -14,7 +14,7 @@
       />
       <Button
         variant="solid"
-        :label="__('Edit Visit')"
+        :label="__('Edit Meeting')"
         @click="showEditModal = true"
       >
         <template #prefix>
@@ -75,7 +75,7 @@
           />
         </div>
         <div class="flex flex-col gap-2.5 truncate">
-          <Tooltip :text="visit.data.visit_to || __('Visit Title')">
+          <Tooltip :text="visit.data.visit_to || __('Meeting Title')">
             <div class="truncate text-2xl font-medium text-ink-gray-9">
               {{ title }}
             </div>
@@ -277,7 +277,7 @@ const visit = createResource({
       errorTitle.value = __('Not permitted')
       errorMessage.value = __(err.messages?.[0])
     } else {
-      router.push({ name: 'Visits' })
+      router.push({ name: 'Meetings' })
     }
   },
 })
@@ -310,12 +310,12 @@ function updateVisit(fieldname, value, callback) {
     onSuccess: () => {
       visit.reload()
       reload.value = true
-      toast.success(__('Visit updated successfully'))
+      toast.success(__('Meeting updated successfully'))
       callback?.()
     },
     onError: (err) => {
       // Use enhanced error handler for comprehensive error processing
-      handleResourceError(err, 'update visit')
+      handleResourceError(err, 'update meeting')
     },
   })
 }
@@ -330,7 +330,7 @@ function validateRequired(fieldname, value) {
 }
 
 const breadcrumbs = computed(() => {
-  let items = [{ label: __('Visits'), route: { name: 'Visits' } }]
+  let items = [{ label: __('Meetings'), route: { name: 'Meetings' } }]
 
   if (route.query.view || route.query.viewType) {
     let view = getView(route.query.view, route.query.viewType, 'CRM Site Visit')
@@ -339,7 +339,7 @@ const breadcrumbs = computed(() => {
         label: __(view.label),
         icon: view.icon,
         route: {
-          name: 'Visits',
+          name: 'Meetings',
           params: { viewType: route.query.viewType },
           query: { view: route.query.view },
         },
@@ -463,7 +463,7 @@ async function deleteVisit(name) {
     doctype: 'CRM Site Visit',
     name,
   })
-  router.push({ name: 'Visits' })
+  router.push({ name: 'Meetings' })
 }
 
 const activities = ref(null)
@@ -484,6 +484,6 @@ function onVisitUpdated() {
   visit.reload()
   sections.reload()
   reload.value = true
-  toast.success(__('Visit updated successfully'))
+  toast.success(__('Meeting updated successfully'))
 }
 </script>

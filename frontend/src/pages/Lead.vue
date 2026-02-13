@@ -30,6 +30,8 @@
               ? document.statuses
               : lead.data._customStatuses,
             triggerStatusChange,
+            document.doc.status,
+            { [document.doc.status]: statusVisibility }
           )
         "
       >
@@ -49,30 +51,8 @@
           </Button>
         </template>
       </Dropdown>
-      <div v-if="document.doc && ['Contacted', 'Nurture'].includes(document.doc.status)" class="flex items-center gap-2">
-        <span class="text-sm text-ink-gray-5">{{ __('Meeting Outcome') }}:</span>
-        <Dropdown
-          :options="meetingOutcomeOptions"
-        >
-          <template #default="{ open }">
-            <Button :label="document.doc.meeting_outcomes || __('Select Outcome')">
-              <template #prefix v-if="document.doc.meeting_outcomes">
-                <IndicatorIcon
-                  :class="getOutcomeColor(document.doc.meeting_outcomes)"
-                />
-              </template>
-              <template #suffix>
-                <FeatherIcon
-                  :name="open ? 'chevron-up' : 'chevron-down'"
-                  class="h-4"
-                />
-              </template>
-            </Button>
-          </template>
-        </Dropdown>
-      </div>
       <Button
-        v-if="['Contacted', 'Nurture'].includes(document.doc?.status) && document.doc?.meeting_outcomes === 'Qualified'"
+        v-if="isQualified"
         :label="__('Convert to Deal')"
         variant="solid"
         @click="showConvertToDealModal = true"
@@ -90,7 +70,7 @@
           v-model:tabIndex="tabIndex"
           v-model="lead"
           :linkedVisits="linkedVisits"
-          @afterSave="reloadAssignees"
+          @afterSave="handleAfterSave"
           @reloadVisits="reloadVisits"
         />
       </template>
@@ -443,6 +423,9 @@ async function triggerStatusChange(value) {
     return
   }
   await triggerOnChange('status', value)
+  if (lead.data) {
+    lead.data.status = value
+  }
   document.save.submit()
 }
 
@@ -598,6 +581,37 @@ function evaluateMandatoryCondition(expression) {
   return !!lead.data[expression]
 }
 
+const statusVisibility = computed(() => {
+  const status = document.doc?.status
+  if (status === 'New') {
+    return ['New', 'Contacted', 'Nurture', 'Disqualified', 'Junk']
+  } else if (['Contacted', 'Nurture', 'Qualified'].includes(status)) {
+    return ['Contacted', 'Nurture', 'Qualified', 'Disqualified', 'Junk']
+  } else {
+    // Junk, Disqualified, etc.
+    return ['Contacted', 'Nurture', 'Disqualified', 'Junk']
+  }
+})
+
+const isQualified = computed(() => {
+  return (
+    document.doc?.status === 'Qualified' ||
+    lead.data?.status === 'Qualified'
+  )
+})
+
+function handleAfterSave(data) {
+  if (data) {
+    Object.assign(document.doc, data)
+    if (lead.data) {
+      Object.assign(lead.data, data)
+    }
+  }
+  if (data?.hasOwnProperty('lead_owner')) {
+    assignees.reload()
+  }
+}
+
 const breadcrumbs = computed(() => {
   let items = [{ label: __('Leads'), route: { name: 'Leads' } }]
 
@@ -654,12 +668,21 @@ const tabs = computed(() => {
     },
     {
       name: 'Data',
-      label: __('Data'),
+      label: __('Lead Data'),
       icon: DetailsIcon,
+      condition: () =>
+        !['Contacted', 'Nurture', 'Qualified'].includes(document.doc?.status),
     },
     {
-      name: 'Visits',
-      label: __('Visits'),
+      name: 'Meeting Data',
+      label: __('Meeting Data'),
+      icon: DetailsIcon,
+      condition: () =>
+        ['Contacted', 'Nurture', 'Qualified'].includes(document.doc?.status),
+    },
+    {
+      name: 'Meetings',
+      label: __('Meetings'),
       icon: VisitsIcon,
     },
     {
@@ -741,11 +764,6 @@ function openEmailBox() {
   nextTick(() => (activities.value.emailBox.show = true))
 }
 
-function reloadAssignees(data) {
-  if (data?.hasOwnProperty('lead_owner')) {
-    assignees.reload()
-  }
-}
 
 function reloadVisits() {
   visits.reload()

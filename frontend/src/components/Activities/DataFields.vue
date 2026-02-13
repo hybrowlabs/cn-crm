@@ -48,6 +48,7 @@
     v-if="showDataFieldsModal"
     v-model="showDataFieldsModal"
     :doctype="doctype"
+    :layoutType="layoutType"
     @reload="
       () => {
         tabs.reload()
@@ -77,6 +78,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  layoutType: {
+    type: String,
+    default: 'Data Fields',
+  },
 })
 
 const emit = defineEmits(['beforeSave', 'afterSave'])
@@ -92,8 +97,8 @@ const { document } = useDocument(props.doctype, props.docname)
 
 const tabs = createResource({
   url: 'crm.fcrm.doctype.crm_fields_layout.crm_fields_layout.get_fields_layout',
-  cache: ['DataFields', props.doctype],
-  params: { doctype: props.doctype, type: 'Data Fields' },
+  cache: ['DataFields', props.doctype, props.layoutType],
+  params: { doctype: props.doctype, type: props.layoutType },
   auto: true,
 })
 

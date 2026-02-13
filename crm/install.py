@@ -164,7 +164,7 @@ def add_default_fields_layout(force=False):
 	quick_entry_layouts = {
 		"CRM Lead-Quick Entry": {
 			"doctype": "CRM Lead",
-			"layout": '[{"name":"first_tab","sections":[{"name":"person_section","columns":[{"name":"column_5jrk","fields":["salutation","email","designation"]},{"name":"column_5CPV","fields":["first_name","mobile_no"]},{"name":"column_gXOy","fields":["last_name","gender"]}]},{"name":"organization_section","columns":[{"name":"column_GHfX","fields":["organization","territory","engagement_type"]},{"name":"column_hXjS","fields":["website","annual_revenue","product_interested"]},{"name":"column_RDNA","fields":["source","industry","applicationusage"]}]},{"name":"lead_section","columns":[{"name":"column_EO1H","fields":["status"]},{"name":"column_RWBe","fields":["lead_owner"]}]}]}]',
+			"layout": '[{"name":"first_tab","sections":[{"name":"person_section","columns":[{"name":"column_5jrk","fields":["salutation","email"]},{"name":"column_5CPV","fields":["first_name","mobile_no"]},{"name":"column_gXOy","fields":["last_name","designation"]}]},{"name":"organization_section","columns":[{"name":"column_GHfX","fields":["organization","engagement_type"]},{"name":"column_hXjS","fields":["website","annual_revenue","product_interested"]},{"name":"column_RDNA","fields":["source","industry","applicationusage"]}]},{"name":"lead_section","columns":[{"name":"column_EO1H","fields":["status"]},{"name":"column_RWBe","fields":["lead_owner"]}]}]}]',
 		},
 		"CRM Deal-Quick Entry": {
 			"doctype": "CRM Deal",
@@ -218,11 +218,11 @@ def add_default_fields_layout(force=False):
 	data_fields_layouts = {
 		"CRM Lead-Data Fields": {
 			"doctype": "CRM Lead",
-			"layout": '[{"name":"first_tab","sections":[{"label":"Details","name":"details_section","opened":true,"columns":[{"name":"column_ZgLG","fields":["organization","industry","lead_owner","engagement_type"]},{"name":"column_TbYq","fields":["website","job_title","company_type","product_interested"]},{"name":"column_OKSX","fields":["territory","source","company_type","applicationusage"]}]},{"label":"Person","name":"person_section","opened":true,"columns":[{"name":"column_6c5g","fields":["salutation","email"]},{"name":"column_1n7Q","fields":["first_name","mobile_no"]},{"name":"column_cT6C","fields":["last_name","designation"]}]}]}]',
+			"layout": '[{"name":"first_tab","sections":[{"label":"Details","name":"details_section","opened":true,"columns":[{"name":"column_ZgLG","fields":["organization","lead_owner","engagement_type"]},{"name":"column_TbYq","fields":["job_title","industry","product_interested"]},{"name":"column_OKSX","fields":["source","company_type","applicationusage"]}]},{"label":"Person","name":"person_section","opened":true,"columns":[{"name":"column_6c5g","fields":["salutation","email"]},{"name":"column_1n7Q","fields":["first_name","mobile_no"]},{"name":"column_cT6C","fields":["last_name","designation"]}]}]}]',
 		},
 		"CRM Deal-Data Fields": {
 			"doctype": "CRM Deal",
-			"layout": '[{"name":"first_tab","sections":[{"label":"Details","name":"details_section","opened":true,"columns":[{"name":"column_z9XL","fields":["organization","annual_revenue","next_step","first_order_volume","decision_criteria","custom_formulation_required"]},{"name":"column_gM4w","fields":["website","close_date","deal_owner","expected_monthly_volume","economic_buyer_name"]},{"name":"column_gWmE","fields":["territory","probability","product_alloy_type","primary_pain_category","decision_timeline"]}]}]}]',
+			"layout": '[{"name":"first_tab","sections":[{"label":"Details","name":"details_section","opened":true,"columns":[{"name":"column_z9XL","fields":["organization","next_step","first_order_volume","decision_criteria"]},{"name":"column_gM4w","fields":["close_date","deal_owner","expected_monthly_volume","economic_buyer_name","custom_formulation_required"]},{"name":"column_gWmE","fields":["probability","product_alloy_type","primary_pain_category","decision_timeline"]}]}]}]',
 		},
 	}
 
@@ -263,6 +263,26 @@ def add_default_fields_layout(force=False):
 		doc.type = "Data Fields"
 		doc.dt = data_fields_layouts[layout]["doctype"]
 		doc.layout = data_fields_layouts[layout]["layout"]
+		doc.insert()
+
+	side_data_bar_layouts = {
+		"CRM Lead-Side Data Bar": {
+			"doctype": "CRM Lead",
+			"layout": '[{"label": "Meeting Details", "opened": true, "columns": [{"fields": ["meeting_type", "meeting_outcomes", "next_action_date"]}]}, {"label": "Outcome Analysis", "opened": true, "columns": [{"fields": ["decision_process", "pain_description", "primary_pain_category"]}]}, {"label": "Product Context", "opened": true, "columns": [{"fields": ["product_discussed", "product_interested", "volume_rangekg"]}]}]',
+		}
+	}
+
+	for layout in side_data_bar_layouts:
+		if frappe.db.exists("CRM Fields Layout", layout):
+			if force:
+				frappe.delete_doc("CRM Fields Layout", layout)
+			else:
+				continue
+
+		doc = frappe.new_doc("CRM Fields Layout")
+		doc.type = "Side Data Bar"
+		doc.dt = side_data_bar_layouts[layout]["doctype"]
+		doc.layout = side_data_bar_layouts[layout]["layout"]
 		doc.insert()
 
 

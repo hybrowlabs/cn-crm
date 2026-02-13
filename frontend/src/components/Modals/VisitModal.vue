@@ -5,7 +5,7 @@
         <div class="mb-5 flex items-center justify-between">
           <div>
             <h3 class="text-2xl font-semibold leading-6 text-ink-gray-9">
-              {{ isEditMode ? __('Edit Site Visit') : __('Create Site Visit') }}
+              {{ isEditMode ? __('Edit Meeting') : __('Create Meeting') }}
             </h3>
             <p v-if="isEditMode && visitId" class="mt-1 text-sm text-ink-gray-6">
               {{ visitId }}
@@ -184,9 +184,7 @@ const tabs = createResource({
                 transformedField.fieldtype = 'Small Text'
                 transformedField.reqd = 1
                 // Set default value if not provided
-                if (!visit.doc.visit_purpose) {
-                  transformedField.default = 'Site visit scheduled'
-                }
+                transformedField.default = 'Meeting scheduled'
               }
 
               if (field.fieldname == 'reference_name' || field.fieldname == 'reference') {
@@ -249,12 +247,12 @@ async function createVisit() {
 
   // Pre-validation - check required fields before API call
   if (!visit.doc.visit_date) {
-    error.value = __('Visit Date is required')
+    error.value = __('Meeting Date is required')
     return
   }
 
   if (!visit.doc.visit_type) {
-    error.value = __('Visit Type is required')
+    error.value = __('Meeting Type is required')
     return
   }
 
@@ -269,7 +267,7 @@ async function createVisit() {
   }
 
   if (!visit.doc.visit_purpose) {
-    error.value = __('Visit Purpose is required')
+    error.value = __('Meeting Purpose is required')
     return
   }
 
@@ -306,7 +304,7 @@ async function createVisit() {
       naming_series: visit.doc.naming_series || 'SV-.YYYY.-',
       priority: visit.doc.priority || 'Medium',
       // Ensure visit_purpose is not empty
-      visit_purpose: visit.doc.visit_purpose || 'Site visit scheduled'
+      visit_purpose: visit.doc.visit_purpose || 'Meeting scheduled'
     }
 
     isVisitCreating.value = true
@@ -318,28 +316,28 @@ async function createVisit() {
     })
 
     const result = await insertResource.submit()
-    capture('site_visit_created')
+    capture('meeting_created')
     isVisitCreating.value = false
     show.value = false
     
     // Navigate to the created visit
     if (result && result.name) {
-      router.push({ name: 'Visit', params: { visitId: result.name } })
+      router.push({ name: 'Meeting', params: { visitId: result.name } })
     }
 
   } catch (err) {
     isVisitCreating.value = false
     
     // Use global error handler for comprehensive error processing
-    handleResourceError(err, 'create site visit')
+    handleResourceError(err, 'create meeting')
     
     // Set specific local error message
     if (err._server_messages) {
       try {
         const messages = JSON.parse(err._server_messages)
-        error.value = messages[0]?.message || 'Failed to create site visit'
+        error.value = messages[0]?.message || 'Failed to create meeting'
       } catch {
-        error.value = 'Server error occurred while creating visit'
+        error.value = 'Server error occurred while creating meeting'
       }
     } else if (err.exception) {
       error.value = 'Please check all required fields and try again'
@@ -350,7 +348,7 @@ async function createVisit() {
     } else if (err.message) {
       error.value = err.message
     } else {
-      error.value = 'Failed to create site visit. Please try again.'
+      error.value = 'Failed to create meeting. Please try again.'
     }
   }
 }
@@ -390,19 +388,19 @@ async function saveChanges() {
     
   } catch (err) {
     isVisitCreating.value = false
-    handleResourceError(err, 'update site visit')
+    handleResourceError(err, 'update meeting')
     
     if (err._server_messages) {
       try {
         const messages = JSON.parse(err._server_messages)
-        error.value = messages[0]?.message || 'Failed to update site visit'
+        error.value = messages[0]?.message || 'Failed to update meeting'
       } catch {
-        error.value = 'Server error occurred while updating visit'
+        error.value = 'Server error occurred while updating meeting'
       }
     } else if (err.message) {
       error.value = err.message
     } else {
-      error.value = 'Failed to update site visit. Please try again.'
+      error.value = 'Failed to update meeting. Please try again.'
     }
   }
 }
@@ -506,7 +504,7 @@ function applyDefaults() {
       status: 'Planned',
       priority: 'Medium',
       naming_series: 'SV-.YYYY.-',
-      visit_purpose: 'Site visit scheduled',
+      visit_purpose: 'Meeting scheduled',
       sales_person: getUser().name,
       ...props.defaults
     }

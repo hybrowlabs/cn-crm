@@ -1,13 +1,13 @@
 <template>
   <!-- Checkout Dialog -->
-  <Dialog v-model="showCheckoutDialog" :options="{ title: __('Complete Visit'), size: 'lg' }">
+  <Dialog v-model="showCheckoutDialog" :options="{ title: __('Complete Meeting'), size: 'lg' }">
     <template #body-content>
       <div class="space-y-4">
         <FormControl
           v-model="checkoutForm.visit_summary"
           type="textarea"
-          :label="__('Visit Summary')"
-          :placeholder="__('Describe what happened during the visit...')"
+          :label="__('Meeting Summary')"
+          :placeholder="__('Describe what happened during the meeting...')"
           :rows="3"
         />
         <FormControl
@@ -114,7 +114,7 @@
             <!-- Visit Status Card -->
             <div class="bg-white border rounded-lg p-3">
               <div class="flex items-center justify-between mb-2">
-                <h3 class="text-sm font-medium text-gray-700">{{ __('Visit Status') }}</h3>
+                <h3 class="text-sm font-medium text-gray-700">{{ __('Meeting Status') }}</h3>
                 <span class="px-2 py-1 text-xs rounded-full" :class="getStatusBadgeClass(visit.data.status)">
                   {{ visit.data.status || 'Planned' }}
                 </span>
@@ -275,11 +275,11 @@ function updateVisit(fieldname, value, callback) {
     onSuccess: () => {
       visit.reload()
       reload.value = true
-      toast.success(__('Visit updated successfully'))
+      toast.success(__('Meeting updated successfully'))
       callback?.()
     },
     onError: (err) => {
-      toast.error(err.messages?.[0] || __('Error updating visit'))
+      toast.error(err.messages?.[0] || __('Error updating meeting'))
     },
   })
 }
@@ -294,7 +294,7 @@ function validateRequired(fieldname, value) {
 }
 
 const breadcrumbs = computed(() => {
-  let items = [{ label: __('Visits'), route: { name: 'Visits' } }]
+  let items = [{ label: __('Meetings'), route: { name: 'Meetings' } }]
 
   if (route.query.view || route.query.viewType) {
     let view = getView(route.query.view, route.query.viewType, 'CRM Site Visit')
@@ -303,7 +303,7 @@ const breadcrumbs = computed(() => {
         label: __(view.label),
         icon: view.icon,
         route: {
-          name: 'Visits',
+          name: 'Meetings',
           params: { viewType: route.query.viewType },
           query: { view: route.query.view },
         },
@@ -444,7 +444,7 @@ async function deleteVisit(name) {
     doctype: 'CRM Site Visit',
     name,
   })
-  router.push({ name: 'Visits' })
+  router.push({ name: 'Meetings' })
 }
 
 function formatDateTime(dateTime) {
@@ -461,7 +461,7 @@ function openLocation() {
     const url = `https://www.google.com/maps/search/?api=1&query=${address}`
     window.openWindow(url, '_blank')
   } else {
-    toast.error(__('No location available for this visit.'))
+    toast.error(__('No location available for this meeting.'))
   }
 }
 
@@ -613,9 +613,9 @@ async function submit() {
     if (siteVisitDocument?.reload) {
       await siteVisitDocument.reload()
     }
-    toast.success(__('Visit submitted successfully!'))
+    toast.success(__('Meeting submitted successfully!'))
   } catch (error) {
-    toast.error(__('Failed to submit visit: {0}', [error.message]))
+    toast.error(__('Failed to submit meeting: {0}', [error.message]))
   }
 }
 </script>

@@ -562,8 +562,8 @@ const tabs = computed(() => {
       icon: DetailsIcon
     },
     {
-      name: 'Visits',
-      label: __('Visits'),
+      name: 'Meetings',
+      label: __('Meetings'),
       icon: VisitsIcon,
     },
     {

@@ -55,3 +55,38 @@ def get_lead_visits(name):
 	)
 
 	return visits
+
+@frappe.whitelist()
+def get_meeting_data_sections(doctype):
+	if not frappe.db.exists("CRM Fields Layout", {"dt": doctype, "type": "Side Data Bar"}):
+		return []
+	layout = frappe.get_doc("CRM Fields Layout", {"dt": doctype, "type": "Side Data Bar"}).layout
+
+	if not layout:
+		return []
+
+	import json
+	from crm.fcrm.doctype.crm_fields_layout.crm_fields_layout import get_field_obj, handle_perm_level_restrictions
+
+	layout = json.loads(layout)
+
+	not_allowed_fieldtypes = [
+		"Tab Break",
+		"Section Break",
+		"Column Break",
+	]
+
+	fields = frappe.get_meta(doctype).fields
+	fields = [field for field in fields if field.fieldtype not in not_allowed_fieldtypes]
+
+	for section in layout:
+		section["name"] = section.get("name") or section.get("label")
+		for column in section.get("columns") if section.get("columns") else []:
+			for field in column.get("fields") if column.get("fields") else []:
+				field_obj = next((f for f in fields if f.fieldname == field), None)
+				if field_obj:
+					field_obj = field_obj.as_dict()
+					handle_perm_level_restrictions(field_obj, doctype)
+					column["fields"][column.get("fields").index(field)] = get_field_obj(field_obj)
+
+	return layout

@@ -60,6 +60,10 @@ const props = defineProps({
     type: String,
     default: 'CRM Lead',
   },
+  layoutType: {
+    type: String,
+    default: 'Data Fields',
+  },
 })
 
 const emit = defineEmits(['reload'])
@@ -71,12 +75,12 @@ const dirty = ref(false)
 const preview = ref(false)
 
 function getParams() {
-  return { doctype: _doctype.value, type: 'Data Fields' }
+  return { doctype: _doctype.value, type: props.layoutType }
 }
 
 const tabs = createResource({
   url: 'crm.fcrm.doctype.crm_fields_layout.crm_fields_layout.get_fields_layout',
-  cache: ['DataFieldsModal', _doctype.value],
+  cache: ['DataFieldsModal', _doctype.value, props.layoutType],
   params: getParams(),
   onSuccess(data) {
     tabs.originalData = JSON.parse(JSON.stringify(data))
@@ -119,7 +123,7 @@ function saveChanges() {
     'crm.fcrm.doctype.crm_fields_layout.crm_fields_layout.save_fields_layout',
     {
       doctype: _doctype.value,
-      type: 'Data Fields',
+      type: props.layoutType,
       layout: JSON.stringify(_tabs),
     },
   ).then(() => {
