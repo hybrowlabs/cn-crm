@@ -101,6 +101,13 @@ export const statusesStore = defineStore('crm-statuses', () => {
           'Ready to Close',
           'Lost',
         ],
+        'Proposal/Quotation': [
+          'Proposal/Quotation',
+          'Negotiation',
+          'Ready to Close',
+          'Won',
+          'Lost',
+        ],
       },
       lead: {},
     }
