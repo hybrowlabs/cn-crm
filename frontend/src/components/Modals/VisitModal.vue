@@ -232,6 +232,29 @@ function getStatusColor(status) {
   return statusObj?.color || 'gray'
 }
 
+
+function formatTo24Hour(dateTimeStr) {
+  if (!dateTimeStr || typeof dateTimeStr !== 'string') return dateTimeStr
+  
+  // Check if it's in 12-hour format (has am/pm)
+  if (!dateTimeStr.toLowerCase().match(/[ap]m$/)) return dateTimeStr
+
+  const parts = dateTimeStr.split(' ')
+  if (parts.length === 3) {
+    const datePart = parts[0]
+    const timePart = parts[1]
+    const meridian = parts[2].toLowerCase()
+    
+    let [hours, minutes] = timePart.split(':').map(Number)
+    
+    if (meridian === 'pm' && hours < 12) hours += 12
+    if (meridian === 'am' && hours === 12) hours = 0
+    
+    return `${datePart} ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`
+  }
+  return dateTimeStr
+}
+
 async function createVisit() {
   error.value = null
   
@@ -307,6 +330,14 @@ async function createVisit() {
       visit_purpose: visit.doc.visit_purpose || 'Meeting scheduled'
     }
 
+    // Fix datetime format for planned times
+    if (visitData.planned_start_time) {
+      visitData.planned_start_time = formatTo24Hour(visitData.planned_start_time)
+    }
+    if (visitData.planned_end_time) {
+      visitData.planned_end_time = formatTo24Hour(visitData.planned_end_time)
+    }
+
     isVisitCreating.value = true
 
     const insertResource = createResource({
@@ -367,6 +398,14 @@ async function saveChanges() {
         changedFields[key] = visit.doc[key]
       }
     })
+
+    // Fix datetime format for planned times
+    if (changedFields.planned_start_time) {
+      changedFields.planned_start_time = formatTo24Hour(changedFields.planned_start_time)
+    }
+    if (changedFields.planned_end_time) {
+      changedFields.planned_end_time = formatTo24Hour(changedFields.planned_end_time)
+    }
 
     if (Object.keys(changedFields).length > 0) {
       const updateResource = createResource({

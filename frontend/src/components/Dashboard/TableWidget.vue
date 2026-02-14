@@ -240,7 +240,7 @@ function handleRowClick(row) {
     const routeMap = {
       'CRM Lead': { name: 'Lead', params: { leadId: row.name } },
       'CRM Deal': { name: 'Deal', params: { dealId: row.name } },
-      'CRM Site Visit': { name: 'Visit', params: { visitId: row.name } },
+      'CRM Site Visit': { name: 'Meeting', params: { visitId: row.name } },
       'Contact': { name: 'Contact', params: { contactId: row.name } }
     }
     

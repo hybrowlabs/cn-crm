@@ -400,7 +400,7 @@
         :rows="doc.linked_quotations"
       />
     </div>
-    <div v-else-if="title == 'Visits'" class="px-3 pb-3 sm:px-10 sm:pb-5">
+    <div v-else-if="title == 'Meetings'" class="px-3 pb-3 sm:px-10 sm:pb-5">
       <VisitArea :visits="props.linkedVisits?.length ? props.linkedVisits : (doc.data?.linked_visits || doc.linked_visits || [])" />
     </div>
     
@@ -748,6 +748,8 @@ const emptyText = computed(() => {
     text = 'No Tasks'
   } else if (title.value == 'Attachments') {
     text = 'No Attachments'
+  } else if (title.value == 'Meetings') {
+    text = 'No Meetings'
   } else if (title.value == 'WhatsApp') {
     text = 'No WhatsApp Messages'
   }
@@ -774,6 +776,8 @@ const emptyTextIcon = computed(() => {
     icon = TaskIcon
   } else if (title.value == 'Attachments') {
     icon = AttachmentIcon
+  } else if (title.value == 'Meetings') {
+    icon = VisitsIcon
   } else if (title.value == 'WhatsApp') {
     icon = WhatsAppIcon
   }

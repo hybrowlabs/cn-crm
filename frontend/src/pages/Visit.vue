@@ -349,7 +349,7 @@ const breadcrumbs = computed(() => {
 
   items.push({
     label: title.value,
-    route: { name: 'Visit', params: { visitId: visit.data.name } },
+    route: { name: 'Meeting', params: { visitId: visit.data.name } },
   })
   return items
 })

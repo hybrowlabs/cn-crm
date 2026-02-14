@@ -75,7 +75,7 @@
     </div>
     <div v-else-if="title == 'Quotations' || title == 'Meeting Data'"></div>
     <Button
-      v-else-if="title == 'Visits'"
+      v-else-if="title == 'Meetings'"
       variant="solid"
       @click="modalRef.showVisit()"
     >

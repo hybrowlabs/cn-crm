@@ -65,7 +65,7 @@ const props = defineProps({
 const router = useRouter()
 
 function navigateToVisit(visit) {
-  router.push({ name: 'Visit', params: { visitId: visit.name } })
+  router.push({ name: 'Meeting', params: { visitId: visit.name } })
 }
 
 function getSalesPersonName(visit) {
