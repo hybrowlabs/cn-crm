@@ -161,6 +161,17 @@ function saveChanges() {
   }
 }
 
+// ...
+
+watch(
+  () => props.layoutType,
+  (newType) => {
+    if (newType) {
+      tabs.fetch({ doctype: props.doctype, type: newType })
+    }
+  }
+)
+
 watch(
   () => document.doc,
   (newValue, oldValue) => {

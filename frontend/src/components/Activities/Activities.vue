@@ -370,6 +370,13 @@
       <DataFields
         :doctype="doctype"
         :docname="doc.data.name"
+        :layoutType="
+          doc.data.status === 'Demo/Making'
+            ? 'Trial Data'
+            : doc.data.status === 'Proposal/Quotation'
+              ? 'Side Data Bar'
+              : 'Data Fields'
+        "
         @beforeSave="(data) => emit('beforeSave', data)"
         @afterSave="(data) => emit('afterSave', data)"
       />
@@ -730,7 +737,9 @@ const emptyText = computed(() => {
   } else if (title.value == 'Data') {
     text = 'No Data'
   } else if (title.value == 'Meeting Data') {
-    text = 'No Meeting Data'
+    text = 'No Data'
+  } else if (title.value == 'Trial Data') {
+    text = 'No Data'
   } else if (title.value == 'Calls') {
     text = 'No Call Logs'
   } else if (title.value == 'Notes') {
@@ -754,6 +763,8 @@ const emptyTextIcon = computed(() => {
   } else if (title.value == 'Data') {
     icon = DetailsIcon
   } else if (title.value == 'Meeting Data') {
+    icon = DetailsIcon
+  } else if (title.value == 'Trial Data') {
     icon = DetailsIcon
   } else if (title.value == 'Calls') {
     icon = PhoneIcon

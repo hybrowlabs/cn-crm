@@ -269,6 +269,10 @@ def add_default_fields_layout(force=False):
 		"CRM Lead-Side Data Bar": {
 			"doctype": "CRM Lead",
 			"layout": '[{"label": "Meeting Details", "opened": true, "columns": [{"fields": ["meeting_type", "meeting_outcomes", "next_action_date"]}]}, {"label": "Outcome Analysis", "opened": true, "columns": [{"fields": ["decision_process", "pain_description", "primary_pain_category"]}]}, {"label": "Product Context", "opened": true, "columns": [{"fields": ["product_discussed", "product_interested", "volume_rangekg"]}]}]',
+		},
+		"CRM Deal-Side Data Bar": {
+			"doctype": "CRM Deal",
+			"layout": '[{"label": "Proposal Details", "opened": true, "columns": [{"fields": ["final_volume_kg", "final_price__kg", "commercial_acceptance", "proposal_acknowledged"]}]}, {"label": "Process Status", "opened": true, "columns": [{"fields": ["approval_authority", "paper_process_status", "order_date", "product_type"]}]}]',
 		}
 	}
 
@@ -283,6 +287,26 @@ def add_default_fields_layout(force=False):
 		doc.type = "Side Data Bar"
 		doc.dt = side_data_bar_layouts[layout]["doctype"]
 		doc.layout = side_data_bar_layouts[layout]["layout"]
+		doc.insert()
+
+	trial_data_layouts = {
+		"CRM Deal-Trial Data": {
+			"doctype": "CRM Deal",
+			"layout": '[{"name":"first_tab","sections":[{"label":"Trial Details","name":"trial_details_section","opened":true,"columns":[{"name":"column_trial_1","fields":["trial_product","trial_volume_kg","trial_start_date","trial_end_date","trial_success_criteria"]}]}]}]',
+		}
+	}
+
+	for layout in trial_data_layouts:
+		if frappe.db.exists("CRM Fields Layout", layout):
+			if force:
+				frappe.delete_doc("CRM Fields Layout", layout)
+			else:
+				continue
+
+		doc = frappe.new_doc("CRM Fields Layout")
+		doc.type = "Trial Data"
+		doc.dt = trial_data_layouts[layout]["doctype"]
+		doc.layout = trial_data_layouts[layout]["layout"]
 		doc.insert()
 
 

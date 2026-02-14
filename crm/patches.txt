@@ -17,4 +17,4 @@ crm.patches.v1_0.update_deal_status_probabilities
 crm.patches.v1_0.fix_dashboard_widget_parent_columns
 crm.patches.v1_0.create_default_dashboards #09-01-2026 --002
 crm.patches.v1_0.add_contact_lead_field
-crm.patches.v1_0.worksapce_create #13/02/2026 --006crm.patches.v1_0.create_meeting_data_layout
+crm.patches.v1_0.worksapce_create #13/02/2026 --006

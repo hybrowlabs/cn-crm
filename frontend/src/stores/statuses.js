@@ -124,6 +124,15 @@ export const statusesStore = defineStore('crm-statuses', () => {
 
       if (
         doctype === 'deal' &&
+        currentStatus !== 'Qualification'
+      ) {
+        allowedStatuses = allowedStatuses.filter(
+          (s) => s !== 'Qualification',
+        )
+      }
+
+      if (
+        doctype === 'deal' &&
         currentStatus === 'Demo/Making' &&
         doc?.trial_outcome !== 'Qualified'
       ) {

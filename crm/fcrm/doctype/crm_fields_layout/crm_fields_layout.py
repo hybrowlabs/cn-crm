@@ -24,6 +24,25 @@ def get_fields_layout(doctype: str, type: str, parent_doctype: str | None = None
 	if layout and layout.layout:
 		tabs = json.loads(layout.layout)
 
+	# Fallback for CRM Deal - Side Data Bar (Proposal Data) if not in DB
+	if not tabs and doctype == "CRM Deal" and type == "Side Data Bar":
+		tabs = [
+			{
+				"label": "Proposal Details",
+				"opened": True,
+				"columns": [
+					{"fields": ["final_volume_kg", "final_price__kg", "commercial_acceptance", "proposal_acknowledged"]}
+				]
+			},
+			{
+				"label": "Process Status",
+				"opened": True,
+				"columns": [
+					{"fields": ["approval_authority", "paper_process_status", "order_date", "product_type"]}
+				]
+			}
+		]
+
 	if not tabs and type != "Required Fields":
 		tabs = get_default_layout(doctype)
 
@@ -54,28 +73,73 @@ def get_fields_layout(doctype: str, type: str, parent_doctype: str | None = None
 			field for field in frappe.get_meta(doctype, False).fields if field.reqd and not field.default
 		]
 
+	if type in ["Meeting Data", "Trial Data"] and not frappe.db.exists("CRM Fields Layout", {"dt": doctype, "type": type}):
+		data_layout = get_fields_layout(doctype, "Data Fields", parent_doctype)
+		excluded_fields = []
+		for tab in data_layout:
+			for section in tab.get("sections", []):
+				for column in section.get("columns", []):
+					for field in column.get("fields", []):
+						if isinstance(field, dict) and field.get("fieldname"):
+							excluded_fields.append(field.get("fieldname"))
+						elif isinstance(field, str):
+							excluded_fields.append(field)
+		
+		for tab in tabs:
+			for section in tab.get("sections", []):
+				for column in section.get("columns", []):
+					if column.get("fields"):
+						column["fields"] = [
+							field for field in column["fields"] 
+							if (field.get("fieldname") if isinstance(field, dict) else field) not in excluded_fields
+						]
+
 	for tab in tabs:
-		for section in tab.get("sections"):
+		for section in tab.get("sections") or []:
 			if section.get("columns"):
 				section["columns"] = [column for column in section.get("columns") if column]
-			for column in section.get("columns") if section.get("columns") else []:
-				column["fields"] = [field for field in column.get("fields") if field]
-				for field in column.get("fields") if column.get("fields") else []:
-					field = next((f for f in fields if f.fieldname == field), None)
-					if field:
-						field = field.as_dict()
-						handle_perm_level_restrictions(field, doctype, parent_doctype)
-						column["fields"][column.get("fields").index(field["fieldname"])] = field
 
-						# remove field from required_fields if it is already present
-						if (
-							type == "Required Fields"
-							and field.reqd
-							and any(f.get("fieldname") == field.get("fieldname") for f in required_fields)
-						):
-							required_fields = [
-								f for f in required_fields if f.get("fieldname") != field.get("fieldname")
-							]
+			for column in section.get("columns") or []:
+				if not column.get("fields"):
+					column["fields"] = []
+					continue
+
+				# Filter out None/Empty fields first
+				current_fields = [f for f in column.get("fields") if f]
+				processed_fields = []
+
+				for field_entry in current_fields:
+					if isinstance(field_entry, str):
+						# It's a fieldname, find the metadata
+						field_meta = next((f for f in fields if f.fieldname == field_entry), None)
+						if field_meta:
+							field_dict = field_meta.as_dict()
+							handle_perm_level_restrictions(field_dict, doctype, parent_doctype)
+							processed_fields.append(field_dict)
+
+							# remove field from required_fields if it is already present
+							if (
+								type == "Required Fields"
+								and field_dict.get("reqd")
+								and any((f.get("fieldname") if hasattr(f, "get") else f.fieldname) == field_dict.get("fieldname") for f in required_fields)
+							):
+								required_fields = [
+									f for f in required_fields if (f.get("fieldname") if hasattr(f, "get") else f.fieldname) != field_dict.get("fieldname")
+								]
+						else:
+							# Field not found in meta, return a minimal dict to avoid frontend crash
+							processed_fields.append({
+								"fieldname": field_entry,
+								"fieldtype": "Data",
+								"label": field_entry,
+								"read_only": 1,
+								"hidden": 0 # Ensure it is visible if possible or debug why it's missing
+							})
+					else:
+						# Already a dict or object
+						processed_fields.append(field_entry)
+
+				column["fields"] = processed_fields
 
 	if type == "Required Fields" and required_fields and tabs:
 		tabs[-1].get("sections").append(
