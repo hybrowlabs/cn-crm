@@ -7,14 +7,14 @@ crm.patches.v1_0.rename_twilio_settings_to_crm_twilio_settings
 [post_model_sync]
 # Patches added in this section will be executed after doctypes are migrated
 crm.patches.v1_0.create_email_template_custom_fields
-crm.patches.v1_0.create_default_fields_layout #22/01/2025 --002
+crm.patches.v1_0.create_default_fields_layout #22/01/2025 --003
 crm.patches.v1_0.create_default_sidebar_fields_layout
 crm.patches.v1_0.update_deal_quick_entry_layout
 crm.patches.v1_0.update_layouts_to_new_format
 crm.patches.v1_0.move_twilio_agent_to_telephony_agent
-crm.patches.v1_0.create_default_scripts # 13-06-2025 --002
+crm.patches.v1_0.create_default_scripts # 13-06-2025 --003
 crm.patches.v1_0.update_deal_status_probabilities
 crm.patches.v1_0.fix_dashboard_widget_parent_columns
-crm.patches.v1_0.create_default_dashboards #09-01-2026 --002
+crm.patches.v1_0.create_default_dashboards #09-01-2026 --003
 crm.patches.v1_0.add_contact_lead_field
 crm.patches.v1_0.worksapce_create #13/02/2026 --006
