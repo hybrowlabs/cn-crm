@@ -11,21 +11,6 @@ class TestCRMLead(FrappeTestCase):
 	@classmethod
 	def setUpClass(cls):
 		"""Set up test records once for all tests"""
-		# Create test user if it doesn't exist
-		if not frappe.db.exists("User", "crm.user1@example.com"):
-			frappe.get_doc(
-				{
-					"doctype": "User",
-					"email": "crm.user1@example.com",
-					"first_name": "CRM",
-					"last_name": "User1",
-					"send_welcome_email": 0,
-					"roles": [{"doctype": "Has Role", "parentfield": "roles", "role": "Sales User"}],
-					"user_type": "System User",
-				}
-			).insert(ignore_permissions=True)
-			frappe.db.commit()  # nosemgrep
-
 		if not frappe.db.exists("Salutation", "Mr"):
 			frappe.get_doc({"doctype": "Salutation", "salutation": "Mr"}).insert(ignore_permissions=True)
 			frappe.db.commit()  # nosemgrep
@@ -36,9 +21,12 @@ class TestCRMLead(FrappeTestCase):
 	def tearDownClass(cls):
 		"""Clean up test records after all tests"""
 		frappe.db.rollback()
+<<<<<<< HEAD
 		frappe.delete_doc_if_exists("User", "crm.user1@example.com", 1)
 		frappe.delete_doc_if_exists("Contact", "CRM User1")
 		frappe.db.commit()  # nosemgrep
+=======
+>>>>>>> 98eb737d (fix: removed user creation code from crm lead test)
 		super().tearDownClass()
 
 	def tearDown(self):
