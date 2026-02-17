@@ -32,9 +32,9 @@
       </div>
       <div v-if="!props.isGroup" class="flex items-center gap-2 w-full">
         <div id="fieldname" class="w-full">
-          <Combobox
+          <Autocomplete
             :options="filterableFields.data"
-            v-model="props.condition[0]"
+            :modelValue="props.condition[0]"
             :placeholder="__('Field')"
             @update:modelValue="updateField"
           />
@@ -111,8 +111,8 @@
 
 <script setup>
 import {
+  Autocomplete,
   Button,
-  Combobox,
   DatePicker,
   DateRangePicker,
   DateTimePicker,
@@ -219,7 +219,8 @@ function toggleConjunction() {
   emit('toggleConjunction', props.conjunction)
 }
 
-const updateField = () => {
+const updateField = (field) => {
+  props.condition[0] = field?.fieldname
   resetConditionValue()
 }
 

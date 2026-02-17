@@ -10,13 +10,13 @@
       as="div"
       v-model="tabIndex"
       :tabs="tabs"
-      :class="!hasTabs ? `[&_[role='tablist']]:hidden` : ''"
+      :class="[
+        !hasTabs ? `[&_[role='tablist']]:hidden` : '',
+        `[&_[role='tabpanel']]:overflow-visible !overflow-visible`,
+      ]"
     >
       <template #tab-panel="{ tab }">
-        <div
-          class="sections overflow-hidden"
-          :class="{ 'my-4 sm:my-5': hasTabs }"
-        >
+        <div class="sections" :class="{ 'my-4 sm:my-5': hasTabs }">
           <template v-for="section in tab.sections" :key="section.name">
             <Section :section="section" :data-name="section.name" />
           </template>

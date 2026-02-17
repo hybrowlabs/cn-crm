@@ -73,7 +73,7 @@
                 <div class="flex flex-col gap-2 truncate text-ink-gray-9">
                   <div class="truncate text-2xl font-medium">
                     <span v-if="contact.doc.salutation">
-                      {{ contact.doc.salutation + '. ' }}
+                      {{ contact.doc.salutation + ' ' }}
                     </span>
                     <span>{{ contact.doc.full_name }}</span>
                   </div>
@@ -81,15 +81,7 @@
                     v-if="contact.doc.company_name"
                     class="flex items-center gap-1.5 text-base text-ink-gray-8"
                   >
-                    <Avatar
-                      size="xs"
-                      :label="contact.doc.company_name"
-                      :image="
-                        getOrganization(contact.doc.company_name)
-                          ?.organization_logo
-                      "
-                    />
-                    <span class="">{{ contact.doc.company_name }}</span>
+                    {{ contact.doc.company_name }}
                   </div>
                   <ErrorMessage :message="__(error)" />
                 </div>
@@ -159,15 +151,7 @@
           :columns="columns"
           :options="{ selectable: false, showTooltip: false }"
         />
-        <div
-          v-if="!rows.length"
-          class="grid flex-1 place-items-center text-xl font-medium text-ink-gray-4"
-        >
-          <div class="flex flex-col items-center justify-center space-y-3">
-            <component :is="tab.icon" class="!h-10 !w-10" />
-            <div>{{ __('No {0} found', [__(tab.label.toLowerCase())]) }}</div>
-          </div>
-        </div>
+        <EmptyState v-if="!rows.length" :icon="tab.icon" name="deals" />
       </template>
     </Tabs>
   </div>
@@ -225,6 +209,7 @@ import {
 } from 'frappe-ui'
 import { ref, computed, h, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import EmptyState from '@/components/ListViews/EmptyState.vue'
 
 const { brand } = getSettings()
 const { makeCall, $dialog, $socket } = globalStore()
@@ -342,6 +327,10 @@ const parsedSections = computed(() => {
     columns: section.columns.map((column) => ({
       ...column,
       fields: column.fields.map((field) => {
+        field.label = fieldLabelMap[field.fieldname] || field.label
+        field.placeholder =
+          fieldPlaceholderMap[field.fieldname] || field.placeholder
+
         if (field.fieldname === 'email_id') {
           return {
             ...field,
@@ -437,6 +426,16 @@ const parsedSections = computed(() => {
     })),
   }))
 })
+
+const fieldLabelMap = {
+  mobile_no: __('Mobile Number'),
+  company_name: __('Organization'),
+}
+
+const fieldPlaceholderMap = {
+  mobile_no: __('Add Mobile Number...'),
+  company_name: __('Add Organization...'),
+}
 
 async function setAsPrimary(field, value) {
   let d = await call('crm.api.contact.set_as_primary', {
