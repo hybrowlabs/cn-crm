@@ -21,12 +21,6 @@ class TestCRMLead(FrappeTestCase):
 	def tearDownClass(cls):
 		"""Clean up test records after all tests"""
 		frappe.db.rollback()
-<<<<<<< HEAD
-		frappe.delete_doc_if_exists("User", "crm.user1@example.com", 1)
-		frappe.delete_doc_if_exists("Contact", "CRM User1")
-		frappe.db.commit()  # nosemgrep
-=======
->>>>>>> 98eb737d (fix: removed user creation code from crm lead test)
 		super().tearDownClass()
 
 	def tearDown(self):
