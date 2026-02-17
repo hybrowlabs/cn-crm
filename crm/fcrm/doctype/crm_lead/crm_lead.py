@@ -457,7 +457,13 @@ class CRMLead(Document):
 
 
 @frappe.whitelist()
-def convert_to_deal(lead, doc=None, deal=None, existing_contact=None, existing_organization=None):
+def convert_to_deal(
+	lead: str,
+	doc: Document | None = None,
+	deal: str | None = None,
+	existing_contact: str | None = None,
+	existing_organization: str | None = None,
+):
 	if not (doc and doc.flags.get("ignore_permissions")) and not frappe.has_permission(
 		"CRM Lead", "write", lead
 	):

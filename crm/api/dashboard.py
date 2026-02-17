@@ -15,7 +15,7 @@ def reset_to_default():
 
 @frappe.whitelist()
 @sales_user_only
-def get_dashboard(from_date="", to_date="", user=""):
+def get_dashboard(from_date: str = "", to_date: str = "", user: str = ""):
 	"""
 	Get the dashboard data for the CRM dashboard.
 	"""
@@ -54,7 +54,7 @@ def get_dashboard(from_date="", to_date="", user=""):
 
 @frappe.whitelist()
 @sales_user_only
-def get_chart(name, type, from_date="", to_date="", user=""):
+def get_chart(name: str, type: str, from_date: str = "", to_date: str = "", user: str = ""):
 	"""
 	Get number chart data for the dashboard.
 	"""

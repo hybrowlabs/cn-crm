@@ -3,7 +3,7 @@ from frappe import _
 
 
 @frappe.whitelist()
-def add_existing_users(users, role="Sales User"):
+def add_existing_users(users: str | list, role: str = "Sales User"):
 	"""
 	Add existing users to the CRM by assigning them a role (Sales User or Sales Manager).
 	:param users: List of user names to be added
@@ -24,7 +24,7 @@ def add_existing_users(users, role="Sales User"):
 
 
 @frappe.whitelist()
-def update_user_role(user, new_role):
+def update_user_role(user: str, new_role: str):
 	"""
 	Update the role of the user to Sales Manager, Sales User, or System Manager.
 	:param user: The name of the user
@@ -65,7 +65,7 @@ def update_user_role(user, new_role):
 
 
 @frappe.whitelist()
-def remove_crm_roles_from_user(user):
+def remove_crm_roles_from_user(user: str):
 	"""
 	Remove a user means removing Sales User & Sales Manager roles from the user.
 	:param user: The name of the user to be removed

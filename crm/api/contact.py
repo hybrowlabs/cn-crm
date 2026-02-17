@@ -27,7 +27,7 @@ def update_deals_email_mobile_no(doc):
 
 
 @frappe.whitelist()
-def get_linked_deals(contact):
+def get_linked_deals(contact: str):
 	"""Get linked deals for a contact"""
 
 	if not frappe.has_permission("Contact", "read", contact):
@@ -64,7 +64,7 @@ def get_linked_deals(contact):
 
 
 @frappe.whitelist()
-def create_new(contact, field, value):
+def create_new(contact: str, field: str, value: str):
 	"""Create new email or phone for a contact"""
 	if not frappe.has_permission("Contact", "write", contact):
 		frappe.throw("Not permitted", frappe.PermissionError)
@@ -85,7 +85,7 @@ def create_new(contact, field, value):
 
 
 @frappe.whitelist()
-def set_as_primary(contact, field, value):
+def set_as_primary(contact: str, field: str, value: str):
 	"""Set email or phone as primary for a contact"""
 	if not frappe.has_permission("Contact", "write", contact):
 		frappe.throw("Not permitted", frappe.PermissionError)

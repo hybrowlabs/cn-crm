@@ -110,7 +110,7 @@ def get_erpnext_site_client(erpnext_crm_settings):
 
 
 @frappe.whitelist()
-def get_customer_link(crm_deal):
+def get_customer_link(crm_deal: str):
 	erpnext_crm_settings = frappe.get_single("ERPNext CRM Settings")
 	if not erpnext_crm_settings.enabled:
 		frappe.throw(_("ERPNext is not integrated with the CRM"))
@@ -136,7 +136,7 @@ def get_customer_link(crm_deal):
 
 
 @frappe.whitelist()
-def get_quotation_url(crm_deal, organization):
+def get_quotation_url(crm_deal: str, organization: str):
 	erpnext_crm_settings = frappe.get_single("ERPNext CRM Settings")
 	if not erpnext_crm_settings.enabled:
 		frappe.throw(_("ERPNext is not integrated with the CRM"))

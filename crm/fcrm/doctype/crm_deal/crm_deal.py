@@ -331,7 +331,7 @@ class CRMDeal(Document):
 
 
 @frappe.whitelist()
-def add_contact(deal, contact):
+def add_contact(deal: str, contact: str):
 	if not frappe.has_permission("CRM Deal", "write", deal):
 		frappe.throw(_("Not allowed to add contact to Deal"), frappe.PermissionError)
 
@@ -342,7 +342,7 @@ def add_contact(deal, contact):
 
 
 @frappe.whitelist()
-def remove_contact(deal, contact):
+def remove_contact(deal: str, contact: str):
 	if not frappe.has_permission("CRM Deal", "write", deal):
 		frappe.throw(_("Not allowed to remove contact from Deal"), frappe.PermissionError)
 
@@ -353,7 +353,7 @@ def remove_contact(deal, contact):
 
 
 @frappe.whitelist()
-def set_primary_contact(deal, contact):
+def set_primary_contact(deal: str, contact: str):
 	if not frappe.has_permission("CRM Deal", "write", deal):
 		frappe.throw(_("Not allowed to set primary contact for Deal"), frappe.PermissionError)
 
@@ -429,7 +429,7 @@ def create_contact(doc):
 
 
 @frappe.whitelist()
-def create_deal(args):
+def create_deal(args: dict):
 	deal = frappe.new_doc("CRM Deal")
 
 	contact = args.get("contact")
