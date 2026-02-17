@@ -183,7 +183,7 @@ scheduler_events = {
 # Testing
 # -------
 
-# before_tests = "crm.install.before_tests"
+before_tests = "crm.tests.before_tests"
 
 # Overriding Methods
 # ------------------------------
