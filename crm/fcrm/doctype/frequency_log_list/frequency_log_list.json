@@ -9,7 +9,8 @@
   "customer_name",
   "item",
   "qty",
-  "next_order_date_as_per_frequency"
+  "next_order_date_as_per_frequency",
+  "done_flow_up"
  ],
  "fields": [
   {
@@ -38,12 +39,18 @@
    "fieldname": "next_order_date_as_per_frequency",
    "fieldtype": "Date",
    "label": "Next Order Date As Per Frequency"
+  },
+  {
+   "default": "0",
+   "fieldname": "done_flow_up",
+   "fieldtype": "Check",
+   "label": "Done Flow up"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-17 12:54:36.116338",
+ "modified": "2026-02-17 13:53:21.866940",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "Frequency Log List",

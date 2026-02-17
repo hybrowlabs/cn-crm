@@ -20,6 +20,95 @@ def generate_logs_for_all():
 	frappe.msgprint("Frequency logs generated successfully")
 
 
+@frappe.whitelist()
+def get_followup_logs_for_user():
+	"""
+	Get frequency logs that need follow-up for the current user.
+	Filters based on user permissions:
+	- Administrators see all logs
+	- Other users see only logs for customers they are assigned to via sales_team
+	
+	Returns:
+		dict: Grouped logs by customer
+	"""
+	user = frappe.session.user
+	
+	# Check if user is Administrator
+	if "Administrator" in frappe.get_roles(user):
+		# Get all logs where done_flow_up = 0
+		logs = frappe.get_all(
+			"Frequency Log List",
+			filters={"done_flow_up": 0},
+			fields=["name", "customer_code", "customer_name", "item", "qty", "next_order_date_as_per_frequency"],
+			order_by="customer_name asc, item asc"
+		)
+	else:
+		# Get customers where current user is in sales_team
+		customer_list = frappe.db.sql("""
+			SELECT DISTINCT parent
+			FROM `tabSales Team`
+			WHERE sales_person = %(user)s
+				AND parenttype = 'Customer'
+		""", {'user': user}, as_dict=True)
+		
+		if not customer_list:
+			return {"customers": []}
+		
+		customer_ids = [c.parent for c in customer_list]
+		
+		# Get logs for these customers where done_flow_up = 0
+		logs = frappe.get_all(
+			"Frequency Log List",
+			filters={
+				"customer_code": ["in", customer_ids],
+				"done_flow_up": 0
+			},
+			fields=["name", "customer_code", "customer_name", "item", "qty", "next_order_date_as_per_frequency"],
+			order_by="customer_name asc, item asc"
+		)
+	
+	# Group logs by customer
+	customers = {}
+	for log in logs:
+		customer_code = log.customer_code
+		if customer_code not in customers:
+			customers[customer_code] = {
+				"customer_code": customer_code,
+				"customer_name": log.customer_name,
+				"items": []
+			}
+		customers[customer_code]["items"].append({
+			"log_id": log.name,
+			"item": log.item,
+			"qty": log.qty,
+			"next_order_date": log.next_order_date_as_per_frequency
+		})
+	
+	return {"customers": list(customers.values())}
+
+
+@frappe.whitelist()
+def mark_followup_done(log_id):
+	"""
+	Mark a frequency log as followed up.
+	
+	Args:
+		log_id (str): Name of the Frequency Log List document
+	"""
+	if not log_id:
+		frappe.throw("Log ID is required")
+	
+	try:
+		doc = frappe.get_doc("Frequency Log List", log_id)
+		doc.done_flow_up = 1
+		doc.save(ignore_permissions=True)
+		frappe.db.commit()
+		return {"success": True, "message": "Marked as followed up"}
+	except Exception as e:
+		frappe.logger().error(f"Error marking followup done for {log_id}: {str(e)}")
+		frappe.throw(f"Failed to mark as followed up: {str(e)}")
+
+
 def generate_frequency_logs():
 	"""
 	Generate logs in Frequency Log List for customers whose items have passed their order frequency.
