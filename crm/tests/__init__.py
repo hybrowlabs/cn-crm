@@ -7,6 +7,7 @@ import frappe
 def before_tests():
 	load_crm_user_test_records()
 
+
 def load_crm_user_test_records():
 	"""Load CRM user test records from crm/tests/test_records.json"""
 	test_records_path = os.path.join(os.path.dirname(__file__), "test_records.json")
