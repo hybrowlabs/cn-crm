@@ -213,6 +213,11 @@ scheduler_events = {
 	"daily": [
 		"crm.fcrm.doctype.crm_site_visit.crm_site_visit.send_visit_reminders",
 	],
+	"cron": {
+		"0 0 * * *": [  # Run daily at midnight (12:00 AM)
+			"crm.fcrm.doctype.customer_order_frequancy.customer_order_frequancy.calculate_customer_order_frequency"
+		]
+	}
 }
 
 # Whitelisted API Methods
