@@ -195,6 +195,16 @@ class CRMServiceLevelAgreement(Document):
 			return get_datetime(doc.response_by) < now_datetime()
 		return get_datetime(doc.response_by) < get_datetime(doc.last_responded_on)
 
+	def _time_to_seconds(self, time_obj):
+		"""
+		Convert time or timedelta object to seconds
+		"""
+		if isinstance(time_obj, timedelta):
+			return time_obj.total_seconds()
+		else:
+			# datetime.time object
+			return time_obj.hour * 3600 + time_obj.minute * 60 + time_obj.second
+
 	def calc_time(
 		self,
 		start_at: str,
@@ -217,16 +227,9 @@ class CRMServiceLevelAgreement(Document):
 			today_workday = workdays[today_weekday]
 			now_in_seconds = time_diff_in_seconds(today, today_day)
 
-			start_time_seconds = (
-				today_workday.start_time.hour * 3600
-				+ today_workday.start_time.minute * 60
-				+ today_workday.start_time.second
-			)
-			end_time_seconds = (
-				today_workday.end_time.hour * 3600
-				+ today_workday.end_time.minute * 60
-				+ today_workday.end_time.second
-			)
+			# Convert time objects to seconds
+			start_time_seconds = self._time_to_seconds(today_workday.start_time)
+			end_time_seconds = self._time_to_seconds(today_workday.end_time)
 
 			start_time = max(start_time_seconds, now_in_seconds)
 			till_start_time = max(start_time - now_in_seconds, 0)
@@ -324,13 +327,9 @@ class CRMServiceLevelAgreement(Document):
 			hours=date_time.hour, minutes=date_time.minute, seconds=date_time.second
 		).total_seconds()
 
-		start_time_seconds = timedelta(
-			hours=start_time.hour, minutes=start_time.minute, seconds=start_time.second
-		).total_seconds()
-
-		end_time_seconds = timedelta(
-			hours=end_time.hour, minutes=end_time.minute, seconds=end_time.second
-		).total_seconds()
+		# Convert time objects to seconds
+		start_time_seconds = self._time_to_seconds(start_time)
+		end_time_seconds = self._time_to_seconds(end_time)
 
 		return start_time_seconds <= date_time_seconds < end_time_seconds
 
