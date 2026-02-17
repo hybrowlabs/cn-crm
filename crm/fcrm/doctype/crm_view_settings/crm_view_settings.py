@@ -118,28 +118,28 @@ def update(view: dict):
 
 
 @frappe.whitelist()
-def delete(name: str):
+def delete(name: str | int):
 	if frappe.db.exists("CRM View Settings", name):
 		frappe.delete_doc("CRM View Settings", name)
 
 
 @frappe.whitelist()
-def public(name: str, value: bool):
+def public(name: str | int, value: bool | int):
 	if frappe.session.user != "Administrator" and "Sales Manager" not in frappe.get_roles():
 		frappe.throw(_("Not permitted"), frappe.PermissionError)
 
 	doc = frappe.get_doc("CRM View Settings", name)
 	if doc.pinned:
 		doc.pinned = False
-	doc.public = value
+	doc.public = bool(value)
 	doc.user = "" if value else frappe.session.user
 	doc.save()
 
 
 @frappe.whitelist()
-def pin(name: str, value: bool):
+def pin(name: str | int, value: bool | int):
 	doc = frappe.get_doc("CRM View Settings", name)
-	doc.pinned = value
+	doc.pinned = bool(value)
 	doc.save()
 
 
@@ -178,7 +178,7 @@ def sync_default_columns(view):
 
 
 @frappe.whitelist()
-def set_as_default(name: str | None = None, type: str | None = None, doctype: str | None = None):
+def set_as_default(name: str | int | None = None, type: str | None = None, doctype: str | None = None):
 	if name:
 		frappe.db.set_value("CRM View Settings", name, "is_default", 1)
 	else:

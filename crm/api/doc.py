@@ -850,7 +850,7 @@ def remove_contact_link(doctype, docname):
 
 
 @frappe.whitelist()
-def remove_linked_doc_reference(items: str | list, remove_contact: str | None = None, delete: bool = False):
+def remove_linked_doc_reference(items: str | list, remove_contact: bool = False, delete: bool = False):
 	if isinstance(items, str):
 		items = frappe.parse_json(items)
 
