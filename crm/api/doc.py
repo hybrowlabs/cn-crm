@@ -292,7 +292,7 @@ def get_data(
 	rows: str | None = None,
 	kanban_columns: str | None = None,
 	kanban_fields: str | None = None,
-	view: str | None = None,
+	view: str | dict | None = None,
 	default_filters: dict | None = None,
 ):
 	custom_view = False

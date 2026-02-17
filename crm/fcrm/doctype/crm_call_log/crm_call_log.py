@@ -228,7 +228,7 @@ def get_call_log(name: str):
 
 
 @frappe.whitelist()
-def create_lead_from_call_log(call_log: str | dict, lead_details: dict | None = None):
+def create_lead_from_call_log(call_log: str | dict, lead_details: str | dict | None = None):
 	call_log_data = frappe.parse_json(call_log or {})
 
 	if isinstance(call_log_data, str):
