@@ -81,15 +81,7 @@
                     v-if="contact.doc.company_name"
                     class="flex items-center gap-1.5 text-base text-ink-gray-8"
                   >
-                    <Avatar
-                      size="xs"
-                      :label="contact.doc.company_name"
-                      :image="
-                        getOrganization(contact.doc.company_name)
-                          ?.organization_logo
-                      "
-                    />
-                    <span class="">{{ contact.doc.company_name }}</span>
+                    {{ contact.doc.company_name }}
                   </div>
                   <ErrorMessage :message="__(error)" />
                 </div>
