@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
 
 
@@ -57,7 +58,7 @@ class CRMInvitation(Document):
 
 	def accept(self):
 		if self.status == "Expired":
-			frappe.throw("Invalid or expired key")
+			frappe.throw(_("Invalid or expired key"))
 
 		user = self.create_user_if_not_exists()
 		user.append_roles(self.role)

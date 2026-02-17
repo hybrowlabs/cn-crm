@@ -3,6 +3,7 @@
 import json
 
 import frappe
+from frappe import _
 from frappe.model.document import Document, get_controller
 from frappe.utils import parse_json
 
@@ -125,7 +126,7 @@ def delete(name: str):
 @frappe.whitelist()
 def public(name: str, value: bool):
 	if frappe.session.user != "Administrator" and "Sales Manager" not in frappe.get_roles():
-		frappe.throw("Not permitted", frappe.PermissionError)
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
 
 	doc = frappe.get_doc("CRM View Settings", name)
 	if doc.pinned:

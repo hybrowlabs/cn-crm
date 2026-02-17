@@ -71,7 +71,7 @@ class ERPNextCRMSettings(Document):
 				frappe.get_traceback(),
 				f"Error while creating custom field in the remote erpnext site: {self.erpnext_site_url}",
 			)
-			frappe.throw("Error while creating custom field in ERPNext, check error log for more details")
+			frappe.throw(_("Error while creating custom field in ERPNext, check error log for more details"))
 
 	def create_crm_form_script(self):
 		if not frappe.db.exists("CRM Form Script", "Create Quotation from CRM Deal"):

@@ -35,7 +35,7 @@ def update_user_role(user: str, new_role: str):
 	is_system_manager = "System Manager" in frappe.get_roles()
 
 	if new_role not in ["System Manager", "Sales Manager", "Sales User"]:
-		frappe.throw("Cannot assign this role")
+		frappe.throw(_("Cannot assign this role"))
 
 	user_doc = frappe.get_doc("User", user)
 	target_roles = [d.role for d in user_doc.roles]
