@@ -335,3 +335,10 @@ crm.followup_widget = {
         });
     }
 };
+
+// Auto-initialize on followup page
+$(document).ready(function () {
+    if (window.location.pathname === '/followup' && $('#followup-page-container').length > 0) {
+        crm.followup_widget.render($('#followup-page-container'));
+    }
+});
