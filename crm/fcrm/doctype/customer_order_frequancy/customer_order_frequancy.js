@@ -25,5 +25,27 @@ frappe.ui.form.on('Customer Order Frequancy', {
                 });
             });
         }
+
+        // Add "Generate Logs" button
+        frm.add_custom_button(__('Generate Logs'), function () {
+            frappe.confirm(
+                'This will regenerate all frequency logs. Continue?',
+                function () {
+                    frappe.call({
+                        method: 'crm.fcrm.doctype.frequency_log_list.frequency_log_list.generate_logs_for_all',
+                        freeze: true,
+                        freeze_message: __('Generating Frequency Logs...'),
+                        callback: function (r) {
+                            if (!r.exc) {
+                                frappe.show_alert({
+                                    message: __('Logs generated successfully'),
+                                    indicator: 'green'
+                                }, 5);
+                            }
+                        }
+                    });
+                }
+            );
+        });
     }
 });
