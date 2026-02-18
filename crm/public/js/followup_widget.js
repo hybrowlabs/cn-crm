@@ -148,7 +148,7 @@ crm.followup_widget = {
                         
                         <div>
                             <strong class="customer-link"
-                                    data-name="${customer.customer}">
+                                    data-name="${customer.name}">
                                 ${customer.customer_name}
                             </strong>
                         </div>

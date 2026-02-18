@@ -72,7 +72,9 @@ def get_followup_logs_for_user():
 	for log in logs:
 		customer_code = log.customer_code
 		if customer_code not in customers:
+			customer_doc_name = frappe.db.get_value("Customer", customer_code, "name")
 			customers[customer_code] = {
+				"name": customer_doc_name or customer_code,
 				"customer_code": customer_code,
 				"customer_name": log.customer_name,
 				"items": []
