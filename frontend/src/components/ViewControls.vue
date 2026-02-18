@@ -1086,7 +1086,7 @@ const viewActions = (view, close) => {
     },
   ]
 
-  if (!isDefaultView(_view, isStandard)) {
+  if (isStandard && !isDefaultView(_view)) {
     actions[0].items.unshift({
       label: __('Set as default'),
       icon: () => h(CheckIcon, { class: 'h-4 w-4' }),
@@ -1151,10 +1151,10 @@ const viewActions = (view, close) => {
   return actions
 }
 
-function isDefaultView(v, isStandard) {
+function isDefaultView(v) {
   let defaultView = getDefaultView()
 
-  if (!defaultView || (isStandard && !v.name)) return false
+  if (!defaultView || !v.name) return false
 
   return defaultView.name == v.name
 }
