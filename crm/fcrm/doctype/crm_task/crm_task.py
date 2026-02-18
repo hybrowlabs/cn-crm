@@ -7,8 +7,6 @@ from frappe.desk.form.assign_to import add as assign
 from frappe.desk.form.assign_to import remove as unassign
 from frappe.model.document import Document
 
-from crm.fcrm.doctype.crm_notification.crm_notification import notify_user
-
 
 class CRMTask(Document):
 	# begin: auto-generated types

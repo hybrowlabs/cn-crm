@@ -429,25 +429,25 @@ def create_contact(doc):
 
 
 @frappe.whitelist()
-def create_deal(args: dict):
+def create_deal(doc: dict):
 	deal = frappe.new_doc("CRM Deal")
 
-	contact = args.get("contact")
+	contact = doc.get("contact")
 	if not contact and (
-		args.get("first_name") or args.get("last_name") or args.get("email") or args.get("mobile_no")
+		doc.get("first_name") or doc.get("last_name") or doc.get("email") or doc.get("mobile_no")
 	):
-		contact = create_contact(args)
+		contact = create_contact(doc)
 
 	deal.update(
 		{
-			"organization": args.get("organization") or create_organization(args),
+			"organization": doc.get("organization") or create_organization(doc),
 			"contacts": [{"contact": contact, "is_primary": 1}] if contact else [],
 		}
 	)
 
-	args.pop("organization", None)
+	doc.pop("organization", None)
 
-	deal.update(args)
+	deal.update(doc)
 
 	deal.insert(ignore_permissions=True)
 	return deal.name
