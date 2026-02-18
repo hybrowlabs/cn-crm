@@ -37,7 +37,7 @@ class CRMInvitation(Document):
 	def invite_via_email(self):
 		invite_link = frappe.utils.get_url(f"/api/method/crm.api.accept_invitation?key={self.key}")
 		if frappe.local.dev_server:
-			print(f"Invite link for {self.email}: {invite_link}") # nosemgrep
+			print(f"Invite link for {self.email}: {invite_link}")  # nosemgrep
 
 		title = "Frappe CRM"
 		template = "crm_invitation"
