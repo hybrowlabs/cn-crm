@@ -26,9 +26,9 @@ add_to_apps_screen = [
 # ------------------
 
 # include js, css files in header of desk.html
-app_include_css = [
-    "/assets/crm/css/followup_widget.css"
-]
+# app_include_css = [
+#     "/assets/crm/css/followup_widget.css"
+# ]
 app_include_js = ["/assets/crm/js/followup_widget.js"]
 
 # include js, css files in header of web template

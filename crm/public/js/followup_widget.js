@@ -7,12 +7,11 @@ crm.followup_widget = {
 		const container = $(wrapper);
 		container.empty();
 
-		// Inject HTML
 		container.html(`
             <div class="followup-widget">
-                
+
                 <div class="followup-header">
-                    <div style="font-weight:600;font-size:16px;">
+                    <div class="followup-title">
                         Follow-ups Needed
                     </div>
 
@@ -36,16 +35,44 @@ crm.followup_widget = {
             </div>
         `);
 
-		// Refresh button
+		//-----------------------------------------
+		// Refresh
+		//-----------------------------------------
+
 		container.off('click', '.refresh-btn');
 		container.on('click', '.refresh-btn', () => {
 			this.load_data(container);
 		});
 
+		//-----------------------------------------
+		// Toggle Customers (CLASS BASED — NO jQuery animation)
+		//-----------------------------------------
+
+		container.off('click', '.customer-header');
+
+		container.on('click', '.customer-header', function () {
+
+			const card = $(this).closest('.customer-card');
+			const items = card.find('.customer-items');
+			const icon = $(this).find('.chevron');
+
+			const isOpen = items.hasClass('open');
+
+			// Close ALL
+			container.find('.customer-items').removeClass('open');
+			container.find('.chevron').removeClass('rotate');
+
+			// If it was closed → open it
+			if (!isOpen) {
+				items.addClass('open');
+				icon.addClass('rotate');
+			}
+		});
+
 		this.load_data(container);
 	},
 
-	//-------------------------------------
+	//-----------------------------------------
 
 	load_data(container) {
 
@@ -67,7 +94,11 @@ crm.followup_widget = {
 
 				if (r.message?.customers?.length) {
 
-					this.render_customers(list, r.message.customers);
+					this.render_customers(
+						list,
+						r.message.customers,
+						container
+					);
 
 					empty.hide();
 					list.show();
@@ -81,26 +112,11 @@ crm.followup_widget = {
 		});
 	},
 
-	//-------------------------------------
+	//-----------------------------------------
 
-	render_customers(container, customers) {
+	render_customers(container, customers, widget) {
 
 		container.empty();
-
-		//-------------------------------------
-		// ✅ EVENT DELEGATION (FIXES CLICK)
-		//-------------------------------------
-
-		container.off('click', '.customer-header');
-
-		container.on('click', '.customer-header', function () {
-
-			const items = $(this).next('.customer-items');
-
-			items.stop(true, true).slideToggle(150);
-		});
-
-		//-------------------------------------
 
 		customers.forEach(customer => {
 
@@ -108,16 +124,24 @@ crm.followup_widget = {
                 <div class="customer-card">
 
                     <div class="customer-header">
+                        
                         <div>
                             <strong>${customer.customer_name}</strong>
                         </div>
 
-                        <div>
-                            ${customer.items.length}
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <span class="badge badge-secondary">
+                                ${customer.items.length}
+                            </span>
+
+                            <span class="chevron">
+                                ▶
+                            </span>
                         </div>
+
                     </div>
 
-                    <div class="customer-items" style="display:none;"></div>
+                    <div class="customer-items"></div>
 
                 </div>
             `);
@@ -132,11 +156,11 @@ crm.followup_widget = {
                     <div class="item-row" data-id="${item.log_id}">
                         
                         <div>
-                            <div style="font-weight:500;">
+                            <div class="item-title">
                                 ${item.item}
                             </div>
 
-                            <div style="font-size:12px;color:#777;">
+                            <div class="item-meta">
                                 Qty: ${item.qty}
                                 • Next: ${frappe.datetime.str_to_user(item.next_order_date)}
                             </div>
@@ -150,8 +174,6 @@ crm.followup_widget = {
                 `);
 
 				//-------------------------------------
-				// FOLLOW BUTTON
-				//-------------------------------------
 
 				row.find('.follow-btn').on('click', (e) => {
 
@@ -160,7 +182,7 @@ crm.followup_widget = {
 					this.mark_followup(
 						item.log_id,
 						row,
-						container.closest('.followup-widget')
+						widget
 					);
 				});
 
@@ -171,7 +193,7 @@ crm.followup_widget = {
 		});
 	},
 
-	//-------------------------------------
+	//-----------------------------------------
 
 	mark_followup(log_id, row, widget) {
 
@@ -187,17 +209,16 @@ crm.followup_widget = {
 
 				if (!r.message?.success) return;
 
-				row.slideUp(200, function () {
+				row.fadeOut(200, function () {
 
 					const card = row.closest('.customer-card');
-
 					row.remove();
 
 					const remaining = card.find('.item-row').length;
 
 					if (!remaining) {
 
-						card.slideUp(200, () => {
+						card.fadeOut(200, () => {
 
 							card.remove();
 
@@ -207,7 +228,6 @@ crm.followup_widget = {
 								widget.find('.empty-state').show();
 							}
 						});
-
 					}
 				});
 
@@ -215,7 +235,6 @@ crm.followup_widget = {
 					message: "Follow-up marked",
 					indicator: "green"
 				});
-
 			}
 		});
 	}
