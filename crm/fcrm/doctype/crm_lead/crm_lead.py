@@ -94,15 +94,14 @@ class CRMLead(Document):
 	def set_full_name(self):
 		if self.first_name:
 			self.lead_name = " ".join(
-				filter(
-					None,
-					[
-						self.salutation,
-						self.first_name,
-						self.middle_name,
-						self.last_name,
-					],
-				)
+				name
+				for name in [
+					self.salutation,
+					self.first_name,
+					self.middle_name,
+					self.last_name,
+				]
+				if name
 			)
 
 	def set_lead_name(self):
@@ -457,7 +456,13 @@ class CRMLead(Document):
 
 
 @frappe.whitelist()
-def convert_to_deal(lead, doc=None, deal=None, existing_contact=None, existing_organization=None):
+def convert_to_deal(
+	lead: str,
+	doc: Document | None = None,
+	deal: str | None = None,
+	existing_contact: str | None = None,
+	existing_organization: str | None = None,
+):
 	if not (doc and doc.flags.get("ignore_permissions")) and not frappe.has_permission(
 		"CRM Lead", "write", lead
 	):

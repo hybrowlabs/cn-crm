@@ -110,7 +110,7 @@ def get_fields_layout(doctype: str, type: str, parent_doctype: str | None = None
 
 
 @frappe.whitelist()
-def get_sidepanel_sections(doctype):
+def get_sidepanel_sections(doctype: str):
 	if not frappe.db.exists("CRM Fields Layout", {"dt": doctype, "type": "Side Panel"}):
 		return []
 	layout = frappe.get_doc("CRM Fields Layout", {"dt": doctype, "type": "Side Panel"}).layout

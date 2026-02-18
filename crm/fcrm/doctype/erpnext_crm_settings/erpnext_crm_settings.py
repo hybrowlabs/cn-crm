@@ -71,7 +71,7 @@ class ERPNextCRMSettings(Document):
 				frappe.get_traceback(),
 				f"Error while creating custom field in the remote erpnext site: {self.erpnext_site_url}",
 			)
-			frappe.throw("Error while creating custom field in ERPNext, check error log for more details")
+			frappe.throw(_("Error while creating custom field in ERPNext, check error log for more details"))
 
 	def create_crm_form_script(self):
 		if not frappe.db.exists("CRM Form Script", "Create Quotation from CRM Deal"):
@@ -110,7 +110,7 @@ def get_erpnext_site_client(erpnext_crm_settings):
 
 
 @frappe.whitelist()
-def get_customer_link(crm_deal):
+def get_customer_link(crm_deal: str):
 	erpnext_crm_settings = frappe.get_single("ERPNext CRM Settings")
 	if not erpnext_crm_settings.enabled:
 		frappe.throw(_("ERPNext is not integrated with the CRM"))
@@ -136,7 +136,7 @@ def get_customer_link(crm_deal):
 
 
 @frappe.whitelist()
-def get_quotation_url(crm_deal, organization):
+def get_quotation_url(crm_deal: str, organization: str):
 	erpnext_crm_settings = frappe.get_single("ERPNext CRM Settings")
 	if not erpnext_crm_settings.enabled:
 		frappe.throw(_("ERPNext is not integrated with the CRM"))

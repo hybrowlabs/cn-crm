@@ -188,7 +188,7 @@ async function createDeal() {
 
   createResource({
     url: 'crm.fcrm.doctype.crm_deal.crm_deal.create_deal',
-    params: { args: deal.doc },
+    params: { doc: deal.doc },
     auto: true,
     validate() {
       error.value = null
