@@ -1,344 +1,223 @@
-// Follow-up Needed Widget
-// This file provides the widget for displaying frequency follow-up logs
-
 frappe.provide('crm.followup_widget');
 
 crm.followup_widget = {
-    render: function (wrapper) {
-        const container = $(wrapper);
-        container.empty();
 
-        // Add CSS
-        this.add_styles(container);
+	render(wrapper) {
 
-        // Create main structure
-        const html = `
-			<div class="followup-widget">
-				<div class="followup-header">
-					<h3>Follow-up Needed</h3>
-					<button class="btn btn-sm btn-primary refresh-btn">
-						<i class="fa fa-refresh"></i> Refresh
-					</button>
-				</div>
-				<div class="followup-loading">
-					<i class="fa fa-spinner fa-spin"></i> Loading...
-				</div>
-				<div class="followup-content" style="display: none;">
-					<div class="customer-list"></div>
-					<div class="empty-state" style="display: none;">
-						<p>No follow-ups needed at the moment.</p>
-					</div>
-				</div>
-			</div>
-		`;
+		const container = $(wrapper);
+		container.empty();
 
-        container.html(html);
+		// Inject HTML
+		container.html(`
+            <div class="followup-widget">
+                
+                <div class="followup-header">
+                    <div style="font-weight:600;font-size:16px;">
+                        Follow-ups Needed
+                    </div>
 
-        // Bind events
-        container.find('.refresh-btn').on('click', () => {
-            this.load_data(container);
-        });
+                    <button class="btn btn-sm btn-primary refresh-btn">
+                        Refresh
+                    </button>
+                </div>
 
-        // Load initial data
-        this.load_data(container);
-    },
+                <div class="followup-loading">
+                    Loading...
+                </div>
 
-    add_styles: function (container) {
-        const style = `
-			<style>
-				.followup-widget {
-					background: white;
-					border-radius: 8px;
-					padding: 20px;
-					box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                <div class="followup-content" style="display:none;">
+                    <div class="customer-list"></div>
+
+                    <div class="empty-state" style="display:none;">
+                        No follow-ups 🎉
+                    </div>
+                </div>
+
+            </div>
+        `);
+
+		// Refresh button
+		container.off('click', '.refresh-btn');
+		container.on('click', '.refresh-btn', () => {
+			this.load_data(container);
+		});
+
+		this.load_data(container);
+	},
+
+	//-------------------------------------
+
+	load_data(container) {
+
+		const loading = container.find('.followup-loading');
+		const content = container.find('.followup-content');
+		const list = container.find('.customer-list');
+		const empty = container.find('.empty-state');
+
+		loading.show();
+		content.hide();
+
+		frappe.call({
+			method: 'crm.fcrm.doctype.frequency_log_list.frequency_log_list.get_followup_logs_for_user',
+
+			callback: (r) => {
+
+				loading.hide();
+				content.show();
+
+				if (r.message?.customers?.length) {
+
+					this.render_customers(list, r.message.customers);
+
+					empty.hide();
+					list.show();
+
+				} else {
+
+					list.hide();
+					empty.show();
 				}
-				
-				.followup-header {
-					display: flex;
-					justify-content: space-between;
-					align-items: center;
-					margin-bottom: 20px;
-					padding-bottom: 15px;
-					border-bottom: 2px solid #f0f0f0;
-				}
-				
-				.followup-header h3 {
-					margin: 0;
-					font-size: 18px;
-					font-weight: 600;
-					color: #333;
-				}
-				
-				.followup-loading {
-					text-align: center;
-					padding: 40px;
-					color: #888;
-					font-size: 14px;
-				}
-				
-				.customer-card {
-					border: 1px solid #e0e0e0;
-					border-radius: 6px;
-					margin-bottom: 12px;
-					overflow: hidden;
-					transition: all 0.3s ease;
-				}
-				
-				.customer-card:hover {
-					box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-				}
-				
-				.customer-header {
-					background: #f8f9fa;
-					padding: 12px 15px;
-					cursor: pointer;
-					display: flex;
-					justify-content: space-between;
-					align-items: center;
-					transition: background 0.2s ease;
-				}
-				
-				.customer-header:hover {
-					background: #e9ecef;
-				}
-				
-				.customer-name {
-					font-weight: 600;
-					color: #333;
-					font-size: 14px;
-				}
-				
-				.item-count {
-					background: #e74c3c;
-					color: white;
-					padding: 2px 8px;
-					border-radius: 12px;
-					font-size: 12px;
-					font-weight: 600;
-				}
-				
-				.customer-items {
-					display: none;
-					padding: 10px 15px;
-					background: white;
-				}
-				
-				.customer-items.expanded {
-					display: block;
-				}
-				
-				.item-row {
-					display: flex;
-					justify-content: space-between;
-					align-items: center;
-					padding: 10px;
-					border-bottom: 1px solid #f0f0f0;
-					transition: background 0.2s ease;
-				}
-				
-				.item-row:last-child {
-					border-bottom: none;
-				}
-				
-				.item-row:hover {
-					background: #f8f9fa;
-				}
-				
-				.item-info {
-					flex: 1;
-				}
-				
-				.item-name {
-					font-weight: 500;
-					color: #333;
-					font-size: 14px;
-					margin-bottom: 4px;
-				}
-				
-				.item-details {
-					font-size: 12px;
-					color: #666;
-				}
-				
-				.followup-btn {
-					background: #27ae60;
-					color: white;
-					border: none;
-					padding: 6px 14px;
-					border-radius: 4px;
-					cursor: pointer;
-					font-size: 12px;
-					font-weight: 500;
-					transition: background 0.2s ease;
-				}
-				
-				.followup-btn:hover {
-					background: #229954;
-				}
-				
-				.followup-btn:disabled {
-					background: #bdc3c7;
-					cursor: not-allowed;
-				}
-				
-				.empty-state {
-					text-align: center;
-					padding: 40px;
-					color: #888;
-					font-size: 14px;
-				}
-				
-				.expand-icon {
-					transition: transform 0.3s ease;
-					color: #666;
-					font-size: 12px;
-					margin-left: 8px;
-				}
-				
-				.expand-icon.expanded {
-					transform: rotate(90deg);
-				}
-			</style>
-		`;
+			}
+		});
+	},
 
-        $('head').append(style);
-    },
+	//-------------------------------------
 
-    load_data: function (container) {
-        const loading = container.find('.followup-loading');
-        const content = container.find('.followup-content');
-        const customerList = container.find('.customer-list');
-        const emptyState = container.find('.empty-state');
+	render_customers(container, customers) {
 
-        loading.show();
-        content.hide();
+		container.empty();
 
-        frappe.call({
-            method: 'crm.fcrm.doctype.frequency_log_list.frequency_log_list.get_followup_logs_for_user',
-            callback: (r) => {
-                loading.hide();
-                content.show();
+		//-------------------------------------
+		// ✅ EVENT DELEGATION (FIXES CLICK)
+		//-------------------------------------
 
-                if (r.message && r.message.customers && r.message.customers.length > 0) {
-                    this.render_customers(customerList, r.message.customers);
-                    emptyState.hide();
-                    customerList.show();
-                } else {
-                    customerList.hide();
-                    emptyState.show();
-                }
-            },
-            error: () => {
-                loading.hide();
-                frappe.msgprint('Failed to load follow-up data');
-            }
-        });
-    },
+		container.off('click', '.customer-header');
 
-    render_customers: function (container, customers) {
-        container.empty();
+		container.on('click', '.customer-header', function () {
 
-        customers.forEach(customer => {
-            const card = $(`
-				<div class="customer-card">
-					<div class="customer-header" data-customer="${customer.customer_code}">
-						<span class="customer-name">
-							${customer.customer_name}
-							<i class="fa fa-chevron-right expand-icon"></i>
-						</span>
-						<span class="item-count">${customer.items.length} item${customer.items.length > 1 ? 's' : ''}</span>
-					</div>
-					<div class="customer-items"></div>
-				</div>
-			`);
+			const items = $(this).next('.customer-items');
 
-            const itemsContainer = card.find('.customer-items');
+			items.stop(true, true).slideToggle(150);
+		});
 
-            customer.items.forEach(item => {
-                const itemRow = $(`
-					<div class="item-row" data-log-id="${item.log_id}">
-						<div class="item-info">
-							<div class="item-name">${item.item}</div>
-							<div class="item-details">
-								Qty: ${item.qty} | Next Order: ${frappe.datetime.str_to_user(item.next_order_date)}
-							</div>
-						</div>
-						<button class="followup-btn">Mark as Followed Up</button>
-					</div>
-				`);
+		//-------------------------------------
 
-                // Bind follow-up button
-                itemRow.find('.followup-btn').on('click', (e) => {
-                    e.stopPropagation();
-                    this.mark_followup(item.log_id, itemRow, container.closest('.followup-widget'));
-                });
+		customers.forEach(customer => {
 
-                itemsContainer.append(itemRow);
-            });
+			const card = $(`
+                <div class="customer-card">
 
-            // Bind expand/collapse
-            card.find('.customer-header').on('click', function () {
-                const items = $(this).siblings('.customer-items');
-                const icon = $(this).find('.expand-icon');
+                    <div class="customer-header">
+                        <div>
+                            <strong>${customer.customer_name}</strong>
+                        </div>
 
-                items.toggleClass('expanded');
-                icon.toggleClass('expanded');
-            });
+                        <div>
+                            ${customer.items.length}
+                        </div>
+                    </div>
 
-            container.append(card);
-        });
-    },
+                    <div class="customer-items" style="display:none;"></div>
 
-    mark_followup: function (log_id, row, widgetContainer) {
-        const btn = row.find('.followup-btn');
-        btn.prop('disabled', true).text('Processing...');
+                </div>
+            `);
 
-        frappe.call({
-            method: 'crm.fcrm.doctype.frequency_log_list.frequency_log_list.mark_followup_done',
-            args: { log_id: log_id },
-            callback: (r) => {
-                if (r.message && r.message.success) {
-                    // Animate removal
-                    row.fadeOut(300, function () {
-                        const card = row.closest('.customer-card');
-                        row.remove();
+			const itemsContainer = card.find('.customer-items');
 
-                        // Check if customer has any items left
-                        const remainingItems = card.find('.item-row').length;
-                        if (remainingItems === 0) {
-                            card.fadeOut(300, function () {
-                                card.remove();
+			//-------------------------------------
 
-                                // Check if any customers left
-                                const remainingCustomers = widgetContainer.find('.customer-card').length;
-                                if (remainingCustomers === 0) {
-                                    widgetContainer.find('.customer-list').hide();
-                                    widgetContainer.find('.empty-state').show();
-                                }
-                            });
-                        } else {
-                            // Update count
-                            card.find('.item-count').text(`${remainingItems} item${remainingItems > 1 ? 's' : ''}`);
-                        }
-                    });
+			customer.items.forEach(item => {
 
-                    frappe.show_alert({
-                        message: 'Marked as followed up',
-                        indicator: 'green'
-                    }, 3);
-                }
-            },
-            error: () => {
-                btn.prop('disabled', false).text('Mark as Followed Up');
-                frappe.msgprint('Failed to mark as followed up');
-            }
-        });
-    }
+				const row = $(`
+                    <div class="item-row" data-id="${item.log_id}">
+                        
+                        <div>
+                            <div style="font-weight:500;">
+                                ${item.item}
+                            </div>
+
+                            <div style="font-size:12px;color:#777;">
+                                Qty: ${item.qty}
+                                • Next: ${frappe.datetime.str_to_user(item.next_order_date)}
+                            </div>
+                        </div>
+
+                        <button class="btn btn-xs btn-success follow-btn">
+                            Done
+                        </button>
+
+                    </div>
+                `);
+
+				//-------------------------------------
+				// FOLLOW BUTTON
+				//-------------------------------------
+
+				row.find('.follow-btn').on('click', (e) => {
+
+					e.stopPropagation();
+
+					this.mark_followup(
+						item.log_id,
+						row,
+						container.closest('.followup-widget')
+					);
+				});
+
+				itemsContainer.append(row);
+			});
+
+			container.append(card);
+		});
+	},
+
+	//-------------------------------------
+
+	mark_followup(log_id, row, widget) {
+
+		const btn = row.find('.follow-btn');
+
+		btn.prop('disabled', true).text('...');
+
+		frappe.call({
+			method: 'crm.fcrm.doctype.frequency_log_list.frequency_log_list.mark_followup_done',
+			args: { log_id },
+
+			callback: (r) => {
+
+				if (!r.message?.success) return;
+
+				row.slideUp(200, function () {
+
+					const card = row.closest('.customer-card');
+
+					row.remove();
+
+					const remaining = card.find('.item-row').length;
+
+					if (!remaining) {
+
+						card.slideUp(200, () => {
+
+							card.remove();
+
+							if (!widget.find('.customer-card').length) {
+
+								widget.find('.customer-list').hide();
+								widget.find('.empty-state').show();
+							}
+						});
+
+					}
+				});
+
+				frappe.show_alert({
+					message: "Follow-up marked",
+					indicator: "green"
+				});
+
+			}
+		});
+	}
+
 };
-
-// Auto-initialize on followup page
-$(document).ready(function () {
-    if (window.location.pathname === '/followup' && $('#followup-page-container').length > 0) {
-        crm.followup_widget.render($('#followup-page-container'));
-    }
-});
