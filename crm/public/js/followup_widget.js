@@ -45,7 +45,7 @@ crm.followup_widget = {
 		});
 
 		//-----------------------------------------
-		// Toggle Customers (CLASS BASED — NO jQuery animation)
+		// Toggle Customers
 		//-----------------------------------------
 
 		container.off('click', '.customer-header');
@@ -58,15 +58,34 @@ crm.followup_widget = {
 
 			const isOpen = items.hasClass('open');
 
-			// Close ALL
+			// Close all
 			container.find('.customer-items').removeClass('open');
 			container.find('.chevron').removeClass('rotate');
 
-			// If it was closed → open it
+			// Open if previously closed
 			if (!isOpen) {
 				items.addClass('open');
 				icon.addClass('rotate');
 			}
+		});
+
+		//-----------------------------------------
+		// OPEN CUSTOMER DOC
+		//-----------------------------------------
+
+		container.off('click', '.customer-link');
+
+		container.on('click', '.customer-link', function (e) {
+
+			e.stopPropagation();
+
+			const customerName = $(this).data('name');
+
+			frappe.set_route(
+				'Form',
+				'Customer',
+				customerName
+			);
 		});
 
 		this.load_data(container);
@@ -118,6 +137,8 @@ crm.followup_widget = {
 
 		container.empty();
 
+		const today = frappe.datetime.get_today();
+
 		customers.forEach(customer => {
 
 			const card = $(`
@@ -126,7 +147,10 @@ crm.followup_widget = {
                     <div class="customer-header">
                         
                         <div>
-                            <strong>${customer.customer_name}</strong>
+                            <strong class="customer-link"
+                                    data-name="${customer.customer}">
+                                ${customer.customer_name}
+                            </strong>
                         </div>
 
                         <div style="display:flex;gap:8px;align-items:center;">
@@ -152,8 +176,26 @@ crm.followup_widget = {
 
 			customer.items.forEach(item => {
 
+				//---------------------------------
+				// URGENCY CALCULATION
+				//---------------------------------
+
+				let urgencyClass = "urgency-upcoming";
+				let urgencyLabel = "Upcoming";
+
+				if (item.next_order_date < today) {
+					urgencyClass = "urgency-overdue";
+					urgencyLabel = "Overdue";
+				}
+				else if (item.next_order_date === today) {
+					urgencyClass = "urgency-today";
+					urgencyLabel = "Due Today";
+				}
+
+				//---------------------------------
+
 				const row = $(`
-                    <div class="item-row" data-id="${item.log_id}">
+                    <div class="item-row ${urgencyClass}" data-id="${item.log_id}">
                         
                         <div>
                             <div class="item-title">
@@ -166,14 +208,22 @@ crm.followup_widget = {
                             </div>
                         </div>
 
-                        <button class="btn btn-xs btn-success follow-btn">
-                            Done
-                        </button>
+                        <div class="item-right">
+
+                            <span class="urgency-badge ${urgencyClass}">
+                                ${urgencyLabel}
+                            </span>
+
+                            <button class="btn btn-xs btn-success follow-btn">
+                                Done
+                            </button>
+
+                        </div>
 
                     </div>
                 `);
 
-				//-------------------------------------
+				//---------------------------------
 
 				row.find('.follow-btn').on('click', (e) => {
 
