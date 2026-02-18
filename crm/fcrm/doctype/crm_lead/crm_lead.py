@@ -459,7 +459,7 @@ class CRMLead(Document):
 def convert_to_deal(
 	lead: str,
 	doc: Document | None = None,
-	deal: str | None = None,
+	deal: str | dict | None = None,
 	existing_contact: str | None = None,
 	existing_organization: str | None = None,
 ):
