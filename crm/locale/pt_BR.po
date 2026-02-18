@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: frappe\n"
 "Report-Msgid-Bugs-To: shariq@frappe.io\n"
 "POT-Creation-Date: 2025-12-21 09:37+0000\n"
-"PO-Revision-Date: 2026-01-31 12:58\n"
+"PO-Revision-Date: 2026-02-17 18:43\n"
 "Last-Translator: shariq@frappe.io\n"
 "Language-Team: Portuguese, Brazilian\n"
 "MIME-Version: 1.0\n"
@@ -3532,7 +3532,7 @@ msgstr ""
 #: frontend/src/components/Telephony/ExotelCallUI.vue:200
 #: frontend/src/pages/Tasks.vue:133
 msgid "Lead"
-msgstr ""
+msgstr "Lead"
 
 #. Label of the lead_data (Code) field in DocType 'Failed Lead Sync Log'
 #: crm/lead_syncing/doctype/failed_lead_sync_log/failed_lead_sync_log.json
@@ -4084,7 +4084,7 @@ msgstr ""
 #: frontend/src/components/Activities/ActivityHeader.vue:149
 #: frontend/src/pages/Deals.vue:516 frontend/src/pages/Leads.vue:543
 msgid "New Task"
-msgstr ""
+msgstr "Nova Tarefa"
 
 #: frontend/src/components/Activities/ActivityHeader.vue:159
 msgid "New WhatsApp Message"
@@ -4426,7 +4426,7 @@ msgstr ""
 #. Option for the 'Type' (Select) field in DocType 'CRM Deal Status'
 #: crm/fcrm/doctype/crm_deal_status/crm_deal_status.json
 msgid "Open"
-msgstr ""
+msgstr "Aberto"
 
 #: frontend/src/components/Modals/NoteModal.vue:13
 #: frontend/src/components/Modals/TaskModal.vue:13
@@ -4856,7 +4856,7 @@ msgstr ""
 #. Label of the rate (Currency) field in DocType 'CRM Products'
 #: crm/fcrm/doctype/crm_products/crm_products.json
 msgid "Rate"
-msgstr "Taxa"
+msgstr "Valor"
 
 #. Label of the read (Check) field in DocType 'CRM Notification'
 #: crm/fcrm/doctype/crm_notification/crm_notification.json
