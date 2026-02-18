@@ -94,15 +94,14 @@ class CRMLead(Document):
 	def set_full_name(self):
 		if self.first_name:
 			self.lead_name = " ".join(
-				filter(
-					None,
-					[
-						self.salutation,
-						self.first_name,
-						self.middle_name,
-						self.last_name,
-					],
-				)
+				name
+				for name in [
+					self.salutation,
+					self.first_name,
+					self.middle_name,
+					self.last_name,
+				]
+				if name
 			)
 
 	def set_lead_name(self):
