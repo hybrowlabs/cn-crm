@@ -14,8 +14,6 @@ def execute():
 				probability = 50
 			elif status.deal_status == "Negotiation":
 				probability = 70
-			elif status.deal_status == "Ready to Close":
-				probability = 90
 			elif status.deal_status == "Won":
 				probability = 100
 			else:

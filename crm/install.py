@@ -112,20 +112,15 @@ def add_default_deal_statuses():
 			"probability": 70,
 			"position": 4,
 		},
-		"Ready to Close": {
-			"color": "purple",
-			"probability": 90,
-			"position": 5,
-		},
 		"Won": {
 			"color": "green",
 			"probability": 100,
-			"position": 6,
+			"position": 5,
 		},
 		"Lost": {
 			"color": "red",
 			"probability": 0,
-			"position": 7,
+			"position": 6,
 		},
 	}
 
@@ -563,7 +558,7 @@ def add_default_spanco_views():
 		"orderbooking": {
 			"label": "Order Booking Stage",
 			"dt": "CRM Deal",
-			"filters": '{"status": ["in", ["Ready to Close", "Won"]]}',
+			"filters": '{"status": ["in", ["Won"]]}',
 			"route_name": "Deals",
 		},
 	}

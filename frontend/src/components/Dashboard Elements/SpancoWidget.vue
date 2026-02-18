@@ -552,7 +552,7 @@ const spancoData = computed(() => {
     ['Negotiation'].includes(d.status),
   )
   const orderStage = deals.filter((d) =>
-    ['Ready to Close', 'Won'].includes(d.status),
+    ['Won'].includes(d.status),
   )
 
   // Calculate total records across ALL stages for percentage that sums to 100%

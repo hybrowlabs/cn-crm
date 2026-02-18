@@ -90,7 +90,6 @@ export const statusesStore = defineStore('crm-statuses', () => {
         Qualification: [
           'Qualification',
           'Demo/Making',
-          'Ready to Close',
           'Lost',
         ],
         'Demo/Making': [
@@ -98,13 +97,11 @@ export const statusesStore = defineStore('crm-statuses', () => {
           'Demo/Making',
           'Proposal/Quotation',
           'Negotiation',
-          'Ready to Close',
           'Lost',
         ],
         'Proposal/Quotation': [
           'Proposal/Quotation',
           'Negotiation',
-          'Ready to Close',
           'Won',
           'Lost',
         ],
