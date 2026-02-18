@@ -382,14 +382,12 @@ function debouncedDuplicateCheck() {
   duplicateCheckTimer = setTimeout(() => {
     const org = lead.doc.organization
     const email = lead.doc.email
-    const mobile = lead.doc.mobile_no
 
     // Only check if at least one field has meaningful content
-    if ((org && org.length >= 2) || email || mobile) {
+    if ((org && org.length >= 2) || email) {
       checkDuplicates.submit({
         organization: org || null,
         email: email || null,
-        mobile_no: mobile || null,
       })
     } else {
       // Clear warnings if no search criteria
@@ -404,7 +402,7 @@ function debouncedDuplicateCheck() {
 
 // Watch for changes to lead.doc fields that should trigger duplicate checking
 watch(
-  () => [lead.doc.organization, lead.doc.email, lead.doc.mobile_no],
+  () => [lead.doc.organization, lead.doc.email],
   () => {
     debouncedDuplicateCheck()
   },

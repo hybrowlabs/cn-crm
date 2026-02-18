@@ -831,15 +831,15 @@ def check_lead_duplicates(organization=None, email=None, mobile_no=None):
     Check for potential duplicate leads, organizations, contacts, and customers.
 
     This helps prevent creating duplicate records by checking:
-    1. Existing leads (not yet converted to deals) with matching organization, email, or mobile
+    1. Existing leads (not yet converted to deals) with matching organization or email
     2. Existing organizations (from converted leads/deals) with matching name
-    3. Existing contacts with matching email or mobile number
-    4. Existing customers with matching email or mobile number
+    3. Existing contacts with matching email
+    4. Existing customers with matching email
 
     Args:
         organization: Organization name to search for (partial match)
         email: Email address to search for (exact match)
-        mobile_no: Mobile number to search for (exact match)
+        mobile_no: Deprecated, kept for API compatibility but no longer used
 
     Returns:
         dict: Contains 'leads', 'organizations', 'contacts', and 'customers' lists with potential duplicates
@@ -853,7 +853,7 @@ def check_lead_duplicates(organization=None, email=None, mobile_no=None):
     }
 
     # Skip if no search criteria provided
-    if not organization and not email and not mobile_no:
+    if not organization and not email:
         return duplicates
 
     # Build filters for lead search
@@ -867,10 +867,7 @@ def check_lead_duplicates(organization=None, email=None, mobile_no=None):
     if email:
         lead_or_filters.append(["email", "=", email])
 
-    if mobile_no:
-        # Normalize mobile number - remove common formatting characters
-        normalized_mobile = mobile_no.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
-        lead_or_filters.append(["mobile_no", "like", f"%{normalized_mobile[-10:]}%"])
+
 
     # Search for existing leads
     if lead_or_filters:
@@ -891,11 +888,7 @@ def check_lead_duplicates(organization=None, email=None, mobile_no=None):
                 match_reasons.append("organization")
             if email and lead.email and email.lower() == lead.email.lower():
                 match_reasons.append("email")
-            if mobile_no and lead.mobile_no:
-                normalized_search = mobile_no.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
-                normalized_lead = lead.mobile_no.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
-                if normalized_search[-10:] in normalized_lead or normalized_lead[-10:] in normalized_search:
-                    match_reasons.append("mobile")
+
 
             duplicates["leads"].append({
                 "name": lead.name,
@@ -936,8 +929,8 @@ def check_lead_duplicates(organization=None, email=None, mobile_no=None):
                 "deal_status": deal.get("status") if deal else None
             })
 
-    # Search for existing contacts by email or mobile
-    if email or mobile_no:
+    # Search for existing contacts by email
+    if email:
         contact_names = set()
 
         # Search by email
@@ -951,18 +944,7 @@ def check_lead_duplicates(organization=None, email=None, mobile_no=None):
             for ec in email_contacts:
                 contact_names.add(ec.parent)
 
-        # Search by mobile number
-        if mobile_no:
-            normalized_mobile = mobile_no.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
-            # Search for contacts with matching phone numbers
-            phone_contacts = frappe.get_all(
-                "Contact Phone",
-                filters=[["phone", "like", f"%{normalized_mobile[-10:]}%"]],
-                fields=["parent"],
-                limit=10
-            )
-            for pc in phone_contacts:
-                contact_names.add(pc.parent)
+
 
         # Get contact details
         for contact_name in list(contact_names)[:10]:
@@ -989,33 +971,7 @@ def check_lead_duplicates(organization=None, email=None, mobile_no=None):
                         if email_exists:
                             match_reasons.append("email")
 
-                # Check mobile match - also check against all phones in Contact Phone
-                if mobile_no:
-                    normalized_search = mobile_no.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
-                    matched_mobile = False
 
-                    # Check primary mobile
-                    if contact.mobile_no:
-                        normalized_contact = contact.mobile_no.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
-                        if normalized_search[-10:] in normalized_contact or normalized_contact[-10:] in normalized_search:
-                            matched_mobile = True
-
-                    # If not matched, check all phones in Contact Phone child table
-                    if not matched_mobile:
-                        contact_phones = frappe.get_all(
-                            "Contact Phone",
-                            filters={"parent": contact_name},
-                            fields=["phone"]
-                        )
-                        for cp in contact_phones:
-                            if cp.phone:
-                                normalized_phone = cp.phone.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
-                                if normalized_search[-10:] in normalized_phone or normalized_phone[-10:] in normalized_search:
-                                    matched_mobile = True
-                                    break
-
-                    if matched_mobile:
-                        match_reasons.append("mobile")
 
                 # Only add contacts that have at least one match reason
                 if match_reasons:
@@ -1059,16 +1015,14 @@ def check_lead_duplicates(organization=None, email=None, mobile_no=None):
                         "match_reasons": match_reasons
                     })
 
-    # Search for existing customers by email or mobile
-    if email or mobile_no:
+    # Search for existing customers by email
+    if email:
         customer_or_filters = []
 
         if email:
             customer_or_filters.append(["email_id", "=", email])
 
-        if mobile_no:
-            normalized_mobile = mobile_no.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
-            customer_or_filters.append(["mobile_no", "like", f"%{normalized_mobile[-10:]}%"])
+
 
         if customer_or_filters:
             existing_customers = frappe.get_all(
@@ -1088,12 +1042,7 @@ def check_lead_duplicates(organization=None, email=None, mobile_no=None):
                 if email and customer.email_id and email.lower() == customer.email_id.lower():
                     match_reasons.append("email")
 
-                # Check mobile match
-                if mobile_no and customer.mobile_no:
-                    normalized_search = mobile_no.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
-                    normalized_customer = customer.mobile_no.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
-                    if normalized_search[-10:] in normalized_customer or normalized_customer[-10:] in normalized_search:
-                        match_reasons.append("mobile")
+
 
                 if match_reasons:
                     duplicates["customers"].append({
