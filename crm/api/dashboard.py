@@ -1060,25 +1060,7 @@ def get_deals_by_territory(from_date: str | None = None, to_date: str | None = N
 	if user:
 		query = query.where(CRMDeal.deal_owner == user)
 
-<<<<<<< HEAD
-	result = frappe.db.sql(
-		f"""
-		SELECT
-			IFNULL(d.territory, 'Empty') AS territory,
-			COUNT(*) AS deals,
-			SUM(COALESCE(d.deal_value, 0) * IFNULL(d.exchange_rate, 1)) AS value
-		FROM `tabCRM Deal` AS d
-		WHERE DATE(d.creation) BETWEEN %(from)s AND %(to)s
-		{deal_conds}
-		GROUP BY d.territory
-		ORDER BY value DESC
-		""",
-		params,
-		as_dict=True,
-	)
-=======
 	result = query.run(as_dict=True)
->>>>>>> 9e4bb2e0 (refactor: use query builder instead of sql)
 
 	return {
 		"data": result or [],
@@ -1141,26 +1123,7 @@ def get_deals_by_salesperson(
 	if user:
 		query = query.where(CRMDeal.deal_owner == user)
 
-<<<<<<< HEAD
-	result = frappe.db.sql(
-		f"""
-		SELECT
-			IFNULL(u.full_name, d.deal_owner) AS salesperson,
-			COUNT(*)                           AS deals,
-			SUM(COALESCE(d.deal_value, 0) * IFNULL(d.exchange_rate, 1)) AS value
-		FROM `tabCRM Deal` AS d
-		LEFT JOIN `tabUser` AS u ON u.name = d.deal_owner
-		WHERE DATE(d.creation) BETWEEN %(from)s AND %(to)s
-		{deal_conds}
-		GROUP BY d.deal_owner
-		ORDER BY value DESC
-		""",
-		params,
-		as_dict=True,
-	)
-=======
 	result = query.run(as_dict=True)
->>>>>>> 9e4bb2e0 (refactor: use query builder instead of sql)
 
 	return {
 		"data": result or [],
