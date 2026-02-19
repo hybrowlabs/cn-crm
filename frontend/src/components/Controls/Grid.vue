@@ -215,7 +215,7 @@
                     variant="outline"
                     v-model="row[field.fieldname]"
                     :options="field.options"
-                    @change="(e) => fieldChange(e.target.value, field, row)"
+                    @update:modelValue="(e) => fieldChange(e, field, row)"
                   />
                   <Password
                     v-else-if="field.fieldtype === 'Password'"

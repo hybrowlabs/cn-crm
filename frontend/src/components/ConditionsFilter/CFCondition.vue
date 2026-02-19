@@ -52,7 +52,7 @@
             :disabled="!props.condition[0]"
             type="select"
             v-model="props.condition[1]"
-            @change="updateOperator"
+            @update:modelValue="updateOperator"
             :options="getOperators()"
             class="w-max min-w-[100px]"
           />
@@ -302,13 +302,8 @@ function getSelectOptions(options) {
   return options.split('\n')
 }
 
-function updateOperator(event) {
-  let oldOperatorValue = event.target._value
-  let newOperatorValue = event.target.value
-  props.condition[1] = event.target.value
-  if (!isSameTypeOperator(oldOperatorValue, newOperatorValue)) {
-    props.condition[2] = getDefaultValue(props.condition[0])
-  }
+function updateOperator() {
+  props.condition[2] = getDefaultValue(props.condition[0])
   resetConditionValue()
 }
 
@@ -440,15 +435,5 @@ function getDefaultValue(field) {
     return 0
   }
   return ''
-}
-
-function isSameTypeOperator(oldOperator, newOperator) {
-  let textOperators = ['==', '!=', 'in', 'not in', '>', '<', '>=', '<=']
-  if (
-    textOperators.includes(oldOperator) &&
-    textOperators.includes(newOperator)
-  )
-    return true
-  return false
 }
 </script>

@@ -39,7 +39,7 @@
       :class="field.prefix ? 'prefix' : ''"
       :options="field.options"
       v-model="data[field.fieldname]"
-      @change="(e) => fieldChange(e.target.value, field)"
+      @update:modelValue="(e) => fieldChange(e, field)"
       :placeholder="getPlaceholder(field)"
       :description="field.description"
     >

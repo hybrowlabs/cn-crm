@@ -61,7 +61,7 @@
                 <FormControl
                   type="select"
                   v-model="f.operator"
-                  @change="(e) => updateOperator(e, f)"
+                  @update:modelValue="() => updateOperator(f)"
                   :options="getOperators(f.field.fieldtype, f.field.fieldname)"
                   :placeholder="__('Equals')"
                 />
@@ -92,7 +92,7 @@
                   <FormControl
                     type="select"
                     v-model="f.operator"
-                    @change="(e) => updateOperator(e, f)"
+                    @update:modelValue="() => updateOperator(f)"
                     :options="
                       getOperators(f.field.fieldtype, f.field.fieldname)
                     "
@@ -499,36 +499,13 @@ function updateValue(value, filter) {
   apply()
 }
 
-function updateOperator(event, filter) {
-  let oldOperatorValue = event.target._value
-  let newOperatorValue = event.target.value
-  filter.operator = event.target.value
-  if (!isSameTypeOperator(oldOperatorValue, newOperatorValue)) {
-    filter.value = getDefaultValue(filter.field)
-  }
-  if (newOperatorValue === 'is' || newOperatorValue === 'is not') {
+function updateOperator(filter) {
+  filter.value = getDefaultValue(filter.field)
+
+  if (filter.operator === 'is' || filter.operator === 'is not') {
     filter.value = 'set'
   }
   apply()
-}
-
-function isSameTypeOperator(oldOperator, newOperator) {
-  let textOperators = [
-    'equals',
-    'not equals',
-    'in',
-    'not in',
-    '>',
-    '<',
-    '>=',
-    '<=',
-  ]
-  if (
-    textOperators.includes(oldOperator) &&
-    textOperators.includes(newOperator)
-  )
-    return true
-  return false
 }
 
 function apply() {
