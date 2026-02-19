@@ -190,8 +190,8 @@ crm.followup_widget = {
 				let urgencyLabel = "Upcoming";
 
 				if (item.next_order_date < today) {
-					urgencyClass = "urgency-overdue";
-					urgencyLabel = "Overdue";
+					urgencyClass = "";
+					urgencyLabel = "";
 				}
 				else if (item.next_order_date === today) {
 					urgencyClass = "urgency-today";
@@ -217,9 +217,11 @@ crm.followup_widget = {
 
                         <div class="item-right">
 
-                            <span class="urgency-badge ${urgencyClass}">
-                                ${urgencyLabel}
-                            </span>
+                            ${urgencyLabel ? `
+                                <span class="urgency-badge ${urgencyClass}">
+                                    ${urgencyLabel}
+                                </span>
+                            ` : ''}
 
                             <button class="btn btn-xs btn-success follow-btn">
                                 Done

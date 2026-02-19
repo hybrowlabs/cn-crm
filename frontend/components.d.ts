@@ -202,6 +202,8 @@ declare module 'vue' {
     PlayIcon: typeof import('./src/components/Icons/PlayIcon.vue')['default']
     Popover: typeof import('./src/components/frappe-ui/Popover.vue')['default']
     ProfileSettings: typeof import('./src/components/Settings/ProfileSettings.vue')['default']
+    ProspectImportModal: typeof import('./src/components/Modals/ProspectImportModal.vue')['default']
+    ProspectModal: typeof import('./src/components/Modals/ProspectModal.vue')['default']
     QuickEntryModal: typeof import('./src/components/Modals/QuickEntryModal.vue')['default']
     QuickFilterField: typeof import('./src/components/QuickFilterField.vue')['default']
     QuickFilterIcon: typeof import('./src/components/Icons/QuickFilterIcon.vue')['default']

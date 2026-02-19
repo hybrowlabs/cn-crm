@@ -426,7 +426,7 @@ const trialOutcomeOptions = computed(() => {
     label: option || __('Select Outcome'),
     value: option,
     onClick: async () => {
-      if (['Qualified', 'Disqualified'].includes(option)) {
+      if (['Qualified'].includes(option)) {
         selectedTrialOutcome.value = option
         showTrialOutcomeNoteModal.value = true
       } else {

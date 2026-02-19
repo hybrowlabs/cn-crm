@@ -269,6 +269,11 @@ const links = [
     icon: ReportsIcon,
     to: 'Reports',
   },
+  {
+    label: 'Prospects',
+    icon: ContactsIcon,
+    to: 'Prospects',
+  },
 ]
 
 const allViews = computed(() => {

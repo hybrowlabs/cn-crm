@@ -322,6 +322,7 @@ const { getLeadStatus, statusOptions } = statusesStore()
 const { updateOnboardingStep } = useOnboarding('frappecrm')
 
 const show = defineModel()
+const emit = defineEmits(['success'])
 const router = useRouter()
 const error = ref(null)
 const isLeadCreating = ref(false)
@@ -596,6 +597,7 @@ async function createNewLead() {
         capture('lead_created')
         isLeadCreating.value = false
         show.value = false
+        emit('success', data)
         router.push({ name: 'Lead', params: { leadId: data.name } })
         updateOnboardingStep('create_first_lead', true, false, () => {
           localStorage.setItem('firstLead' + user, data.name)
