@@ -157,6 +157,12 @@ crm.followup_widget = {
                             <span class="badge badge-secondary">
                                 ${customer.items.length}
                             </span>
+                            
+                            ${customer.total_value > 0 ? `
+                                <span class="badge badge-primary">
+                                    ${frappe.format(customer.total_value, { fieldtype: 'Currency' })}
+                                </span>
+                            ` : ''}
 
                             <span class="chevron">
                                 ▶
@@ -203,8 +209,9 @@ crm.followup_widget = {
                             </div>
 
                             <div class="item-meta">
-                                Qty: ${item.qty}
-                                • Next: ${frappe.datetime.str_to_user(item.next_order_date)}
+                                Qty: ${item.qty} • Rate: ${frappe.format(item.rate, { fieldtype: 'Currency' })}
+                                <br>
+                                Next: ${frappe.datetime.str_to_user(item.next_order_date)}
                             </div>
                         </div>
 

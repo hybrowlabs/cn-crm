@@ -9,6 +9,7 @@
   "customer_name",
   "item",
   "qty",
+  "value",
   "next_order_date_as_per_frequency",
   "done_flow_up"
  ],
@@ -45,12 +46,17 @@
    "fieldname": "done_flow_up",
    "fieldtype": "Check",
    "label": "Done Flow up"
+  },
+  {
+   "fieldname": "value",
+   "fieldtype": "Currency",
+   "label": "Value"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-17 13:53:21.866940",
+ "modified": "2026-02-19 12:49:52.052285",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "Frequency Log List",

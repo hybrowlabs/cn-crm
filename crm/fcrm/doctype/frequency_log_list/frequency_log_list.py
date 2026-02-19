@@ -39,7 +39,7 @@ def get_followup_logs_for_user():
 		logs = frappe.get_all(
 			"Frequency Log List",
 			filters={"done_flow_up": 0},
-			fields=["name", "customer_code", "customer_name", "item", "qty", "next_order_date_as_per_frequency"],
+			fields=["name", "customer_code", "customer_name", "item", "qty", "value", "next_order_date_as_per_frequency"],
 			order_by="customer_name asc, item asc"
 		)
 	else:
@@ -63,7 +63,7 @@ def get_followup_logs_for_user():
 				"customer_code": ["in", customer_ids],
 				"done_flow_up": 0
 			},
-			fields=["name", "customer_code", "customer_name", "item", "qty", "next_order_date_as_per_frequency"],
+			fields=["name", "customer_code", "customer_name", "item", "qty", "value", "next_order_date_as_per_frequency"],
 			order_by="customer_name asc, item asc"
 		)
 	
@@ -77,16 +77,28 @@ def get_followup_logs_for_user():
 				"name": customer_doc_name or customer_code,
 				"customer_code": customer_code,
 				"customer_name": log.customer_name,
-				"items": []
+				"items": [],
+				"total_value": 0.0
 			}
+		
+		# Calculate value for this item (rate * qty)
+		item_value = (log.value or 0) * (log.qty or 0)
+		customers[customer_code]["total_value"] += item_value
+
 		customers[customer_code]["items"].append({
 			"log_id": log.name,
 			"item": log.item,
 			"qty": log.qty,
+			"rate": log.value,
+			"value": item_value,
 			"next_order_date": log.next_order_date_as_per_frequency
 		})
 	
-	return {"customers": list(customers.values())}
+	# Convert to list and sort by total_value descending
+	customer_list = list(customers.values())
+	customer_list.sort(key=lambda x: x["total_value"], reverse=True)
+	
+	return {"customers": customer_list}
 
 
 @frappe.whitelist()
@@ -177,10 +189,13 @@ def process_customer_for_logs(customer_id, customer_name):
 			continue
 		
 		# Get the last Sales Order date for this customer and item
-		last_order_date = get_last_order_date(customer_id, item_freq.item)
+		last_order_data = get_last_order_date(customer_id, item_freq.item)
 		
-		if not last_order_date:
+		if not last_order_data:
 			continue
+			
+		last_order_date = last_order_data.transaction_date
+		base_price_list_rate = last_order_data.base_price_list_rate or 0
 		
 		# Calculate next order date based on frequency
 		next_order_date = add_days(last_order_date, item_freq.frequency_day)
@@ -193,7 +208,8 @@ def process_customer_for_logs(customer_id, customer_name):
 					customer_name,
 					item_freq.item,
 					item_freq.quantity,
-					next_order_date
+					next_order_date,
+					base_price_list_rate
 				)
 				logs_created += 1
 			except Exception as e:
@@ -214,10 +230,10 @@ def get_last_order_date(customer_id, item_code):
 		item_code (str): Item Code
 		
 	Returns:
-		date: Last order date or None
+		dict: Dictionary containing transaction_date and base_price_list_rate or None
 	"""
 	result = frappe.db.sql("""
-		SELECT so.transaction_date
+		SELECT so.transaction_date, soi.base_price_list_rate
 		FROM `tabSales Order` so
 		INNER JOIN `tabSales Order Item` soi ON soi.parent = so.name
 		WHERE so.customer = %(customer)s
@@ -231,11 +247,11 @@ def get_last_order_date(customer_id, item_code):
 	}, as_dict=True)
 	
 	if result:
-		return result[0].transaction_date
+		return result[0]
 	return None
 
 
-def create_log_entry(customer_code, customer_name, item, qty, next_order_date):
+def create_log_entry(customer_code, customer_name, item, qty, next_order_date, value=0):
 	"""
 	Create a Frequency Log List entry.
 	
@@ -245,11 +261,13 @@ def create_log_entry(customer_code, customer_name, item, qty, next_order_date):
 		item (str): Item Code
 		qty (float): Quantity
 		next_order_date (date): Next order date as per frequency
+		value (float): Value from base_price_list_rate
 	"""
 	log_doc = frappe.new_doc("Frequency Log List")
 	log_doc.customer_code = customer_code
 	log_doc.customer_name = customer_name
 	log_doc.item = item
 	log_doc.qty = qty
+	log_doc.value = value
 	log_doc.next_order_date_as_per_frequency = next_order_date
 	log_doc.insert(ignore_permissions=True)
