@@ -685,7 +685,7 @@ const tabs = computed(() => {
     },
     {
       name: 'Data',
-      label: deal.data?.status === 'Demo/Making' ? __('Trial Data') : (deal.data?.status === 'Proposal/Quotation' ? __('Proposal Data') : __('Data')),
+      label: ['Demo/Making', 'Proposal/Quotation', 'Won'].includes(deal.data?.status) ? __('Trial Data') : __('Data'),
       icon: DetailsIcon,
     },
     {
@@ -919,7 +919,7 @@ async function triggerStatusChange(value) {
     document.doc.product_type = document.doc.trial_product
   }
 
-  if (['Proposal/Quotation', 'Won'].includes(value)) {
+  if (['Won'].includes(value)) {
     statusValidation.fields = mandatoryFields
     statusValidation.targetStatus = value
     statusValidation.show = true

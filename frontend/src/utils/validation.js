@@ -7,7 +7,7 @@ export const MANDATORY_FIELDS_BY_STATUS = {
     },
     'CRM Deal': {
         'Demo/Making': ['trial_product', 'trial_volume_kg', 'trial_start_date', 'trial_end_date', 'trial_success_criteria'],
-        'Proposal/Quotation': ['final_volume_kg', 'final_price__kg', 'approval_authority', 'commercial_acceptance', 'paper_process_status', 'proposal_acknowledged'],
+        // 'Proposal/Quotation': ['final_volume_kg', 'final_price__kg', 'approval_authority', 'commercial_acceptance', 'paper_process_status', 'proposal_acknowledged'],
         // 'Negotiation': ['final_volume_kg', 'final_price__kg', 'approval_authority', 'commercial_acceptance', 'paper_process_status', 'proposal_acknowledged'],
         'Won': ['order_date', 'final_volume_kg', 'final_price__kg', 'product_type'],
     }

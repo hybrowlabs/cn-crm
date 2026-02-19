@@ -371,11 +371,9 @@
         :doctype="doctype"
         :docname="doc.data.name"
         :layoutType="
-          doc.data.status === 'Demo/Making'
+          ['Demo/Making', 'Proposal/Quotation', 'Won'].includes(doc.data.status)
             ? 'Trial Data'
-            : doc.data.status === 'Proposal/Quotation'
-              ? 'Side Data Bar'
-              : 'Data Fields'
+            : 'Data Fields'
         "
         @beforeSave="(data) => emit('beforeSave', data)"
         @afterSave="(data) => emit('afterSave', data)"
