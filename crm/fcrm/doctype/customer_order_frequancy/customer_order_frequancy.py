@@ -84,6 +84,16 @@ def process_customer_frequency(customer_id):
 	# Collect all items from these orders with their details
 	sales_order_names = [so.name for so in sales_orders]
 	
+	allowed_item_groups = [
+		'Bronze', 'Casting Machine', 'Consumable', 'Furnace',
+		'Investment Mixer', 'Master-Ag', 'Ni Based', 'Ni Free',
+		'Ni Safe', 'Pink', 'Plating Ag', 'Plating Au',
+		'Plating Other', 'Plating Pd', 'Plating Pt', 'Plating Rh',
+		'RTU-Ag', 'RTU-Pd', 'RTU-Pt', 'Semi Finished',
+		'Solder-Pink', 'Solder-Silver', 'Solder-White', 'Solder-Yellow',
+		'Spares', 'Yellow'
+	]
+
 	items_data = frappe.db.sql("""
 		SELECT 
 			soi.item_code,
@@ -92,9 +102,11 @@ def process_customer_frequency(customer_id):
 			so.name as sales_order
 		FROM `tabSales Order Item` soi
 		INNER JOIN `tabSales Order` so ON soi.parent = so.name
+		INNER JOIN `tabItem` item ON soi.item_code = item.name
 		WHERE so.name IN %(orders)s
+			AND item.item_group IN %(item_groups)s
 		ORDER BY so.transaction_date DESC
-	""", {'orders': sales_order_names}, as_dict=True)
+	""", {'orders': sales_order_names, 'item_groups': allowed_item_groups}, as_dict=True)
 	
 	if not items_data:
 		return
