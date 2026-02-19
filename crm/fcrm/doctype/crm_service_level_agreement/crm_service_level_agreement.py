@@ -116,8 +116,7 @@ class CRMServiceLevelAgreement(Document):
 			)
 		elif doc.communication_status != self.get_default_priority():
 			current_time = now_datetime()
-			customer_reply_time = self.get_last_customer_reply(doc) or doc.last_responded_on
-			doc.last_response_time = self.calc_elapsed_time(customer_reply_time, current_time)
+			doc.last_response_time = self.calc_elapsed_time(doc.last_responded_on, current_time)
 			doc.last_responded_on = current_time
 			is_failed = self.is_rolling_response_failed(doc)
 			doc.append(
@@ -289,24 +288,6 @@ class CRMServiceLevelAgreement(Document):
 			current_time += timedelta(seconds=1)
 
 		return total_seconds
-
-	def get_last_customer_reply(self, doc: Document):
-		"""Get the communication_date of the last received (customer) message"""
-		result = frappe.get_all(
-			"Communication",
-			filters={
-				"reference_doctype": doc.doctype,
-				"reference_name": doc.name,
-				"sent_or_received": "Received",
-				"communication_type": "Communication",
-			},
-			fields=["communication_date"],
-			order_by="communication_date desc",
-			limit=1,
-		)
-		if result:
-			return get_datetime(result[0].communication_date)
-		return None
 
 	def get_priorities(self):
 		"""
