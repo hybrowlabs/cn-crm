@@ -38,6 +38,17 @@
           </template>
         </Dropdown>
       </div>
+      <Button
+        v-if="document.doc?.trial_outcome === 'Qualified'"
+        variant="solid"
+        theme="green"
+        :label="__('Create Quotation')"
+        @click="createQuotation"
+      >
+        <template #prefix>
+          <FeatherIcon name="plus" class="h-4 w-4" />
+        </template>
+      </Button>
       <Dropdown
         v-if="document.doc"
         :options="
@@ -448,25 +459,6 @@ const route = useRoute()
 const router = useRouter()
 
 
-const trialOutcomeOptions = computed(() => {
-  const fields = doctypeMeta['CRM Deal']?.fields || []
-  const field = fields.find((f) => f.fieldname === 'trial_outcome')
-  if (!field || !field.options) return []
-
-  return field.options.split('\n').map((option) => ({
-    label: option || __('Select Outcome'),
-    value: option,
-    onClick: async () => {
-      if (['Qualified', 'Disqualified'].includes(option)) {
-        selectedTrialOutcome.value = option
-        showTrialOutcomeNoteModal.value = true
-      } else {
-        await triggerOnChange('trial_outcome', option)
-        await document.save.submit()
-      }
-    },
-  }))
-})
 
 const showTrialOutcomeNoteModal = ref(false)
 const selectedTrialOutcome = ref('')
@@ -521,6 +513,38 @@ const deal = createResource({
       router.push({ name: 'Deals' })
     }
   }
+})
+
+const trialOutcomeOptions = computed(() => {
+  let optionsString = ''
+
+  if (deal.data?.fields_meta?.trial_outcome?.options) {
+    optionsString = deal.data.fields_meta.trial_outcome.options
+  } else {
+    // Fallback if not available in deal.data (e.g. before load)
+    const meta = doctypeMeta['CRM Deal']
+    const fields = meta?.fields || []
+    const field = fields.find((f) => f.fieldname === 'trial_outcome')
+    if (field?.options) {
+      optionsString = field.options
+    }
+  }
+
+  if (!optionsString) return []
+
+  return optionsString.split('\n').map((option) => ({
+    label: option || __('Select Outcome'),
+    value: option,
+    onClick: async () => {
+      if (['Qualified', 'Disqualified'].includes(option)) {
+        selectedTrialOutcome.value = option
+        showTrialOutcomeNoteModal.value = true
+      } else {
+        await triggerOnChange('trial_outcome', option)
+        await document.save.submit()
+      }
+    },
+  }))
 })
 
 const quotations = createResource({
@@ -868,6 +892,13 @@ async function deleteDeal(name) {
     name
   })
   router.push({ name: 'Deals' })
+}
+
+function createQuotation() {
+  window.open(
+    `/app/quotation/new?crm_deal=${props.dealId}`,
+    '_blank'
+  )
 }
 
 const activities = ref(null)
