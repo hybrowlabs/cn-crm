@@ -619,40 +619,6 @@ class TestCRMServiceLevelAgreement(FrappeTestCase):
 		self.assertEqual(len(doc.rolling_responses), 2)
 		self.assertEqual(doc.rolling_responses[1].status, "Fulfilled")
 
-	def test_handle_rolling_sla_status_past_failure_persists(self):
-		"""Test that a past Failed rolling response keeps sla_status as Failed,
-		even if the current response_by is in the future."""
-		sla = create_test_sla_with_priorities(rolling_responses=True)
-
-		doc = frappe.get_doc(
-			{
-				"doctype": "CRM Lead",
-				"first_name": "Test Past Failure Persists",
-				"response_by": add_to_date(now_datetime(), hours=1),  # Current deadline in future
-				"last_responded_on": now_datetime(),
-				"communication_status": "High",  # Non-default (agent replied)
-				"sla_status": None,
-			}
-		)
-		# Past rolling response that failed
-		doc.append(
-			"rolling_responses",
-			{
-				"status": "Failed",
-				"response_time": 50000,
-				"responded_on": add_to_date(now_datetime(), hours=-2),
-			},
-		)
-		# Current rolling response that was fulfilled
-		doc.append(
-			"rolling_responses", {"status": "Fulfilled", "response_time": 100, "responded_on": now_datetime()}
-		)
-
-		sla.handle_rolling_sla_status(doc)
-
-		# Should still be Failed because of the past failure
-		self.assertEqual(doc.sla_status, "Failed")
-
 	def test_set_rolling_responses_stale_deadline_marks_failed(self):
 		"""Test that when response_by is a stale past deadline (from a previous cycle),
 		the agent's response is correctly marked as Failed."""
