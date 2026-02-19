@@ -71,7 +71,7 @@
                   :is="getValueControl(f)"
                   v-model="f.value"
                   @change="(v) => updateValue(v, f)"
-                  :placeholder="__('John Doe')"
+                  :placeholder="placeholder(f)"
                 />
               </div>
             </div>
@@ -104,7 +104,7 @@
                     :is="getValueControl(f)"
                     v-model="f.value"
                     @change="(v) => updateValue(v, f)"
-                    :placeholder="__('John Doe')"
+                    :placeholder="placeholder(f)"
                   />
                 </div>
               </div>
@@ -563,6 +563,39 @@ function transformIn(f) {
     f.value = `%${f.value}%`
   }
   return f
+}
+
+function placeholder(f) {
+  if (f.operator === 'between') {
+    return __('01/01/2022 to 01/31/2022')
+  } else if (f.operator === 'in' || f.operator === 'not in') {
+    if (typeNumber.includes(f.field.fieldtype)) {
+      return __('100, 200, 300')
+    }
+    return __('John, Jane, Doe')
+  } else if (f.operator === 'like' || f.operator === 'not like') {
+    if (typeNumber.includes(f.field.fieldtype)) {
+      return __('%100%')
+    }
+    return __('%John%')
+  } else if (f.operator === 'is' || f.operator === 'is not') {
+    return __('Set')
+  } else if (f.operator === 'timespan') {
+    return __('Last week')
+  } else if (typeNumber.includes(f.field.fieldtype)) {
+    return __('1000')
+  } else if (typeDate.includes(f.field.fieldtype)) {
+    return __('01/01/2022')
+  } else if (typeCheck.includes(f.field.fieldtype)) {
+    return __('Yes')
+  } else if (typeLink.includes(f.field.fieldtype)) {
+    return __('Select a value')
+  } else if (typeSelect.includes(f.field.fieldtype)) {
+    return __('Select an option')
+  } else if (typeString.includes(f.field.fieldtype)) {
+    return __('John Doe')
+  }
+  return __('Enter value')
 }
 
 const operatorMap = {
