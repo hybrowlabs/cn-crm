@@ -120,7 +120,7 @@
                           v-model="doc[field.fieldname]"
                           :options="field.options"
                           :placeholder="field.placeholder"
-                          @change.stop="fieldChange($event.target.value, field)"
+                          @update:modelValue="(v) => fieldChange(v, field)"
                         />
                         <Link
                           v-else-if="field.fieldtype === 'User'"
