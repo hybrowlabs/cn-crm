@@ -187,15 +187,15 @@ class CRMServiceLevelAgreement(Document):
 		if not self.rolling_responses or len(doc.rolling_responses) == 0:
 			return
 
-		# Check both the current cycle and past rolling response entries
-		has_past_failure = any(r.status == "Failed" for r in doc.rolling_responses)
-
-		if has_past_failure or self.is_rolling_response_failed(doc):
-			doc.sla_status = "Failed"
-		elif doc.communication_status == self.get_default_priority():
-			doc.sla_status = "Rolling Response Due"
-		else:
-			doc.sla_status = "Fulfilled"
+		is_failed = self.is_rolling_response_failed(doc)
+		options = {
+			"Fulfilled": True,
+			"Rolling Response Due": doc.communication_status == self.get_default_priority(),
+			"Failed": is_failed,
+		}
+		for status in options:
+			if options[status]:
+				doc.sla_status = status
 
 	def is_rolling_response_failed(self, doc: Document):
 		if not doc.response_by:
