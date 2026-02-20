@@ -43,13 +43,19 @@ def get_followup_logs_for_user():
 			order_by="customer_name asc, item asc"
 		)
 	else:
+		employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+		sales_person = frappe.db.get_value("Sales Person", {"employee": employee}, "name") if employee else None
+
+		if not sales_person:
+			return {"customers": []}
+
 		# Get customers where current user is in sales_team
 		customer_list = frappe.db.sql("""
 			SELECT DISTINCT parent
 			FROM `tabSales Team`
-			WHERE sales_person = %(user)s
+			WHERE sales_person = %(sales_person)s
 				AND parenttype = 'Customer'
-		""", {'user': user}, as_dict=True)
+		""", {'sales_person': sales_person}, as_dict=True)
 		
 		if not customer_list:
 			return {"customers": []}
@@ -205,13 +211,19 @@ def get_customers_for_user(**kwargs):
 	if "Administrator" in roles or "System Manager" in roles:
 		return frappe.get_all("Customer", fields=fields, order_by="creation desc", limit_start=start, limit_page_length=limit)
 	else:
+		employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+		sales_person = frappe.db.get_value("Sales Person", {"employee": employee}, "name") if employee else None
+
+		if not sales_person:
+			return []
+
 		# Customers where current user is in sales team
 		customer_list = frappe.db.sql("""
 			SELECT DISTINCT parent
 			FROM `tabSales Team`
-			WHERE sales_person = %(user)s
+			WHERE sales_person = %(sales_person)s
 				AND parenttype = 'Customer'
-		""", {'user': user}, as_dict=True)
+		""", {'sales_person': sales_person}, as_dict=True)
 		
 		if not customer_list:
 			return []

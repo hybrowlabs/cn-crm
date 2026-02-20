@@ -5,21 +5,24 @@ from frappe.utils import get_first_day, get_last_day, today
 def get_am_dashboard_data():
 	user = frappe.session.user
 	
+	employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+	sales_person = frappe.db.get_value("Sales Person", {"employee": employee}, "name") if employee else None
+
 	current_date = today()
 	first_day = get_first_day(current_date)
 	last_day = get_last_day(current_date)
 	
 	# 1. My Booked Volume (Sales Order)
-	# Formula: Sum of base_grand_total where custom_sales_by = user and transaction_date is in current month
+	# Formula: Sum of base_grand_total where custom_sales_by = sales_person and transaction_date is in current month
 	try:
 		booked_volume = frappe.db.sql("""
 			SELECT IFNULL(SUM(base_grand_total), 0) as total
 			FROM `tabSales Order`
-			WHERE custom_sales_by = %(user)s
+			WHERE custom_sales_by = %(sales_person)s
 			AND transaction_date BETWEEN %(first_day)s AND %(last_day)s
 			AND docstatus = 1
 		""", {
-			"user": user,
+			"sales_person": sales_person,
 			"first_day": first_day,
 			"last_day": last_day
 		}, as_dict=True)[0].total
