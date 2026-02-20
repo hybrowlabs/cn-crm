@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: frappe\n"
 "Report-Msgid-Bugs-To: shariq@frappe.io\n"
 "POT-Creation-Date: 2025-12-21 09:37+0000\n"
-"PO-Revision-Date: 2026-02-19 19:13\n"
+"PO-Revision-Date: 2026-02-20 19:42\n"
 "Last-Translator: shariq@frappe.io\n"
 "Language-Team: Spanish\n"
 "MIME-Version: 1.0\n"
@@ -1912,7 +1912,7 @@ msgstr ""
 
 #: frontend/src/components/DeleteLinkedDocModal.vue:66
 msgid "Delete all"
-msgstr ""
+msgstr "Borrar todo"
 
 #: frontend/src/components/Activities/AttachmentArea.vue:58
 #: frontend/src/components/Activities/AttachmentArea.vue:127
@@ -2912,7 +2912,7 @@ msgstr ""
 #. Label of the from_user (Link) field in DocType 'CRM Notification'
 #: crm/fcrm/doctype/crm_notification/crm_notification.json
 msgid "From User"
-msgstr ""
+msgstr "Del usuario"
 
 #. Option for the 'SLA Status' (Select) field in DocType 'CRM Deal'
 #. Option for the 'SLA Status' (Select) field in DocType 'CRM Lead'
@@ -3351,7 +3351,7 @@ msgstr ""
 #. Label of the is_group (Check) field in DocType 'CRM Territory'
 #: crm/fcrm/doctype/crm_territory/crm_territory.json
 msgid "Is Group"
-msgstr ""
+msgstr "Es un grupo"
 
 #. Label of the is_helpdesk_in_different_site (Check) field in DocType
 #. 'Helpdesk CRM Settings'
@@ -3446,7 +3446,7 @@ msgstr ""
 
 #: frontend/src/components/Filter.vue:615
 msgid "Last 6 Months"
-msgstr ""
+msgstr "Últimos 6 meses"
 
 #: frontend/src/components/Filter.vue:607
 msgid "Last Month"
@@ -3518,7 +3518,7 @@ msgstr ""
 #: crm/fcrm/doctype/crm_dashboard/crm_dashboard.json
 #: crm/fcrm/doctype/crm_fields_layout/crm_fields_layout.json
 msgid "Layout"
-msgstr ""
+msgstr "Diseño"
 
 #. Label of the lead (Link) field in DocType 'CRM Deal'
 #: crm/fcrm/doctype/crm_deal/crm_deal.json
@@ -4114,15 +4114,15 @@ msgstr "Nuevo/a: {0}"
 
 #: frontend/src/components/Filter.vue:663
 msgid "Next 6 Months"
-msgstr ""
+msgstr "Próximos 6 meses"
 
 #: frontend/src/components/Filter.vue:655
 msgid "Next Month"
-msgstr ""
+msgstr "Próximo mes"
 
 #: frontend/src/components/Filter.vue:659
 msgid "Next Quarter"
-msgstr ""
+msgstr "Próximo trimestre"
 
 #. Label of the next_step (Data) field in DocType 'CRM Deal'
 #: crm/fcrm/doctype/crm_deal/crm_deal.json
@@ -4131,7 +4131,7 @@ msgstr ""
 
 #: frontend/src/components/Filter.vue:651
 msgid "Next Week"
-msgstr ""
+msgstr "Próxima semana"
 
 #: frontend/src/components/Filter.vue:667
 msgid "Next Year"
@@ -5269,7 +5269,7 @@ msgstr "Sábado"
 #: frontend/src/components/ViewControls.vue:125
 #: frontend/src/pages/Dashboard.vue:36
 msgid "Save"
-msgstr ""
+msgstr "Guardar"
 
 #: frontend/src/components/Modals/ViewModal.vue:40
 #: frontend/src/components/ViewControls.vue:58
@@ -5759,7 +5759,7 @@ msgstr ""
 #: crm/fcrm/doctype/crm_notification/crm_notification.json
 #: frontend/src/components/Layouts/AppSidebar.vue:555
 msgid "Task"
-msgstr ""
+msgstr "Tarea"
 
 #: frontend/src/pages/Deal.vue:573 frontend/src/pages/Lead.vue:419
 #: frontend/src/pages/MobileDeal.vue:458 frontend/src/pages/MobileLead.vue:364
@@ -5979,7 +5979,7 @@ msgstr ""
 
 #: frontend/src/components/Filter.vue:631
 msgid "Tomorrow"
-msgstr ""
+msgstr "Mañana"
 
 #: frontend/src/components/Modals/NoteModal.vue:42
 #: frontend/src/components/Modals/TaskModal.vue:46
@@ -6129,7 +6129,7 @@ msgstr ""
 #: frontend/src/components/Telephony/TwilioCallUI.vue:24
 #: frontend/src/components/Telephony/TwilioCallUI.vue:123
 msgid "Unknown"
-msgstr ""
+msgstr "Desconocido"
 
 #: frontend/src/components/BulkDeleteLinkedDocModal.vue:132
 msgid "Unlink"
@@ -6192,7 +6192,7 @@ msgstr ""
 #: frontend/src/components/Settings/TelephonySettings.vue:23
 #: frontend/src/components/Telephony/ExotelCallUI.vue:210
 msgid "Update"
-msgstr ""
+msgstr "Actualizar"
 
 #: frontend/src/components/Settings/EmailEdit.vue:74
 msgid "Update Account"
@@ -6244,7 +6244,7 @@ msgstr "Subiendo {0}%"
 #: crm/fcrm/doctype/crm_telephony_agent/crm_telephony_agent.json
 #: crm/fcrm/doctype/crm_view_settings/crm_view_settings.json
 msgid "User"
-msgstr ""
+msgstr "Usuario"
 
 #: frontend/src/components/Settings/Settings.vue:127
 msgid "User Management"
@@ -6293,7 +6293,7 @@ msgstr ""
 
 #: frontend/src/components/Layouts/AppSidebar.vue:566
 msgid "Views"
-msgstr ""
+msgstr "Vistas"
 
 #: frontend/src/components/Layouts/AppSidebar.vue:563
 msgid "Web form"
@@ -6313,7 +6313,7 @@ msgstr ""
 #: crm/fcrm/doctype/crm_organization/crm_organization.json
 #: frontend/src/components/Modals/AboutModal.vue:52
 msgid "Website"
-msgstr ""
+msgstr "Sitio Web"
 
 #. Option for the 'Weekly Off' (Select) field in DocType 'CRM Holiday List'
 #. Option for the 'Workday' (Select) field in DocType 'CRM Service Day'
@@ -6499,7 +6499,7 @@ msgstr "negro"
 #: crm/fcrm/doctype/crm_deal_status/crm_deal_status.json
 #: crm/fcrm/doctype/crm_lead_status/crm_lead_status.json
 msgid "blue"
-msgstr ""
+msgstr "azul"
 
 #: frontend/src/components/Activities/Activities.vue:236
 msgid "changes from"
@@ -6559,7 +6559,7 @@ msgstr "gris"
 #: crm/fcrm/doctype/crm_deal_status/crm_deal_status.json
 #: crm/fcrm/doctype/crm_lead_status/crm_lead_status.json
 msgid "green"
-msgstr ""
+msgstr "verde"
 
 #. Option for the 'Type' (Select) field in DocType 'CRM View Settings'
 #: crm/fcrm/doctype/crm_view_settings/crm_view_settings.json
@@ -6688,7 +6688,7 @@ msgstr "operador"
 #: crm/fcrm/doctype/crm_deal_status/crm_deal_status.json
 #: crm/fcrm/doctype/crm_lead_status/crm_lead_status.json
 msgid "orange"
-msgstr ""
+msgstr "naranja"
 
 #. Option for the 'Color' (Select) field in DocType 'CRM Deal Status'
 #. Option for the 'Color' (Select) field in DocType 'CRM Lead Status'
@@ -6714,7 +6714,7 @@ msgstr "público"
 #: crm/fcrm/doctype/crm_deal_status/crm_deal_status.json
 #: crm/fcrm/doctype/crm_lead_status/crm_lead_status.json
 msgid "purple"
-msgstr ""
+msgstr "púrpura"
 
 #: crm/api/whatsapp.py:39
 msgid "received a whatsapp message in {0}"
@@ -6725,7 +6725,7 @@ msgstr ""
 #: crm/fcrm/doctype/crm_deal_status/crm_deal_status.json
 #: crm/fcrm/doctype/crm_lead_status/crm_lead_status.json
 msgid "red"
-msgstr ""
+msgstr "rojo"
 
 #. Option for the 'Color' (Select) field in DocType 'CRM Deal Status'
 #. Option for the 'Color' (Select) field in DocType 'CRM Lead Status'
@@ -6760,7 +6760,7 @@ msgstr ""
 #: crm/fcrm/doctype/crm_deal_status/crm_deal_status.json
 #: crm/fcrm/doctype/crm_lead_status/crm_lead_status.json
 msgid "yellow"
-msgstr ""
+msgstr "amarillo"
 
 #: frontend/src/utils/index.js:179
 msgid "yesterday"
@@ -6813,7 +6813,7 @@ msgstr ""
 
 #: frontend/src/components/Modals/ConvertToDealModal.vue:172
 msgid "{0} is required"
-msgstr ""
+msgstr "{0} es requerido"
 
 #: frontend/src/utils/index.js:119
 msgid "{0} m"
