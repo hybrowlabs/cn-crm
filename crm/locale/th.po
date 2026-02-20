@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: frappe\n"
 "Report-Msgid-Bugs-To: shariq@frappe.io\n"
 "POT-Creation-Date: 2025-12-21 09:37+0000\n"
-"PO-Revision-Date: 2026-02-19 19:13\n"
+"PO-Revision-Date: 2026-02-20 19:43\n"
 "Last-Translator: shariq@frappe.io\n"
 "Language-Team: Thai\n"
 "MIME-Version: 1.0\n"
@@ -1116,7 +1116,7 @@ msgstr "กำลังโทร..."
 #: frontend/src/pages/Deal.vue:568 frontend/src/pages/Lead.vue:414
 #: frontend/src/pages/MobileDeal.vue:452 frontend/src/pages/MobileLead.vue:359
 msgid "Calls"
-msgstr ""
+msgstr "การโทร"
 
 #: frontend/src/components/FilesUploader/FilesUploaderArea.vue:51
 msgid "Camera"
@@ -2436,7 +2436,7 @@ msgstr "ป้อนโทเค็นการเข้าถึง Facebook �
 
 #: frontend/src/components/FieldLayout/Field.vue:347
 msgid "Enter {0}"
-msgstr ""
+msgstr "ป้อน {0}"
 
 #: frontend/src/components/Filter.vue:66 frontend/src/components/Filter.vue:99
 #: frontend/src/components/Filter.vue:267
@@ -4843,7 +4843,7 @@ msgstr "การป้อนข้อมูลอย่างรวดเร็
 #. Option for the 'Type' (Select) field in DocType 'CRM Global Settings'
 #: crm/fcrm/doctype/crm_global_settings/crm_global_settings.json
 msgid "Quick Filters"
-msgstr ""
+msgstr "ตัวกรองด่วน"
 
 #: frontend/src/components/ViewControls.vue:731
 msgid "Quick Filters updated successfully"
@@ -5887,7 +5887,7 @@ msgstr "ปีนี้"
 
 #: crm/www/crm.py:35
 msgid "This method is only meant for developer mode"
-msgstr ""
+msgstr "วิธีการนี้มีไว้สำหรับโหมดนักพัฒนาเท่านั้น"
 
 #: frontend/src/components/SidePanelLayoutEditor.vue:116
 msgid "This section is not editable"
