@@ -22,6 +22,8 @@ add_to_apps_screen = [
 	}
 ]
 
+get_site_info = "crm.activation.get_site_info"
+
 export_python_type_annotations = True
 require_type_annotated_api_methods = True
 
