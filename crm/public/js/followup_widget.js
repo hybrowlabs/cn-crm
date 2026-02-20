@@ -193,13 +193,18 @@ crm.followup_widget = {
 				frappe.route_options = {
 					quotation_to: "Customer",
 					party_name: customer.customer_code,
+					currency: customer.default_currency,
+					custom_branch: customer.custom_branch,
 					items: customer.items.map(i => ({
 						item_code: i.item,
 						qty: i.qty
 					}))
 				};
 
-				frappe.set_route('Form', 'Quotation', 'new-quotation-1');
+				frappe.model.with_doctype('Quotation', () => {
+					const new_name = frappe.model.make_new_doc_and_get_name('Quotation');
+					frappe.set_route('Form', 'Quotation', new_name);
+				});
 
 				setTimeout(() => {
 					createQuotBtn.prop('disabled', false).text('Create Quotation');

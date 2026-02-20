@@ -72,14 +72,32 @@ def get_followup_logs_for_user():
 	for log in logs:
 		customer_code = log.customer_code
 		if customer_code not in customers:
-			customer_doc_name = frappe.db.get_value("Customer", customer_code, "name")
-			customers[customer_code] = {
-				"name": customer_doc_name or customer_code,
-				"customer_code": customer_code,
-				"customer_name": log.customer_name,
-				"items": [],
-				"total_value": 0.0
-			}
+			try:
+				customer_doc = frappe.get_doc("Customer", customer_code)
+				custom_branch = ""
+				if customer_doc.get("custom_branch_details"):
+					custom_branch = customer_doc.get("custom_branch_details")[0].branch
+				
+				customers[customer_code] = {
+					"name": customer_doc.name,
+					"customer_code": customer_code,
+					"customer_name": log.customer_name,
+					"default_currency": customer_doc.default_currency,
+					"custom_branch": custom_branch,
+					"items": [],
+					"total_value": 0.0
+				}
+			except Exception:
+				# Fallback if Customer doesn't exist or is inaccessible
+				customers[customer_code] = {
+					"name": customer_code,
+					"customer_code": customer_code,
+					"customer_name": log.customer_name,
+					"default_currency": "",
+					"custom_branch": "",
+					"items": [],
+					"total_value": 0.0
+				}
 		
 		# Calculate value for this item (rate * qty)
 		item_value = (log.value or 0) * (log.qty or 0)
