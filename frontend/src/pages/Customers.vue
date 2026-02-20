@@ -10,7 +10,7 @@
   <div class="flex h-full flex-col overflow-auto">
     <ListView
       :columns="columns"
-      :rows="customers.data || []"
+      :rows="allCustomers || []"
       :options="{
         selectable: false,
         showTooltip: true,
@@ -25,7 +25,7 @@
             :item="column"
         />
       </ListHeader>
-      <ListRows :rows="customers.data || []" v-slot="{ idx, column, item, row }" doctype="Customer">
+      <ListRows :rows="allCustomers || []" v-slot="{ idx, column, item, row }" doctype="Customer">
         <ListRowItem :item="item" :align="column.align">
             <template #default="{ label }">
                  <div class="truncate text-base">{{ label }}</div>
@@ -33,11 +33,11 @@
         </ListRowItem>
       </ListRows>
     </ListView>
-    <div class="flex items-center justify-between border-t px-5 py-3" v-if="customers.data && customers.data.length >= pageLengthCount">
+    <div class="flex items-center justify-between border-t px-5 py-3" v-if="allCustomers && allCustomers.length >= pageLengthCount">
         <Button
             variant="subtle"
             @click="loadNextPage"
-            :loading="customers.loading"
+            :loading="loading"
             class="w-full"
         >
             {{ __('Load More') }}
@@ -49,40 +49,39 @@
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import ListRows from '@/components/ListViews/ListRows.vue'
-import { ListView, ListHeader, ListHeaderItem, ListRowItem, createListResource, Button } from 'frappe-ui'
-import { ref } from 'vue'
+import { ListView, ListHeader, ListHeaderItem, ListRowItem, Button, call } from 'frappe-ui'
+import { ref, onMounted } from 'vue'
 
 const pageLengthCount = ref(20)
 const pageStart = ref(0)
+const loading = ref(false)
 const allCustomers = ref([])
 
-const customers = createListResource({
-  doctype: 'Customer',
-  fields: ['name', 'customer_name', 'customer_group', 'territory', 'primary_address', 'mobile_no'],
-  getTemplate: 'crm.fcrm.doctype.frequency_log_list.frequency_log_list.get_customers_for_user',
-  orderBy: 'creation desc',
-  auto: true,
-  makeParams() {
-    return {
+function fetchCustomers() {
+    loading.value = true
+    call('crm.fcrm.doctype.frequency_log_list.frequency_log_list.get_customers_for_user', {
         limit_start: pageStart.value,
         limit_page_length: pageLengthCount.value
-    }
-  },
-  onSuccess(data) {
-     if (pageStart.value === 0) {
-        allCustomers.value = data || []
-     } else if (data && data.length) {
-        allCustomers.value = [...allCustomers.value, ...data]
-     }
-  },
-  transform(data) {
-    return allCustomers.value || []
-  }
+    }).then(res => {
+        if (res) {
+            if (pageStart.value === 0) {
+                allCustomers.value = res
+            } else {
+                allCustomers.value = [...allCustomers.value, ...res]
+            }
+        }
+    }).finally(() => {
+        loading.value = false
+    })
+}
+
+onMounted(() => {
+    fetchCustomers()
 })
 
 function loadNextPage() {
     pageStart.value += pageLengthCount.value
-    customers.reload()
+    fetchCustomers()
 }
 
 const columns = [
