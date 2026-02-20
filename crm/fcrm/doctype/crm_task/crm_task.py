@@ -40,8 +40,9 @@ class CRMTask(Document):
 			self.unassign_from_previous_user(self.get_doc_before_save().assigned_to)
 			self.assign_to()
 
-	def unassign_from_previous_user(self, user):
-		unassign(self.doctype, self.name, user)
+	def unassign_from_previous_user(self, user: str | None):
+		if user:
+			unassign(self.doctype, self.name, user)
 
 	def assign_to(self):
 		if self.assigned_to:
