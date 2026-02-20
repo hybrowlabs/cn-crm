@@ -164,7 +164,11 @@ crm.followup_widget = {
                                 </span>
                             ` : ''}
 
-                            <span class="chevron">
+                            <button class="btn btn-xs btn-primary create-quotation-btn" style="margin-left: 8px;">
+                                Create Quotation
+                            </button>
+
+                            <span class="chevron" style="margin-left: 8px;">
                                 ▶
                             </span>
                         </div>
@@ -179,6 +183,45 @@ crm.followup_widget = {
 			const itemsContainer = card.find('.customer-items');
 
 			//-------------------------------------
+			// CREATE QUOTATION LOGIC
+			//-------------------------------------
+			const createQuotBtn = card.find('.create-quotation-btn');
+			createQuotBtn.on('click', (e) => {
+				e.stopPropagation();
+				createQuotBtn.prop('disabled', true).text('...');
+
+				frappe.call({
+					method: 'crm.fcrm.doctype.frequency_log_list.frequency_log_list.mark_customer_followups_done',
+					args: { customer_code: customer.customer_code },
+					callback: (r) => {
+						if (!r.message?.success) {
+							createQuotBtn.prop('disabled', false).text('Create Quotation');
+							return;
+						}
+
+						card.fadeOut(200, () => {
+							card.remove();
+							if (!widget.find('.customer-card').length) {
+								widget.find('.customer-list').hide();
+								widget.find('.empty-state').show();
+							}
+						});
+
+						frappe.route_options = {
+							quotation_to: "Customer",
+							party_name: customer.customer_code,
+							items: customer.items.map(i => ({
+								item_code: i.item,
+								qty: i.qty
+							}))
+						};
+
+						frappe.set_route('Form', 'Quotation', 'new-quotation-1');
+					}
+				});
+			});
+
+			//-------------------------------------
 
 			customer.items.forEach(item => {
 
@@ -190,8 +233,21 @@ crm.followup_widget = {
 				let urgencyLabel = "Upcoming";
 
 				if (item.next_order_date < today) {
-					urgencyClass = "";
-					urgencyLabel = "";
+					const diffDays = frappe.datetime.get_diff(today, item.next_order_date);
+
+					if (diffDays > 180) {
+						urgencyClass = "urgency-dormant";
+						urgencyLabel = "Dormant";
+					} else if (diffDays > 90) {
+						urgencyClass = "urgency-escalated";
+						urgencyLabel = "Escalated";
+					} else if (diffDays > 60) {
+						urgencyClass = "urgency-inactive";
+						urgencyLabel = "Inactive";
+					} else {
+						urgencyClass = "urgency-overdue";
+						urgencyLabel = "Overdue";
+					}
 				}
 				else if (item.next_order_date === today) {
 					urgencyClass = "urgency-today";

@@ -123,6 +123,38 @@ def mark_followup_done(log_id):
 		frappe.throw(f"Failed to mark as followed up: {str(e)}")
 
 
+@frappe.whitelist()
+def mark_customer_followups_done(customer_code):
+	"""
+	Mark all frequency logs for a specific customer as followed up.
+	
+	Args:
+		customer_code (str): Customer Code
+	"""
+	if not customer_code:
+		frappe.throw("Customer Code is required")
+	
+	try:
+		logs = frappe.get_all(
+			"Frequency Log List",
+			filters={
+				"customer_code": customer_code,
+				"done_flow_up": 0
+			}
+		)
+		
+		for log in logs:
+			doc = frappe.get_doc("Frequency Log List", log.name)
+			doc.done_flow_up = 1
+			doc.save(ignore_permissions=True)
+			
+		frappe.db.commit()
+		return {"success": True, "message": f"Marked {len(logs)} items as followed up"}
+	except Exception as e:
+		frappe.logger().error(f"Error marking customer followups done for {customer_code}: {str(e)}")
+		frappe.throw(f"Failed to mark customer followups as done: {str(e)}")
+
+
 def generate_frequency_logs():
 	"""
 	Generate logs in Frequency Log List for customers whose items have passed their order frequency.
