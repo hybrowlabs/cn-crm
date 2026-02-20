@@ -32,29 +32,29 @@
             </template>
         </ListRowItem>
       </ListRows>
-      <ListFooter>
-        <ListPagination
-          class="sm:mx-5 mx-3"
-          v-if="customers.data"
-          @updatePageCount="pageLengthCount = $event"
-          :start="customers.data.length ? (customers.page_length_count * (customers.page_length_count > 0 ? (customers.page_length_count / 20) : 0)) + 1 : 0"
-          :totalCount="1000"
-          :end="customers.data.length"
-          :rowCount="customers.data.length"
-          @loadMore="customers.reload()"
-        />
-      </ListFooter>
     </ListView>
+    <div class="flex items-center justify-between border-t px-5 py-3" v-if="customers.data && customers.data.length >= pageLengthCount">
+        <Button
+            variant="subtle"
+            @click="loadNextPage"
+            :loading="customers.loading"
+            class="w-full"
+        >
+            {{ __('Load More') }}
+        </Button>
+    </div>
   </div>
 </template>
 
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import ListRows from '@/components/ListViews/ListRows.vue'
-import { ListView, ListHeader, ListHeaderItem, ListRowItem, ListFooter, ListPagination, createListResource } from 'frappe-ui'
-import { ref, watch } from 'vue'
+import { ListView, ListHeader, ListHeaderItem, ListRowItem, createListResource, Button } from 'frappe-ui'
+import { ref } from 'vue'
 
 const pageLengthCount = ref(20)
+const pageStart = ref(0)
+const allCustomers = ref([])
 
 const customers = createListResource({
   doctype: 'Customer',
@@ -62,16 +62,28 @@ const customers = createListResource({
   getTemplate: 'crm.fcrm.doctype.frequency_log_list.frequency_log_list.get_customers_for_user',
   orderBy: 'creation desc',
   auto: true,
-  pageLength: pageLengthCount.value,
+  makeParams() {
+    return {
+        limit_start: pageStart.value,
+        limit_page_length: pageLengthCount.value
+    }
+  },
+  onSuccess(data) {
+     if (pageStart.value === 0) {
+        allCustomers.value = data || []
+     } else if (data && data.length) {
+        allCustomers.value = [...allCustomers.value, ...data]
+     }
+  },
   transform(data) {
-    return data || []
+    return allCustomers.value || []
   }
 })
 
-watch(pageLengthCount, (newVal) => {
-    customers.limit = newVal
+function loadNextPage() {
+    pageStart.value += pageLengthCount.value
     customers.reload()
-})
+}
 
 const columns = [
   {
