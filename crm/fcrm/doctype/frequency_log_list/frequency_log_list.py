@@ -185,6 +185,31 @@ def mark_followups_on_quotation(doc, method=None):
 			frappe.logger().error(f"Error in mark_followups_on_quotation for {doc.name}: {str(e)}")
 
 
+@frappe.whitelist()
+def get_customers_for_user():
+	user = frappe.session.user
+	
+	fields = ["name", "customer_name", "customer_group", "territory", "primary_address", "mobile_no"]
+	
+	if "Administrator" in frappe.get_roles(user):
+		return frappe.get_all("Customer", fields=fields, order_by="creation desc")
+	else:
+		# Customers where current user is in sales team
+		customer_list = frappe.db.sql("""
+			SELECT DISTINCT parent
+			FROM `tabSales Team`
+			WHERE sales_person = %(user)s
+				AND parenttype = 'Customer'
+		""", {'user': user}, as_dict=True)
+		
+		if not customer_list:
+			return []
+			
+		customer_ids = [c.parent for c in customer_list]
+		
+		return frappe.get_all("Customer", filters={"name": ["in", customer_ids]}, fields=fields, order_by="creation desc")
+
+
 def generate_frequency_logs():
 	"""
 	Generate logs in Frequency Log List for customers whose items have passed their order frequency.

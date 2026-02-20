@@ -144,6 +144,11 @@ const routes = [
     name: 'Prospects',
     component: () => import('@/pages/Prospects.vue'),
   },
+  {
+    path: '/customers',
+    name: 'Customers',
+    component: () => import('@/pages/Customers.vue'),
+  },
 ]
 
 const handleMobileView = (componentName) => {
