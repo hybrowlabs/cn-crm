@@ -524,7 +524,7 @@
    "fieldname": "trial_volume_kg",
    "fieldtype": "Select",
    "label": "Trial Volume (g)",
-   "options": "5g\n25g\n50g"
+   "options": "\n5g\n25g\n50g"
   },
   {
    "fieldname": "trial_start_date",
@@ -618,7 +618,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-19 16:56:17.788078",
+ "modified": "2026-02-20 08:53:50.177797",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Deal",
