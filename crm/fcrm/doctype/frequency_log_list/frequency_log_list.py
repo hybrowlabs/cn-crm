@@ -201,7 +201,8 @@ def get_customers_for_user(**kwargs):
 
 	fields = ["name", "customer_name", "customer_group", "territory", "primary_address", "mobile_no"]
 	
-	if "Administrator" in frappe.get_roles(user):
+	roles = frappe.get_roles(user)
+	if "Administrator" in roles or "System Manager" in roles:
 		return frappe.get_all("Customer", fields=fields, order_by="creation desc", limit_start=start, limit_page_length=limit)
 	else:
 		# Customers where current user is in sales team
