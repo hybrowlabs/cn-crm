@@ -184,7 +184,7 @@
             :label="getRow(itemName, fieldName).value"
           />
         </div>
-        <div v-else-if="fieldName === '_assign'" class="flex items-center">
+        <div v-else-if="fieldName === '_assign'" class="flex items-center truncate">
           <MultipleAvatar
             :avatars="getRow(itemName, fieldName).label"
             size="xs"

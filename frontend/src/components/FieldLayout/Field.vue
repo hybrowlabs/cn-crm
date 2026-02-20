@@ -39,7 +39,7 @@
       :class="field.prefix ? 'prefix' : ''"
       :options="field.options"
       v-model="data[field.fieldname]"
-      @change="(e) => fieldChange(e.target.value, field)"
+      @update:modelValue="(e) => fieldChange(e, field)"
       :placeholder="getPlaceholder(field)"
       :description="field.description"
     >
@@ -300,6 +300,11 @@ const field = computed(() => {
     }
   }
 
+  const read_only_via_depends_on = evaluateDependsOnValue(
+    field.read_only_depends_on,
+    data.value,
+  )
+
   let _field = {
     ...field,
     filters: field.link_filters && JSON.parse(field.link_filters),
@@ -312,6 +317,9 @@ const field = computed(() => {
       field.mandatory_depends_on,
       data.value,
     ),
+    read_only:
+      field.read_only ||
+      (field.read_only_depends_on && read_only_via_depends_on),
   }
 
   _field.visible = isFieldVisible(_field)
@@ -359,7 +367,12 @@ const getOptions = (options) => {
 }
 
 function fieldChange(value, df) {
-  value = typeof value === 'object' && value !== null ? value.value : value
+  value = Array.isArray(value)
+    ? value
+    : typeof value === 'object' && value !== null && 'value' in value
+      ? value.value
+      : value
+
   if (isGridRow) {
     triggerOnChange(df.fieldname, value, data.value)
   } else {

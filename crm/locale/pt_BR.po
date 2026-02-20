@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: frappe\n"
 "Report-Msgid-Bugs-To: shariq@frappe.io\n"
 "POT-Creation-Date: 2025-12-21 09:37+0000\n"
-"PO-Revision-Date: 2026-01-31 12:58\n"
+"PO-Revision-Date: 2026-02-19 19:13\n"
 "Last-Translator: shariq@frappe.io\n"
 "Language-Team: Portuguese, Brazilian\n"
 "MIME-Version: 1.0\n"
@@ -466,7 +466,7 @@ msgstr ""
 #: frontend/src/pages/MobileOrganization.vue:466
 #: frontend/src/pages/Organization.vue:500
 msgid "Amount"
-msgstr "Montante"
+msgstr "Valor Total"
 
 #. Description of the 'Net Amount' (Currency) field in DocType 'CRM Products'
 #: crm/fcrm/doctype/crm_products/crm_products.json
@@ -502,7 +502,7 @@ msgstr ""
 #: crm/fcrm/doctype/crm_lead/crm_lead.json
 #: crm/fcrm/doctype/crm_organization/crm_organization.json
 msgid "Annual Revenue"
-msgstr ""
+msgstr "Faturamento Anual"
 
 #: frontend/src/components/Modals/DealModal.vue:200
 #: frontend/src/components/Modals/LeadModal.vue:141
@@ -2024,7 +2024,7 @@ msgstr "Desconto %"
 #. Label of the discount_amount (Currency) field in DocType 'CRM Products'
 #: crm/fcrm/doctype/crm_products/crm_products.json
 msgid "Discount Amount"
-msgstr ""
+msgstr "Valor do Desconto"
 
 #. Label of the dt (Link) field in DocType 'CRM Form Script'
 #. Label of the dt (Link) field in DocType 'CRM Global Settings'
@@ -3210,7 +3210,7 @@ msgstr ""
 #: crm/fcrm/doctype/crm_lead/crm_lead.json
 #: crm/fcrm/doctype/crm_organization/crm_organization.json
 msgid "Industry"
-msgstr "Segmento"
+msgstr "Setor de Atuação"
 
 #. Option for the 'Status' (Select) field in DocType 'CRM Call Log'
 #: crm/fcrm/doctype/crm_call_log/crm_call_log.json
@@ -3532,7 +3532,7 @@ msgstr ""
 #: frontend/src/components/Telephony/ExotelCallUI.vue:200
 #: frontend/src/pages/Tasks.vue:133
 msgid "Lead"
-msgstr ""
+msgstr "Lead"
 
 #. Label of the lead_data (Code) field in DocType 'Failed Lead Sync Log'
 #: crm/lead_syncing/doctype/failed_lead_sync_log/failed_lead_sync_log.json
@@ -3999,7 +3999,7 @@ msgstr ""
 #. Label of the net_amount (Currency) field in DocType 'CRM Products'
 #: crm/fcrm/doctype/crm_products/crm_products.json
 msgid "Net Amount"
-msgstr ""
+msgstr "Valor Líquido"
 
 #. Label of the net_total (Currency) field in DocType 'CRM Deal'
 #. Label of the net_total (Currency) field in DocType 'CRM Lead'
@@ -4084,7 +4084,7 @@ msgstr ""
 #: frontend/src/components/Activities/ActivityHeader.vue:149
 #: frontend/src/pages/Deals.vue:516 frontend/src/pages/Leads.vue:543
 msgid "New Task"
-msgstr ""
+msgstr "Nova Tarefa"
 
 #: frontend/src/components/Activities/ActivityHeader.vue:159
 msgid "New WhatsApp Message"
@@ -4110,7 +4110,7 @@ msgstr ""
 
 #: frontend/src/components/Modals/CreateDocumentModal.vue:88
 msgid "New {0}"
-msgstr ""
+msgstr "Novo {0}"
 
 #: frontend/src/components/Filter.vue:663
 msgid "Next 6 Months"
@@ -4259,7 +4259,7 @@ msgstr ""
 #: crm/fcrm/doctype/crm_lead/crm_lead.json
 #: crm/fcrm/doctype/crm_organization/crm_organization.json
 msgid "No. of Employees"
-msgstr ""
+msgstr "Número de Funcionários"
 
 #: frontend/src/components/Activities/AudioPlayer.vue:148
 msgid "Normal"
@@ -4426,7 +4426,7 @@ msgstr ""
 #. Option for the 'Type' (Select) field in DocType 'CRM Deal Status'
 #: crm/fcrm/doctype/crm_deal_status/crm_deal_status.json
 msgid "Open"
-msgstr ""
+msgstr "Aberto"
 
 #: frontend/src/components/Modals/NoteModal.vue:13
 #: frontend/src/components/Modals/TaskModal.vue:13
@@ -4856,7 +4856,7 @@ msgstr ""
 #. Label of the rate (Currency) field in DocType 'CRM Products'
 #: crm/fcrm/doctype/crm_products/crm_products.json
 msgid "Rate"
-msgstr "Taxa"
+msgstr "Preço Unitário"
 
 #. Label of the read (Check) field in DocType 'CRM Notification'
 #: crm/fcrm/doctype/crm_notification/crm_notification.json

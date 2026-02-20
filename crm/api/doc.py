@@ -284,16 +284,16 @@ def get_data(
 	doctype: str,
 	filters: dict,
 	order_by: str,
-	page_length=20,
-	page_length_count=20,
-	column_field=None,
-	title_field=None,
-	columns=None,
-	rows=None,
-	kanban_columns=None,
-	kanban_fields=None,
-	view=None,
-	default_filters=None,
+	page_length: int = 20,
+	page_length_count: int = 20,
+	column_field: str | None = None,
+	title_field: str | None = None,
+	columns: str | list | None = None,
+	rows: str | list | None = None,
+	kanban_columns: str | list | None = None,
+	kanban_fields: str | list | None = None,
+	view: str | dict | None = None,
+	default_filters: dict | None = None,
 ):
 	custom_view = False
 	filters = frappe._dict(filters)
@@ -613,7 +613,12 @@ def get_records_based_on_order(doctype, rows, filters, page_length, order):
 
 
 @frappe.whitelist()
-def get_fields_meta(doctype, restricted_fieldtypes=None, as_array=False, only_required=False):
+def get_fields_meta(
+	doctype: str,
+	restricted_fieldtypes: str | list | None = None,
+	as_array: bool = False,
+	only_required: bool = False,
+):
 	not_allowed_fieldtypes = [
 		"Tab Break",
 		"Section Break",
@@ -665,7 +670,7 @@ def get_fields_meta(doctype, restricted_fieldtypes=None, as_array=False, only_re
 
 
 @frappe.whitelist()
-def remove_assignments(doctype, name, assignees, ignore_permissions=False):
+def remove_assignments(doctype: str, name: str, assignees: str | list, ignore_permissions: bool = False):
 	assignees = frappe.parse_json(assignees)
 
 	if not assignees:
@@ -683,7 +688,7 @@ def remove_assignments(doctype, name, assignees, ignore_permissions=False):
 
 
 @frappe.whitelist()
-def get_assigned_users(doctype, name, default_assigned_to=None):
+def get_assigned_users(doctype: str, name: str, default_assigned_to: str | None = None):
 	assigned_users = frappe.get_all(
 		"ToDo",
 		fields=["allocated_to"],
@@ -753,7 +758,7 @@ def getCounts(d, doctype):
 
 
 @frappe.whitelist()
-def get_linked_docs_of_document(doctype, docname):
+def get_linked_docs_of_document(doctype: str, docname: str):
 	try:
 		doc = frappe.get_doc(doctype, docname)
 	except frappe.DoesNotExistError:
@@ -845,7 +850,7 @@ def remove_contact_link(doctype, docname):
 
 
 @frappe.whitelist()
-def remove_linked_doc_reference(items, remove_contact=None, delete=False):
+def remove_linked_doc_reference(items: str | list, remove_contact: bool = False, delete: bool = False):
 	if isinstance(items, str):
 		items = frappe.parse_json(items)
 
@@ -868,18 +873,18 @@ def remove_linked_doc_reference(items, remove_contact=None, delete=False):
 
 
 @frappe.whitelist()
-def delete_bulk_docs(doctype, items, delete_linked=False):
+def delete_bulk_docs(doctype: str, items: str | list, delete_linked: bool = False):
 	from frappe.desk.reportview import delete_bulk
 
 	if not doctype:
-		frappe.throw("Doctype is required")
+		frappe.throw(_("Doctype is required"))
 
 	if not items:
-		frappe.throw("Items are required")
+		frappe.throw(_("Items are required"))
 
 	items = frappe.parse_json(items)
 	if not isinstance(items, list):
-		frappe.throw("Items must be a list")
+		frappe.throw(_("Items must be a list"))
 
 	for doc in items:
 		try:

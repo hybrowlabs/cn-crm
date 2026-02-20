@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="avatars?.length"
-    class="mr-1.5 flex cursor-pointer items-center "
+    class="mr-1.5 flex cursor-pointer items-center"
     :class="[
       avatars?.length > 1 ? 'flex-row-reverse' : 'truncate [&>div]:truncate',
     ]"

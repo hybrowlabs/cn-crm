@@ -215,7 +215,7 @@
                     variant="outline"
                     v-model="row[field.fieldname]"
                     :options="field.options"
-                    @change="(e) => fieldChange(e.target.value, field, row)"
+                    @update:modelValue="(e) => fieldChange(e, field, row)"
                   />
                   <Password
                     v-else-if="field.fieldtype === 'Password'"
@@ -543,7 +543,12 @@ const reorder = () => {
 }
 
 function fieldChange(value, field, row) {
-  value = typeof value === 'object' && value !== null ? value.value : value
+  value = Array.isArray(value)
+    ? value
+    : typeof value === 'object' && value !== null && 'value' in value
+      ? value.value
+      : value
+
   triggerOnChange(field.fieldname, value, row)
 }
 

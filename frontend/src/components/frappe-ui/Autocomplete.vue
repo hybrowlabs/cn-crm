@@ -46,7 +46,7 @@
       <template #body="{ isOpen }">
         <div v-show="isOpen">
           <div
-            class="relative mt-1 rounded-lg bg-surface-modal text-base shadow-2xl"
+            class="relative mt-1 rounded-lg bg-surface-modal text-base shadow-2xl max-w-[350px]"
           >
             <div class="relative px-1.5 pt-1.5">
               <ComboboxInput

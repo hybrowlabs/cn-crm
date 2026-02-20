@@ -44,7 +44,7 @@
     >
       <ListRowItem :item="item" :align="column.align">
         <template #prefix>
-          <div v-if="column.key === '_assign'" class="flex items-center">
+          <div v-if="column.key === '_assign'" class="flex items-center truncate">
             <MultipleAvatar
               :avatars="item"
               size="sm"

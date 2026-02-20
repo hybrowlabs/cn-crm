@@ -1,12 +1,12 @@
 import { validateEmail } from '../../utils'
 
-const LogoGmail = '/images/gmail.png'
-const LogoOutlook = '/images/outlook.png'
-const LogoSendgrid = '/images/sendgrid.png'
-const LogoSparkpost = '/images/sparkpost.webp'
-const LogoYahoo = '/images/yahoo.png'
-const LogoYandex = '/images/yandex.png'
-const LogoFrappeMail = '/images/frappe-mail.svg'
+import LogoGmail from '../../../public/images/gmail.png'
+import LogoOutlook from '../../../public/images/outlook.png'
+import LogoSendgrid from '../../../public/images/sendgrid.png'
+import LogoSparkpost from '../../../public/images/sparkpost.webp'
+import LogoYahoo from '../../../public/images/yahoo.png'
+import LogoYandex from '../../../public/images/yandex.png'
+import LogoFrappeMail from '../../../public/images/frappe-mail.svg'
 
 const fixedFields = [
   {
@@ -28,9 +28,7 @@ export const incomingOutgoingFields = [
     label: __('Enable incoming'),
     name: 'enable_incoming',
     type: 'checkbox',
-    description: __(
-      'If enabled, emails will be pulled from this account.',
-    ),
+    description: __('If enabled, emails will be pulled from this account.'),
   },
   {
     label: __('Enable outgoing'),

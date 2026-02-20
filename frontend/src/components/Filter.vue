@@ -61,7 +61,7 @@
                 <FormControl
                   type="select"
                   v-model="f.operator"
-                  @change="(e) => updateOperator(e, f)"
+                  @update:modelValue="() => updateOperator(f)"
                   :options="getOperators(f.field.fieldtype, f.field.fieldname)"
                   :placeholder="__('Equals')"
                 />
@@ -71,7 +71,7 @@
                   :is="getValueControl(f)"
                   v-model="f.value"
                   @change="(v) => updateValue(v, f)"
-                  :placeholder="__('John Doe')"
+                  :placeholder="placeholder(f)"
                 />
               </div>
             </div>
@@ -92,7 +92,7 @@
                   <FormControl
                     type="select"
                     v-model="f.operator"
-                    @change="(e) => updateOperator(e, f)"
+                    @update:modelValue="() => updateOperator(f)"
                     :options="
                       getOperators(f.field.fieldtype, f.field.fieldname)
                     "
@@ -104,7 +104,7 @@
                     :is="getValueControl(f)"
                     v-model="f.value"
                     @change="(v) => updateValue(v, f)"
-                    :placeholder="__('John Doe')"
+                    :placeholder="placeholder(f)"
                   />
                 </div>
               </div>
@@ -499,36 +499,13 @@ function updateValue(value, filter) {
   apply()
 }
 
-function updateOperator(event, filter) {
-  let oldOperatorValue = event.target._value
-  let newOperatorValue = event.target.value
-  filter.operator = event.target.value
-  if (!isSameTypeOperator(oldOperatorValue, newOperatorValue)) {
-    filter.value = getDefaultValue(filter.field)
-  }
-  if (newOperatorValue === 'is' || newOperatorValue === 'is not') {
+function updateOperator(filter) {
+  filter.value = getDefaultValue(filter.field)
+
+  if (filter.operator === 'is' || filter.operator === 'is not') {
     filter.value = 'set'
   }
   apply()
-}
-
-function isSameTypeOperator(oldOperator, newOperator) {
-  let textOperators = [
-    'equals',
-    'not equals',
-    'in',
-    'not in',
-    '>',
-    '<',
-    '>=',
-    '<=',
-  ]
-  if (
-    textOperators.includes(oldOperator) &&
-    textOperators.includes(newOperator)
-  )
-    return true
-  return false
 }
 
 function apply() {
@@ -563,6 +540,39 @@ function transformIn(f) {
     f.value = `%${f.value}%`
   }
   return f
+}
+
+function placeholder(f) {
+  if (f.operator === 'between') {
+    return __('01/01/2022 to 01/31/2022')
+  } else if (f.operator === 'in' || f.operator === 'not in') {
+    if (typeNumber.includes(f.field.fieldtype)) {
+      return __('100, 200, 300')
+    }
+    return __('John, Jane, Doe')
+  } else if (f.operator === 'like' || f.operator === 'not like') {
+    if (typeNumber.includes(f.field.fieldtype)) {
+      return __('%100%')
+    }
+    return __('%John%')
+  } else if (f.operator === 'is' || f.operator === 'is not') {
+    return __('Set')
+  } else if (f.operator === 'timespan') {
+    return __('Last week')
+  } else if (typeNumber.includes(f.field.fieldtype)) {
+    return __('1000')
+  } else if (typeDate.includes(f.field.fieldtype)) {
+    return __('01/01/2022')
+  } else if (typeCheck.includes(f.field.fieldtype)) {
+    return __('Yes')
+  } else if (typeLink.includes(f.field.fieldtype)) {
+    return __('Select a value')
+  } else if (typeSelect.includes(f.field.fieldtype)) {
+    return __('Select an option')
+  } else if (typeString.includes(f.field.fieldtype)) {
+    return __('John Doe')
+  }
+  return __('Enter value')
 }
 
 const operatorMap = {

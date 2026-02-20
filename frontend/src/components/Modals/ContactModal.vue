@@ -31,7 +31,7 @@
           :data="_contact.doc"
           doctype="Contact"
         />
-        <ErrorMessage class="mt-8" v-if="error" :message="__(error)" />
+        <ErrorMessage class="mt-6" v-if="error" :message="__(error)" />
       </div>
       <div class="px-4 pb-7 pt-4 sm:px-6">
         <div class="space-y-2">
@@ -39,7 +39,7 @@
             class="w-full"
             variant="solid"
             :label="__('Create')"
-            :loading="loading"
+            :loading="insertContact.loading"
             @click="createContact"
           />
         </div>
@@ -60,8 +60,9 @@ import {
   addressProps,
 } from '@/composables/modals'
 import { useDocument } from '@/data/document'
+import { evaluateDependsOnValue } from '@/utils'
 import { useTelemetry } from 'frappe-ui/frappe'
-import { call, createResource } from 'frappe-ui'
+import { createResource } from 'frappe-ui'
 import { ref, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -85,14 +86,69 @@ const { capture } = useTelemetry()
 const router = useRouter()
 const show = defineModel()
 
-const loading = ref(false)
 const error = ref(null)
 
 const { document: _contact, triggerOnBeforeCreate } = useDocument('Contact')
 
+function validateRequiredFields() {
+  if (!tabs.data) return null
+
+  const missingFields = []
+
+  tabs.data.forEach((tab) => {
+    tab.sections.forEach((section) => {
+      section.columns.forEach((column) => {
+        column.fields.forEach((field) => {
+          const isMandatory =
+            field.reqd ||
+            (field.mandatory_depends_on &&
+              evaluateDependsOnValue(field.mandatory_depends_on, _contact.doc))
+
+          if (isMandatory && !_contact.doc[field.fieldname]) {
+            missingFields.push(__(field.label))
+          }
+        })
+      })
+    })
+  })
+
+  if (missingFields.length) {
+    return __('{0} is required', [missingFields.join(', ')])
+  }
+
+  if (_contact.doc.email_id && !_contact.doc.email_id.includes('@')) {
+    return __('Invalid email address')
+  }
+
+  if (
+    _contact.doc.mobile_no &&
+    isNaN(_contact.doc.mobile_no.replace(/[-+() ]/g, ''))
+  ) {
+    return __('Mobile no should be a number')
+  }
+
+  return null
+}
+
+const insertContact = createResource({
+  url: 'frappe.client.insert',
+  onSuccess: (doc) => {
+    capture('contact_created')
+    handleContactUpdate(doc)
+  },
+  onError: (err) => {
+    error.value = err.error?.messages?.[0]
+  },
+})
+
 async function createContact() {
-  loading.value = true
   error.value = null
+
+  const validationError = validateRequiredFields()
+  if (validationError) {
+    error.value = validationError
+    return
+  }
 
   if (_contact.doc.email_id) {
     _contact.doc.email_ids = [
@@ -110,25 +166,12 @@ async function createContact() {
 
   await triggerOnBeforeCreate?.()
 
-  const doc = await call(
-    'frappe.client.insert',
-    {
-      doc: {
-        doctype: 'Contact',
-        ..._contact.doc,
-      },
+  insertContact.submit({
+    doc: {
+      doctype: 'Contact',
+      ..._contact.doc,
     },
-    {
-      onError: (err) => {
-        error.value = err.error?.messages?.[0]
-        loading.value = false
-      },
-    },
-  )
-  if (doc.name) {
-    capture('contact_created')
-    handleContactUpdate(doc)
-  }
+  })
 }
 
 function handleContactUpdate(doc) {
@@ -166,6 +209,9 @@ const tabs = createResource({
               field.edit = (address) => openAddressModal(address)
             } else if (field.fieldtype === 'Table') {
               _contact.doc[field.fieldname] = []
+            }
+            if (field.fieldname === 'first_name') {
+              field.reqd = 1
             }
           })
         })
