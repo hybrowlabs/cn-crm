@@ -32,6 +32,18 @@
             </template>
         </ListRowItem>
       </ListRows>
+      <ListFooter>
+        <ListPagination
+          class="sm:mx-5 mx-3"
+          v-if="customers.data"
+          @updatePageCount="pageLengthCount = $event"
+          :start="customers.data.length ? (customers.page_length_count * (customers.page_length_count > 0 ? (customers.page_length_count / 20) : 0)) + 1 : 0"
+          :totalCount="1000"
+          :end="customers.data.length"
+          :rowCount="customers.data.length"
+          @loadMore="customers.reload()"
+        />
+      </ListFooter>
     </ListView>
   </div>
 </template>
@@ -39,7 +51,10 @@
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import ListRows from '@/components/ListViews/ListRows.vue'
-import { ListView, ListHeader, ListHeaderItem, ListRowItem, createListResource } from 'frappe-ui'
+import { ListView, ListHeader, ListHeaderItem, ListRowItem, ListFooter, ListPagination, createListResource } from 'frappe-ui'
+import { ref, watch } from 'vue'
+
+const pageLengthCount = ref(20)
 
 const customers = createListResource({
   doctype: 'Customer',
@@ -47,9 +62,15 @@ const customers = createListResource({
   getTemplate: 'crm.fcrm.doctype.frequency_log_list.frequency_log_list.get_customers_for_user',
   orderBy: 'creation desc',
   auto: true,
+  pageLength: pageLengthCount.value,
   transform(data) {
     return data || []
   }
+})
+
+watch(pageLengthCount, (newVal) => {
+    customers.limit = newVal
+    customers.reload()
 })
 
 const columns = [

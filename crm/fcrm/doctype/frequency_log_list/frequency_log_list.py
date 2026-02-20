@@ -186,13 +186,23 @@ def mark_followups_on_quotation(doc, method=None):
 
 
 @frappe.whitelist()
-def get_customers_for_user():
+def get_customers_for_user(**kwargs):
 	user = frappe.session.user
 	
+	limit = frappe.form_dict.get("limit_page_length") or kwargs.get("limit_page_length") or 20
+	start = frappe.form_dict.get("limit_start") or kwargs.get("limit_start") or 0
+	
+	try:
+		limit = int(limit)
+		start = int(start)
+	except ValueError:
+		limit = 20
+		start = 0
+
 	fields = ["name", "customer_name", "customer_group", "territory", "primary_address", "mobile_no"]
 	
 	if "Administrator" in frappe.get_roles(user):
-		return frappe.get_all("Customer", fields=fields, order_by="creation desc")
+		return frappe.get_all("Customer", fields=fields, order_by="creation desc", limit_start=start, limit_page_length=limit)
 	else:
 		# Customers where current user is in sales team
 		customer_list = frappe.db.sql("""
@@ -207,7 +217,7 @@ def get_customers_for_user():
 			
 		customer_ids = [c.parent for c in customer_list]
 		
-		return frappe.get_all("Customer", filters={"name": ["in", customer_ids]}, fields=fields, order_by="creation desc")
+		return frappe.get_all("Customer", filters={"name": ["in", customer_ids]}, fields=fields, order_by="creation desc", limit_start=start, limit_page_length=limit)
 
 
 def generate_frequency_logs():
