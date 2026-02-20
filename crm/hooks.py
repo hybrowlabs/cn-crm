@@ -163,6 +163,9 @@ doc_events = {
 		"after_insert": ["crm.api.todo.after_insert"],
 		"on_update": ["crm.api.todo.on_update"],
 	},
+	"Quotation": {
+		"after_insert": ["crm.fcrm.doctype.frequency_log_list.frequency_log_list.mark_followups_on_quotation"],
+	},
 	"Comment": {
 		"on_update": ["crm.api.comment.on_update"],
 	},

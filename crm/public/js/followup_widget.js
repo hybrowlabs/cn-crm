@@ -190,35 +190,20 @@ crm.followup_widget = {
 				e.stopPropagation();
 				createQuotBtn.prop('disabled', true).text('...');
 
-				frappe.call({
-					method: 'crm.fcrm.doctype.frequency_log_list.frequency_log_list.mark_customer_followups_done',
-					args: { customer_code: customer.customer_code },
-					callback: (r) => {
-						if (!r.message?.success) {
-							createQuotBtn.prop('disabled', false).text('Create Quotation');
-							return;
-						}
+				frappe.route_options = {
+					quotation_to: "Customer",
+					party_name: customer.customer_code,
+					items: customer.items.map(i => ({
+						item_code: i.item,
+						qty: i.qty
+					}))
+				};
 
-						card.fadeOut(200, () => {
-							card.remove();
-							if (!widget.find('.customer-card').length) {
-								widget.find('.customer-list').hide();
-								widget.find('.empty-state').show();
-							}
-						});
+				frappe.set_route('Form', 'Quotation', 'new-quotation-1');
 
-						frappe.route_options = {
-							quotation_to: "Customer",
-							party_name: customer.customer_code,
-							items: customer.items.map(i => ({
-								item_code: i.item,
-								qty: i.qty
-							}))
-						};
-
-						frappe.set_route('Form', 'Quotation', 'new-quotation-1');
-					}
-				});
+				setTimeout(() => {
+					createQuotBtn.prop('disabled', false).text('Create Quotation');
+				}, 1000);
 			});
 
 			//-------------------------------------

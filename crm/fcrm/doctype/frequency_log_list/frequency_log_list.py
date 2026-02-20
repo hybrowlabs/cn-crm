@@ -155,6 +155,18 @@ def mark_customer_followups_done(customer_code):
 		frappe.throw(f"Failed to mark customer followups as done: {str(e)}")
 
 
+def mark_followups_on_quotation(doc, method=None):
+	"""
+	Hook triggered after a Quotation is created.
+	If it's for a Customer, mark their follow-ups as done.
+	"""
+	if doc.quotation_to == "Customer" and doc.party_name:
+		try:
+			mark_customer_followups_done(doc.party_name)
+		except Exception as e:
+			frappe.logger().error(f"Error in mark_followups_on_quotation for {doc.name}: {str(e)}")
+
+
 def generate_frequency_logs():
 	"""
 	Generate logs in Frequency Log List for customers whose items have passed their order frequency.
