@@ -290,12 +290,6 @@
     doctype="CRM Deal"
     @proceed="proceedWithStatusChange"
   />
-  <TrialOutcomeNoteModal
-    v-if="showTrialOutcomeNoteModal"
-    v-model="showTrialOutcomeNoteModal"
-    :deal="document"
-    :outcome="selectedTrialOutcome"
-  />
 </template>
 <script setup>
 import Icon from '@/components/Icon.vue'
@@ -318,7 +312,6 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import OrganizationModal from '@/components/Modals/OrganizationModal.vue'
 import LostReasonModal from '@/components/Modals/LostReasonModal.vue'
-import TrialOutcomeNoteModal from '@/components/Modals/TrialOutcomeNoteModal.vue'
 import AssignTo from '@/components/AssignTo.vue'
 import ContactModal from '@/components/Modals/ContactModal.vue'
 import Section from '@/components/Section.vue'
@@ -363,9 +356,6 @@ const router = useRouter()
 
 
 
-
-const showTrialOutcomeNoteModal = ref(false)
-const selectedTrialOutcome = ref('')
 
 const props = defineProps({
   dealId: {
@@ -426,13 +416,8 @@ const trialOutcomeOptions = computed(() => {
     label: option || __('Select Outcome'),
     value: option,
     onClick: async () => {
-      if (['Qualified'].includes(option)) {
-        selectedTrialOutcome.value = option
-        showTrialOutcomeNoteModal.value = true
-      } else {
-        await triggerOnChange('trial_outcome', option)
-        await document.save.submit()
-      }
+      await triggerOnChange('trial_outcome', option)
+      await document.save.submit()
     },
   }))
 })
