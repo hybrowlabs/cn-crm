@@ -374,7 +374,7 @@ crm.followup_widget = {
 							<div class="item-title">${item.item}</div>
 							<div class="item-meta">
 								<span>Qty: ${item.qty}</span>
-								<span>Rate: ${frappe.format(item.rate, { fieldtype: 'Currency' })}</span>
+								<span>Rate: ${format_currency(item.rate)}</span>
 								<br>
 								<span>Next Order Date: ${frappe.datetime.str_to_user(item.next_order_date)}</span>
 							</div>
@@ -395,7 +395,7 @@ crm.followup_widget = {
 			const footer = $(`
 				<div class="items-footer">
 					<span class="total-amount">
-						Total: ${frappe.format(customer.total_value || 0, { fieldtype: 'Currency' })}
+						Total: ${format_currency(customer.total_value || 0)}
 					</span>
 					<button class="btn btn-xs btn-primary create-quotation-btn">
 						Create Quotation
