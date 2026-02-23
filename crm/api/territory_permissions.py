@@ -74,7 +74,7 @@ def get_user_territories(user=None):
 
 	# Get territories where user is territory manager
 	territory_manager_territories = frappe.get_all(
-		"CRM Territory",
+		"Territory",
 		filters={"territory_manager": user},
 		fields=["name"]
 	)
@@ -87,7 +87,7 @@ def get_user_territories(user=None):
 		"User Permission",
 		filters={
 			"user": user,
-			"allow": "CRM Territory",
+			"allow": "Territory",
 			"for_value": ["is", "set"]
 		},
 		fields=["for_value"]
@@ -103,10 +103,10 @@ def get_user_territories(user=None):
 		for territory in territories:
 			# Get child territories using nested set
 			child_territories = frappe.get_all(
-				"CRM Territory",
+				"Territory",
 				filters={
-					"lft": [">=", frappe.db.get_value("CRM Territory", territory, "lft")],
-					"rgt": ["<=", frappe.db.get_value("CRM Territory", territory, "rgt")]
+					"lft": [">=", frappe.db.get_value("Territory", territory, "lft")],
+					"rgt": ["<=", frappe.db.get_value("Territory", territory, "rgt")]
 				},
 				fields=["name"]
 			)
@@ -141,7 +141,7 @@ def assign_user_to_territory(user, territory):
 	# Check if permission already exists
 	existing = frappe.db.exists("User Permission", {
 		"user": user,
-		"allow": "CRM Territory",
+		"allow": "Territory",
 		"for_value": territory
 	})
 
@@ -152,7 +152,7 @@ def assign_user_to_territory(user, territory):
 	user_permission = frappe.get_doc({
 		"doctype": "User Permission",
 		"user": user,
-		"allow": "CRM Territory",
+		"allow": "Territory",
 		"for_value": territory,
 		"applicable_for": "CRM Lead,CRM Deal"
 	})
@@ -167,7 +167,7 @@ def remove_user_from_territory(user, territory):
 	"""
 	existing = frappe.db.exists("User Permission", {
 		"user": user,
-		"allow": "CRM Territory",
+		"allow": "Territory",
 		"for_value": territory
 	})
 
@@ -191,7 +191,7 @@ def get_user_territory_access(user=None):
 	# Get territory details
 	territory_details = []
 	for territory in territories:
-		territory_doc = frappe.get_doc("CRM Territory", territory)
+		territory_doc = frappe.get_doc("Territory", territory)
 		territory_details.append({
 			"name": territory_doc.name,
 			"territory_name": territory_doc.territory_name,

@@ -117,7 +117,7 @@ def get_sample_lead_data():
 	lead_statuses = frappe.get_all("CRM Lead Status", pluck="lead_status") or ["New", "Contacted", "Nurture"]
 	lead_sources = frappe.get_all("CRM Lead Source", pluck="source_name") or ["Website", "Referral", "Cold Call"]
 	industries = frappe.get_all("CRM Industry", pluck="industry") or ["Technology", "Healthcare", "Finance"]
-	territories = frappe.get_all("CRM Territory", pluck="territory_name") or []
+	territories = frappe.get_all("Territory", pluck="territory_name") or []
 	users = frappe.get_all("User", filters={"enabled": 1, "user_type": "System User"}, pluck="name") or ["Administrator"]
 	
 	return {
