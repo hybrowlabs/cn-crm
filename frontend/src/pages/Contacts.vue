@@ -49,7 +49,7 @@
   />
   <EmptyState
     v-else-if="contacts.data && !rows.length"
-    name="contacts"
+    name="Contacts"
     :icon="ContactsIcon"
   />
   <ContactModal

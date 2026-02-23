@@ -7,7 +7,7 @@
   </div>
   <EmptyState
     v-else-if="assignmentRulesList.data?.length === 0"
-    title="No assignment rules found"
+    title="No Assignment Rules Found"
     :description="__('Add one to get started.')"
     :icon="h(SettingsIcon2, { class: 'rotate-90' })"
   />

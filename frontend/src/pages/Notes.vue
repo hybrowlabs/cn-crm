@@ -87,7 +87,7 @@
     }"
     @loadMore="() => loadMore++"
   />
-  <EmptyState v-else name="notes" :icon="NoteIcon" />
+  <EmptyState v-else name="Notes" :icon="NoteIcon" />
   <NoteModal
     v-model="showNoteModal"
     v-model:reloadNotes="notes"

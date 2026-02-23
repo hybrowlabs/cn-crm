@@ -151,7 +151,7 @@
           :columns="columns"
           :options="{ selectable: false, showTooltip: false }"
         />
-        <EmptyState v-if="!rows.length" :icon="tab.icon" name="deals" />
+        <EmptyState v-if="!rows.length" :icon="tab.icon" name="Deals" />
       </template>
     </Tabs>
   </div>
@@ -295,7 +295,7 @@ const tabIndex = ref(0)
 const tabs = [
   {
     label: 'Deals',
-    icon: h(DealsIcon, { class: 'h-4 w-4' }),
+    icon: DealsIcon,
     count: computed(() => deals.data?.length),
   },
 ]

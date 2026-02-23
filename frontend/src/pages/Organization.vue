@@ -155,15 +155,11 @@
           :columns="columns"
           :options="{ selectable: false, showTooltip: false }"
         />
-        <div
+        <EmptyState
           v-if="!rows.length"
-          class="grid flex-1 place-items-center text-xl font-medium text-ink-gray-4"
-        >
-          <div class="flex flex-col items-center justify-center space-y-3">
-            <component :is="tab.icon" class="!h-10 !w-10" />
-            <div>{{ __('No {0} Found', [__(tab.label)]) }}</div>
-          </div>
-        </div>
+          :icon="tab.icon"
+          :name="__(tab.label)"
+        />
       </template>
     </Tabs>
   </div>
@@ -373,12 +369,12 @@ const tabIndex = ref(0)
 const tabs = [
   {
     label: 'Deals',
-    icon: h(DealsIcon, { class: 'h-4 w-4' }),
+    icon: DealsIcon,
     count: computed(() => deals.data?.length),
   },
   {
     label: 'Contacts',
-    icon: h(ContactsIcon, { class: 'h-4 w-4' }),
+    icon: ContactsIcon,
     count: computed(() => contacts.data?.length),
   },
 ]

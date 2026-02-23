@@ -178,7 +178,7 @@
   />
   <EmptyState
     v-else-if="tasks.data && !rows.length"
-    name="tasks"
+    name="Tasks"
     :icon="Email2Icon"
   />
   <TaskModal

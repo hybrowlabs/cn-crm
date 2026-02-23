@@ -120,7 +120,7 @@
             v-else
             class="mb-3 flex h-7 items-center px-3 text-sm text-ink-gray-5"
           >
-            {{ __('Empty - choose a field to filter by') }}
+            {{ __('Empty - Choose a field to filter by') }}
           </div>
           <div class="flex items-center justify-between gap-2">
             <Autocomplete

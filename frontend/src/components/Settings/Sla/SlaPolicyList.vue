@@ -50,7 +50,7 @@
             !slaPolicyListResource.list.loading &&
             !slaPolicyListResource.list.data?.length
           "
-          title="No SLA found"
+          title="No SLA Policies Found"
           description="Add one to get started."
           :icon="ShieldCheck"
         />

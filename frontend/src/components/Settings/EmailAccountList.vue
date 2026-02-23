@@ -47,7 +47,7 @@
     <!-- fallback if no email accounts -->
     <EmptyState
       v-else
-      name="email accounts"
+      name="Email Accounts"
       :description="__('Add one to get started.')"
       :icon="Email2Icon"
     />

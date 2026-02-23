@@ -77,19 +77,19 @@ class CRMTask(Document):
 				"width": "8rem",
 			},
 			{
-				"label": "Due date",
+				"label": "Due Date",
 				"type": "Date",
 				"key": "due_date",
 				"width": "8rem",
 			},
 			{
-				"label": "Assigned to",
+				"label": "Assigned To",
 				"type": "Link",
 				"key": "assigned_to",
 				"width": "10rem",
 			},
 			{
-				"label": "Last modified",
+				"label": "Last Modified",
 				"type": "Datetime",
 				"key": "modified",
 				"width": "8rem",
