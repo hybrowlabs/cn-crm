@@ -29,7 +29,7 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "SLA name",
+   "label": "SLA Name",
    "reqd": 1,
    "unique": 1
   },
@@ -59,7 +59,7 @@
   {
    "fieldname": "apply_on",
    "fieldtype": "Link",
-   "label": "Apply on",
+   "label": "Apply On",
    "link_filters": "[[{\"fieldname\":\"apply_on\",\"field_option\":\"DocType\"},\"name\",\"in\",[\"CRM Lead\",\"CRM Deal\"]]]",
    "options": "DocType",
    "reqd": 1
@@ -67,7 +67,7 @@
   {
    "fieldname": "section_break_ufaf",
    "fieldtype": "Section Break",
-   "label": "Response & follow up"
+   "label": "Response & Follow Up"
   },
   {
    "fieldname": "priorities",
@@ -79,12 +79,12 @@
   {
    "fieldname": "section_break_rmgo",
    "fieldtype": "Section Break",
-   "label": "Working hours"
+   "label": "Working Hours"
   },
   {
    "fieldname": "working_hours",
    "fieldtype": "Table",
-   "label": "Working hours",
+   "label": "Working Hours",
    "options": "CRM Service Day",
    "reqd": 1
   },
@@ -96,7 +96,7 @@
   {
    "fieldname": "start_date",
    "fieldtype": "Date",
-   "label": "Start date"
+   "label": "Start Date"
   },
   {
    "fieldname": "column_break_pzjg",
@@ -105,12 +105,12 @@
   {
    "fieldname": "end_date",
    "fieldtype": "Date",
-   "label": "End date"
+   "label": "End Date"
   },
   {
    "fieldname": "holiday_list",
    "fieldtype": "Link",
-   "label": "Holiday list",
+   "label": "Holiday List",
    "options": "CRM Holiday List"
   },
   {
@@ -118,13 +118,25 @@
    "description": "Restart the SLA each time the customer replies (status changes to Open) and fulfill it when marked as Replied",
    "fieldname": "rolling_responses",
    "fieldtype": "Check",
+<<<<<<< HEAD
    "label": "Rolling responses"
+=======
+   "label": "Rolling Responses"
+  },
+  {
+   "depends_on": "eval: doc.condition_json",
+   "description": "Auto-generated from the portal view \u2014 do not edit directly unless you know what you're doing! ",
+   "fieldname": "condition_json",
+   "fieldtype": "Code",
+   "label": "Condition",
+   "max_height": "5rem"
+>>>>>>> 7277a6be (fix: Updated field labels to follow title case convention)
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-28 17:06:16.455548",
- "modified_by": "shariq@frappe.io",
+ "modified": "2026-02-23 12:41:50.104511",
+ "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Service Level Agreement",
  "naming_rule": "By fieldname",
