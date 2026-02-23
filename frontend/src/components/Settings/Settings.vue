@@ -160,14 +160,6 @@ const tabs = computed(() => {
           icon: markRaw(h(SettingsIcon2, { class: 'rotate-90' })),
           component: markRaw(AssignmentRulePage),
         },
-<<<<<<< HEAD
-=======
-        {
-          label: __('SLA Policies'),
-          icon: markRaw(h(ShieldCheck)),
-          component: markRaw(SlaConfig),
-        },
->>>>>>> c8f805af (fix: casing)
       ],
     },
     {
@@ -203,17 +195,7 @@ const tabs = computed(() => {
           condition: () => isManager(),
         },
         {
-<<<<<<< HEAD
-          label: __('Lead syncing'),
-=======
-          label: __('Helpdesk'),
-          icon: HelpdeskIcon,
-          component: markRaw(HelpdeskSettings),
-          condition: () => isManager(),
-        },
-        {
           label: __('Lead Syncing'),
->>>>>>> c8f805af (fix: casing)
           icon: 'refresh-cw',
           component: markRaw(LeadSyncSourcePage),
           condition: () => isManager(),

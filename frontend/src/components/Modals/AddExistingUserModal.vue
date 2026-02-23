@@ -35,10 +35,6 @@
           :error-message="
             (value) => __('{0} is an invalid email address', [value])
           "
-<<<<<<< HEAD
-=======
-          :emptyPlaceholder="__('No Users Found')"
->>>>>>> c8f805af (fix: casing)
         />
       </div>
       <FormControl

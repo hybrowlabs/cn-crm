@@ -118,19 +118,7 @@
    "description": "Restart the SLA each time the customer replies (status changes to Open) and fulfill it when marked as Replied",
    "fieldname": "rolling_responses",
    "fieldtype": "Check",
-<<<<<<< HEAD
-   "label": "Rolling responses"
-=======
    "label": "Rolling Responses"
-  },
-  {
-   "depends_on": "eval: doc.condition_json",
-   "description": "Auto-generated from the portal view \u2014 do not edit directly unless you know what you're doing! ",
-   "fieldname": "condition_json",
-   "fieldtype": "Code",
-   "label": "Condition",
-   "max_height": "5rem"
->>>>>>> 7277a6be (fix: Updated field labels to follow title case convention)
   }
  ],
  "index_web_pages_for_search": 1,

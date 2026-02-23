@@ -30,13 +30,8 @@
         </SidebarLink>
       </div>
       <div v-for="view in allViews" :key="view.label">
-<<<<<<< HEAD
-        <div class="border-t mx-2 my-1.5" />
-        <Section
-=======
         <div class="mx-2 my-1.5" />
-        <CollapsibleSection
->>>>>>> 559c4719 (fix: remove unnecessary border classes from sidebar and settings components)
+        <Section
           :label="view.name"
           :hideLabel="view.hideLabel"
           :opened="view.opened"

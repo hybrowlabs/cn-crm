@@ -112,41 +112,7 @@
    "description": "Automatically update \"Expected Deal Value\" based on the total value of associated products in a deal",
    "fieldname": "auto_update_expected_deal_value",
    "fieldtype": "Check",
-<<<<<<< HEAD
-   "label": "Auto update Expected deal value"
-=======
    "label": "Auto update Expected Deal Value"
-  },
-  {
-   "fieldname": "calendar_tab",
-   "fieldtype": "Tab Break",
-   "label": "Calendar"
-  },
-  {
-   "description": "Time before the event when a reminder notification will be sent by default. This will be applied to all events unless a custom notification is set for a specific event.",
-   "fieldname": "default_reminder_section",
-   "fieldtype": "Section Break",
-   "label": "Default Event Notifications"
-  },
-  {
-   "fieldname": "event_notifications",
-   "fieldtype": "Table",
-   "label": "Event Notifications",
-   "options": "Event Notifications"
-  },
-  {
-   "fieldname": "all_day_event_notifications",
-   "fieldtype": "Table",
-   "label": "All Day Event Notifications",
-   "options": "Event Notifications"
-  },
-  {
-   "default": "Weekly",
-   "fieldname": "default_calendar_view",
-   "fieldtype": "Select",
-   "label": "Default Calendar View",
-   "options": "Daily\nWeekly\nMonthly"
->>>>>>> 7277a6be (fix: Updated field labels to follow title case convention)
   }
  ],
  "index_web_pages_for_search": 1,

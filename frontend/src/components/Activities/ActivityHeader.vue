@@ -26,19 +26,6 @@
       :options="callActions"
     />
     <Button
-<<<<<<< HEAD
-=======
-      v-else-if="title == 'Events'"
-      variant="solid"
-      @click="modalRef.showEvent()"
-    >
-      <template #prefix>
-        <EventIcon class="h-4 w-4" />
-      </template>
-      <span>{{ __('Schedule an Event') }}</span>
-    </Button>
-    <Button
->>>>>>> c8f805af (fix: casing)
       v-else-if="title == 'Notes'"
       variant="solid"
       :label="__('New Note')"
@@ -126,14 +113,6 @@ const defaultActions = computed(() => {
       onClick: () => (props.emailBox.showComment = true),
     },
     {
-<<<<<<< HEAD
-=======
-      icon: h(EventIcon, { class: 'h-4 w-4' }),
-      label: __('Schedule an Event'),
-      onClick: () => props.modalRef.showEvent(),
-    },
-    {
->>>>>>> c8f805af (fix: casing)
       icon: h(PhoneIcon, { class: 'h-4 w-4' }),
       label: __('Log a Call'),
       onClick: () => props.modalRef.createCallLog(),
