@@ -519,9 +519,12 @@ def create_log_entry(customer_code, customer_name, item, qty, next_order_date, v
 @frappe.whitelist()
 def generate_crm_tasks_for_customer(customer_id):
 	"""
-	Whitelist method to generate CRM Tasks for a specific customer's expiring frequency items.
+	Whitelist method to generate CRM Tasks for a specific customer's frequency items.
 	Called from the Customer Order Frequancy form button.
+	Creates tasks for all items with frequency data and assigns to the customer's sales team.
 	"""
+	from frappe.desk.form.assign_to import add as assign_to
+
 	if not customer_id:
 		frappe.throw("Customer ID is required")
 
@@ -534,6 +537,9 @@ def generate_crm_tasks_for_customer(customer_id):
 		frappe.msgprint("No items with frequency data found")
 		return
 
+	# Get sales team user IDs for this customer
+	sales_users = _get_sales_users_for_customer(customer_id)
+
 	current_date = getdate(today())
 	tasks_created = 0
 
@@ -541,19 +547,9 @@ def generate_crm_tasks_for_customer(customer_id):
 		if not item_freq.frequency_day or item_freq.frequency_day == 0:
 			continue
 
-		last_order_data = get_last_order_date(customer_id, item_freq.item)
-		if not last_order_data:
-			continue
-
-		last_order_date = last_order_data.transaction_date
-		next_order_date = getdate(add_days(last_order_date, item_freq.frequency_day))
-
-		days_until_expiry = (next_order_date - current_date).days
-		if days_until_expiry < 0 or days_until_expiry > 3:
-			continue
-
 		task_title = f"Frequency Expiry: {item_freq.item}"
 
+		# Check if a CRM Task already exists for this customer + item
 		existing_task = frappe.db.exists("CRM Task", {
 			"title": task_title,
 			"reference_doctype": "Customer",
@@ -564,6 +560,7 @@ def generate_crm_tasks_for_customer(customer_id):
 		if existing_task:
 			continue
 
+		# Create the CRM Task
 		task_doc = frappe.new_doc("CRM Task")
 		task_doc.title = task_title
 		task_doc.reference_doctype = "Customer"
@@ -573,11 +570,55 @@ def generate_crm_tasks_for_customer(customer_id):
 		task_doc.description = item_freq.item
 		task_doc.start_date = current_date
 		task_doc.due_date = add_days(current_date, 4)
+
+		# Assign to first sales user if available
+		if sales_users:
+			task_doc.assigned_to = sales_users[0]
+
 		task_doc.insert(ignore_permissions=True)
+
+		# Assign to additional sales users if multiple
+		if len(sales_users) > 1:
+			for user in sales_users[1:]:
+				try:
+					assign_to({
+						"assign_to": [user],
+						"doctype": "CRM Task",
+						"name": task_doc.name,
+						"description": task_doc.title,
+					})
+				except Exception:
+					pass
+
 		tasks_created += 1
 
 	frappe.db.commit()
-	frappe.msgprint(f"Created {tasks_created} CRM Task(s) for expiring items")
+	frappe.msgprint(f"Created {tasks_created} CRM Task(s) for customer items")
+
+
+def _get_sales_users_for_customer(customer_id):
+	"""
+	Get the User IDs of all sales persons assigned to a customer via Sales Team.
+	Sales Team → Sales Person → Employee → User
+	"""
+	sales_team = frappe.db.sql("""
+		SELECT DISTINCT st.sales_person
+		FROM `tabSales Team` st
+		WHERE st.parent = %(customer)s
+			AND st.parenttype = 'Customer'
+	""", {"customer": customer_id}, as_dict=True)
+
+	user_ids = []
+	for row in sales_team:
+		if not row.sales_person:
+			continue
+		employee = frappe.db.get_value("Sales Person", row.sales_person, "employee")
+		if employee:
+			user_id = frappe.db.get_value("Employee", employee, "user_id")
+			if user_id:
+				user_ids.append(user_id)
+
+	return user_ids
 
 
 def create_crm_tasks_for_expiring_items():
@@ -585,6 +626,8 @@ def create_crm_tasks_for_expiring_items():
 	Create CRM Tasks for items whose order frequency is about to expire within 3 days.
 	Runs as a scheduled task alongside generate_frequency_logs.
 	"""
+	from frappe.desk.form.assign_to import add as assign_to
+
 	try:
 		frappe.logger().info("Starting CRM Task creation for expiring frequency items")
 
@@ -602,6 +645,9 @@ def create_crm_tasks_for_expiring_items():
 
 				if not freq_doc.item_wise_frequency:
 					continue
+
+				# Get sales team user IDs for this customer
+				sales_users = _get_sales_users_for_customer(freq_record.customer_id)
 
 				for item_freq in freq_doc.item_wise_frequency:
 					if not item_freq.frequency_day or item_freq.frequency_day == 0:
@@ -643,7 +689,26 @@ def create_crm_tasks_for_expiring_items():
 					task_doc.description = item_freq.item
 					task_doc.start_date = current_date
 					task_doc.due_date = add_days(current_date, 4)
+
+					# Assign to first sales user if available
+					if sales_users:
+						task_doc.assigned_to = sales_users[0]
+
 					task_doc.insert(ignore_permissions=True)
+
+					# Assign to additional sales users if multiple
+					if len(sales_users) > 1:
+						for user in sales_users[1:]:
+							try:
+								assign_to({
+									"assign_to": [user],
+									"doctype": "CRM Task",
+									"name": task_doc.name,
+									"description": task_doc.title,
+								})
+							except Exception:
+								pass
+
 					tasks_created += 1
 
 			except Exception as e:

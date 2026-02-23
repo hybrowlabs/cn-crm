@@ -227,6 +227,9 @@ scheduler_events = {
 			"crm.fcrm.doctype.customer_order_frequancy.customer_order_frequancy.calculate_customer_order_frequency",
 			"crm.fcrm.doctype.frequency_log_list.frequency_log_list.generate_frequency_logs",
 			"crm.fcrm.doctype.frequency_log_list.frequency_log_list.create_crm_tasks_for_expiring_items"
+		],
+		"0 12 * * *": [  # Run daily at noon (12:00 PM)
+			"crm.fcrm.doctype.frequency_log_list.frequency_log_list.create_crm_tasks_for_expiring_items"
 		]
 	}
 }
