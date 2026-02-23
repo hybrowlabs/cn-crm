@@ -173,7 +173,7 @@ const options = computed(() => {
     },
     {
       icon: () => h(PlaybackSpeedIcon, { class: 'size-4' }),
-      label: __('Playback speed'),
+      label: __('Playback Speed'),
       onClick: (e) => {
         e.preventDefault()
         e.stopPropagation()

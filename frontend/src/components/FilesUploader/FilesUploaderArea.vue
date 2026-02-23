@@ -21,7 +21,7 @@
     >
       <div v-if="!isDragging" class="flex flex-col gap-3">
         <div class="text-center text-ink-gray-5">
-          {{ __('Drag and drop files here or upload from') }}
+          {{ __('Drag & Drop files here or upload from') }}
         </div>
         <div
           class="grid grid-flow-col justify-center gap-4 text-center text-base"

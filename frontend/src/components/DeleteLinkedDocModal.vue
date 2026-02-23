@@ -63,8 +63,8 @@
             v-if="linkedDocs?.length > 0"
             :label="
               viewControls?.selections?.length == 0
-                ? __('Delete all')
-                : __('Delete {0} item(s)', [viewControls?.selections?.length])
+                ? __('Delete All')
+                : __('Delete {0} Item(s)', [viewControls?.selections?.length])
             "
             theme="red"
             variant="solid"
@@ -75,8 +75,8 @@
             v-if="linkedDocs?.length > 0"
             :label="
               viewControls?.selections?.length == 0
-                ? __('Unlink all')
-                : __('Unlink {0} item(s)', [viewControls?.selections?.length])
+                ? __('Unlink All')
+                : __('Unlink {0} Item(s)', [viewControls?.selections?.length])
             "
             variant="subtle"
             theme="gray"
@@ -227,7 +227,7 @@ const confirmDelete = () => {
       : viewControls.value.selections.length
   confirmDeleteInfo.value = {
     show: true,
-    title: __('Delete linked item'),
+    title: __('Delete Linked Item'),
     message: __('Are you sure you want to delete {0} linked item(s)?', [items]),
     delete: true,
   }
@@ -240,7 +240,7 @@ const confirmUnlink = () => {
       : viewControls.value.selections.length
   confirmDeleteInfo.value = {
     show: true,
-    title: __('Unlink linked item'),
+    title: __('Unlink Linked Item'),
     message: __('Are you sure you want to unlink {0} linked item(s)?', [items]),
     delete: false,
   }

@@ -58,7 +58,7 @@
     <div v-else class="flex flex-1 flex-col items-center justify-center gap-2">
       <NotificationsIcon class="h-20 w-20 text-ink-gray-2" />
       <div class="text-lg font-medium text-ink-gray-4">
-        {{ __('No new notifications') }}
+        {{ __('No New Notifications') }}
       </div>
     </div>
   </div>

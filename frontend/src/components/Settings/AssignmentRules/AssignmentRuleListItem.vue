@@ -43,13 +43,13 @@
     </div>
   </div>
   <Dialog
-    :options="{ title: __('Duplicate assignment rule') }"
+    :options="{ title: __('Duplicate Assignment Rule') }"
     v-model="duplicateDialog.show"
   >
     <template #body-content>
       <div class="flex flex-col gap-4">
         <FormControl
-          :label="__('New assignment rule name')"
+          :label="__('New Assignment Rule Name')"
           type="text"
           v-model="duplicateDialog.name"
         />
@@ -115,7 +115,7 @@ const deleteAssignmentRule = () => {
     onSuccess: () => {
       assignmentRulesList.reload()
       isConfirmingDelete.value = false
-      toast.success(__('Assignment rule deleted'))
+      toast.success(__('Assignment Rule Deleted'))
     },
     auto: true,
   })
@@ -143,7 +143,7 @@ const dropdownOptions = [
     condition: () => !isConfirmingDelete.value,
   },
   {
-    label: __('Confirm delete'),
+    label: __('Confirm Delete'),
     icon: 'trash-2',
     theme: 'red',
     onClick: () => deleteAssignmentRule(),
@@ -160,7 +160,7 @@ const duplicate = () => {
     },
     onSuccess: (data) => {
       assignmentRulesList.reload()
-      toast.success(__('Assignment rule duplicated'))
+      toast.success(__('Assignment Rule Duplicated'))
       duplicateDialog.value.show = false
       duplicateDialog.value.name = ''
       updateStep('view', data)
@@ -192,7 +192,7 @@ const setAssignmentRuleValue = (key, value, fieldName = undefined) => {
     },
     onSuccess: () => {
       assignmentRulesList.reload()
-      toast.success(__('Assignment rule {0} updated', [fieldName || key]))
+      toast.success(__('Assignment Rule {0} Updated', [fieldName || key]))
     },
     auto: true,
   })

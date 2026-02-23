@@ -54,13 +54,13 @@
         </Button> -->
           <Button
             class="cursor-pointer rounded-full"
-            :tooltip="__('Add a note')"
+            :tooltip="__('Add a Note')"
             :icon="NoteIcon"
             @click="showNoteModal = true"
           />
           <Button
             class="rounded-full bg-surface-red-5 hover:bg-surface-red-6 rotate-[135deg] text-ink-white"
-            :tooltip="__('Hang up')"
+            :tooltip="__('Hang Up')"
             :icon="PhoneIcon"
             @click="hangUpCall"
           />
@@ -152,7 +152,7 @@
         variant="solid"
         theme="green"
         class="pulse relative !h-6 !w-6 rounded-full animate-pulse text-ink-white"
-        :tooltip="__('Accept call')"
+        :tooltip="__('Accept Call')"
         :icon="PhoneIcon"
         @click.stop="acceptIncomingCall"
       />
@@ -160,7 +160,7 @@
         variant="solid"
         theme="red"
         class="!h-6 !w-6 rounded-full rotate-[135deg] text-ink-white"
-        :tooltip="__('Reject call')"
+        :tooltip="__('Reject Call')"
         :icon="PhoneIcon"
         @click.stop="rejectIncomingCall"
       />

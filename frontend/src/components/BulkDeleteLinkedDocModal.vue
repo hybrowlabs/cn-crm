@@ -32,7 +32,7 @@
             @click="confirmDelete()"
           />
           <Button
-            :label="__('Unlink and delete {0} items', [props.items.length])"
+            :label="__('Unlink & Delete {0} items', [props.items.length])"
             icon-left="unlock"
             variant="solid"
             @click="confirmUnlink()"
@@ -70,7 +70,7 @@
         <div class="flex flex-row-reverse gap-2">
           <Button
             :label="
-              confirmDeleteInfo.delete ? __('Delete') : __('Unlink and delete')
+              confirmDeleteInfo.delete ? __('Delete') : __('Unlink & Delete')
             "
             :icon-left="confirmDeleteInfo.delete ? 'trash-2' : 'unlock'"
             variant="solid"

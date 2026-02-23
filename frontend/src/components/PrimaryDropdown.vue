@@ -38,7 +38,7 @@
           <Button
             variant="ghost"
             class="w-full !justify-start"
-            :label="__('Create new')"
+            :label="__('Create New')"
             iconLeft="plus"
             @click="create && create()"
           />

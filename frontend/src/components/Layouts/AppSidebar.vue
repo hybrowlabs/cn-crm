@@ -30,7 +30,7 @@
         </SidebarLink>
       </div>
       <div v-for="view in allViews" :key="view.label">
-        <div class="border-t mx-2 my-1.5" />
+        <div class="mx-2 my-1.5" />
         <Section
           :label="view.name"
           :hideLabel="view.hideLabel"
@@ -254,7 +254,7 @@ const allViews = computed(() => {
   ]
   if (getPublicViews().length) {
     _views.push({
-      name: 'Public views',
+      name: 'Public Views',
       opened: true,
       views: parseView(getPublicViews()),
     })
@@ -262,7 +262,7 @@ const allViews = computed(() => {
 
   if (getPinnedViews().length) {
     _views.push({
-      name: 'Pinned views',
+      name: 'Pinned Views',
       opened: true,
       views: parseView(getPinnedViews()),
     })
@@ -530,7 +530,7 @@ const articles = ref([
     opened: false,
     subArticles: [
       { name: 'introduction', title: __('Introduction') },
-      { name: 'setting-up', title: __('Setting up') },
+      { name: 'setting-up', title: __('Setting Up') },
     ],
   },
   {
@@ -538,9 +538,9 @@ const articles = ref([
     opened: false,
     subArticles: [
       { name: 'profile', title: __('Profile') },
-      { name: 'custom-branding', title: __('Custom branding') },
-      { name: 'home-actions', title: __('Home actions') },
-      { name: 'invite-users', title: __('Invite users') },
+      { name: 'custom-branding', title: __('Custom Branding') },
+      { name: 'home-actions', title: __('Home Actions') },
+      { name: 'invite-users', title: __('Invite Users') },
     ],
   },
   {
@@ -553,33 +553,33 @@ const articles = ref([
       { name: 'organization', title: __('Organization') },
       { name: 'note', title: __('Note') },
       { name: 'task', title: __('Task') },
-      { name: 'call-log', title: __('Call log') },
-      { name: 'email-template', title: __('Email template') },
+      { name: 'call-log', title: __('Call Log') },
+      { name: 'email-template', title: __('Email Template') },
     ],
   },
   {
-    title: __('Capturing leads'),
+    title: __('Capturing Leads'),
     opened: false,
-    subArticles: [{ name: 'web-form', title: __('Web form') }],
+    subArticles: [{ name: 'web-form', title: __('Web Form') }],
   },
   {
     title: __('Views'),
     opened: false,
     subArticles: [
-      { name: 'view', title: __('Saved view') },
-      { name: 'public-view', title: __('Public view') },
-      { name: 'pinned-view', title: __('Pinned view') },
+      { name: 'view', title: __('Saved View') },
+      { name: 'public-view', title: __('Public View') },
+      { name: 'pinned-view', title: __('Pinned View') },
     ],
   },
   {
-    title: __('Other features'),
+    title: __('Other Features'),
     opened: false,
     subArticles: [
-      { name: 'email-communication', title: __('Email communication') },
+      { name: 'email-communication', title: __('Email Communication') },
       { name: 'comment', title: __('Comment') },
       { name: 'data', title: __('Data') },
-      { name: 'service-level-agreement', title: __('Service level agreement') },
-      { name: 'assignment-rule', title: __('Assignment rule') },
+      { name: 'service-level-agreement', title: __('Service Level Agreement') },
+      { name: 'assignment-rule', title: __('Assignment Rule') },
       { name: 'notification', title: __('Notification') },
     ],
   },
@@ -587,11 +587,11 @@ const articles = ref([
     title: __('Customization'),
     opened: false,
     subArticles: [
-      { name: 'custom-fields', title: __('Custom fields') },
-      { name: 'custom-actions', title: __('Custom actions') },
-      { name: 'custom-statuses', title: __('Custom statuses') },
-      { name: 'custom-list-actions', title: __('Custom list actions') },
-      { name: 'quick-entry-layout', title: __('Quick entry layout') },
+      { name: 'custom-fields', title: __('Custom Fields') },
+      { name: 'custom-actions', title: __('Custom Actions') },
+      { name: 'custom-statuses', title: __('Custom Statuses') },
+      { name: 'custom-list-actions', title: __('Custom List Actions') },
+      { name: 'quick-entry-layout', title: __('Quick Entry Layout') },
     ],
   },
   {
@@ -608,7 +608,7 @@ const articles = ref([
     title: __('Frappe CRM mobile'),
     opened: false,
     subArticles: [
-      { name: 'mobile-app-installation', title: __('Mobile app installation') },
+      { name: 'mobile-app-installation', title: __('Mobile App Installation') },
     ],
   },
 ])

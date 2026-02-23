@@ -17,7 +17,7 @@
     "
   >
     <FeatherIcon name="plus" class="h-4" />
-    {{ __('Add a condition') }}
+    {{ __('Add a Condition') }}
   </div>
   <div class="flex items-center justify-between mt-2">
     <div class="" v-if="props.conditions.length > 0">
@@ -25,7 +25,7 @@
         <Button
           :disabled="props.errors !== ''"
           :icon-right="open ? 'chevron-up' : 'chevron-down'"
-          :label="__('Add condition')"
+          :label="__('Add Condition')"
         />
       </Dropdown>
     </div>
@@ -61,13 +61,13 @@ const getConjunction = () => {
 
 const dropdownOptions = [
   {
-    label: __('Add condition'),
+    label: __('Add Condition'),
     onClick: () => {
       addCondition()
     },
   },
   {
-    label: __('Add condition group'),
+    label: __('Add Condition Group'),
     onClick: () => {
       const conjunction = getConjunction()
       props.conditions.push(conjunction, [[]])

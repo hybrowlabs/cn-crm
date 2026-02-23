@@ -34,13 +34,13 @@
                           {
                             icon: 'upload',
                             label: contact.doc.image
-                              ? __('Change image')
-                              : __('Upload image'),
+                              ? __('Change Image')
+                              : __('Upload Image'),
                             onClick: openFileSelector,
                           },
                           {
                             icon: 'trash-2',
-                            label: __('Remove image'),
+                            label: __('Remove Image'),
                             onClick: () => changeContactImage(''),
                           },
                         ],
@@ -70,7 +70,7 @@
               <div class="flex items-center gap-1.5">
                 <Button
                   v-if="callEnabled && contact.doc.mobile_no"
-                  :label="__('Make a call')"
+                  :label="__('Make a Call')"
                   size="sm"
                   :iconLeft="PhoneIcon"
                   @click="callEnabled && makeCall(contact.doc.mobile_no)"
@@ -258,14 +258,14 @@ function changeContactImage(file) {
   contact.doc.image = file?.file_url || ''
   contact.save.submit(null, {
     onSuccess: () => {
-      toast.success(__('Contact image updated'))
+      toast.success(__('Contact Image Updated'))
     },
   })
 }
 
 async function deleteContact() {
   $dialog({
-    title: __('Delete contact'),
+    title: __('Delete Contact'),
     message: __('Are you sure you want to delete this contact?'),
     actions: [
       {
@@ -438,7 +438,7 @@ async function setAsPrimary(field, value) {
   })
   if (d) {
     contact.reload()
-    toast.success(___('Contact updated'))
+    toast.success(__('Contact Updated'))
   }
 }
 
@@ -451,7 +451,7 @@ async function createNew(field, value) {
   })
   if (d) {
     contact.reload()
-    toast.success(__('Contact updated'))
+    toast.success(__('Contact Updated'))
   }
 }
 
@@ -464,7 +464,7 @@ async function editOption(doctype, name, fieldname, value) {
   })
   if (d) {
     contact.reload()
-    toast.success(__('Contact updated'))
+    toast.success(__('Contact Updated'))
   }
 }
 
@@ -474,7 +474,7 @@ async function deleteOption(doctype, name) {
     name,
   })
   await contact.reload()
-  toast.success(__('Contact updated'))
+  toast.success(__('Contact Updated'))
 }
 
 const { getFormattedCurrency } = getMeta('CRM Deal')
@@ -529,17 +529,17 @@ const dealColumns = [
     width: '12rem',
   },
   {
-    label: __('Mobile no'),
+    label: __('Mobile No.'),
     key: 'mobile_no',
     width: '11rem',
   },
   {
-    label: __('Deal owner'),
+    label: __('Deal Owner'),
     key: 'deal_owner',
     width: '10rem',
   },
   {
-    label: __('Last modified'),
+    label: __('Last Modified'),
     key: 'modified',
     width: '8rem',
   },

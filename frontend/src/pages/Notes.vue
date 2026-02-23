@@ -20,7 +20,7 @@
     doctype="FCRM Note"
     :options="{
       hideColumnsButton: true,
-      defaultViewName: __('Notes view'),
+      defaultViewName: __('Notes View'),
     }"
   />
   <div class="flex-1 overflow-y-auto">
@@ -87,7 +87,7 @@
     }"
     @loadMore="() => loadMore++"
   />
-  <EmptyState v-else name="notes" :icon="NoteIcon" />
+  <EmptyState v-else name="Notes" :icon="NoteIcon" />
   <NoteModal
     v-model="showNoteModal"
     v-model:reloadNotes="notes"

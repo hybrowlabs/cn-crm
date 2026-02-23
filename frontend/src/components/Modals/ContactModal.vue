@@ -5,7 +5,7 @@
         <div class="mb-5 flex items-center justify-between">
           <div>
             <h3 class="text-2xl font-semibold leading-6 text-ink-gray-9">
-              {{ __('New contact') }}
+              {{ __('New Contact') }}
             </h3>
           </div>
           <div class="flex items-center gap-1">
@@ -13,7 +13,7 @@
               v-if="isManager() && !isMobileView"
               variant="ghost"
               class="w-7"
-              :tooltip="__('Edit fields layout')"
+              :tooltip="__('Edit Fields Layout')"
               :icon="EditIcon"
               @click="openQuickEntryModal"
             />
@@ -117,14 +117,14 @@ function validateRequiredFields() {
   }
 
   if (_contact.doc.email_id && !_contact.doc.email_id.includes('@')) {
-    return __('Invalid email address')
+    return __('Invalid Email Address')
   }
 
   if (
     _contact.doc.mobile_no &&
     isNaN(_contact.doc.mobile_no.replace(/[-+() ]/g, ''))
   ) {
-    return __('Mobile no should be a number')
+    return __('Mobile No. should be a number')
   }
 
   return null

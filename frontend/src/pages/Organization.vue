@@ -44,13 +44,13 @@
                               {
                                 icon: 'upload',
                                 label: organization.doc.organization_logo
-                                  ? __('Change image')
-                                  : __('Upload image'),
+                                  ? __('Change Image')
+                                  : __('Upload Image'),
                                 onClick: openFileSelector,
                               },
                               {
                                 icon: 'trash-2',
-                                label: __('Remove image'),
+                                label: __('Remove Image'),
                                 onClick: () => changeOrganizationImage(''),
                               },
                             ],
@@ -94,7 +94,7 @@
                   @click="deleteOrganization()"
                 />
                 <Button
-                  :tooltip="__('Open website')"
+                  :tooltip="__('Open Website')"
                   icon="link"
                   @click="openWebsite"
                 />
@@ -155,15 +155,11 @@
           :columns="columns"
           :options="{ selectable: false, showTooltip: false }"
         />
-        <div
+        <EmptyState
           v-if="!rows.length"
-          class="grid flex-1 place-items-center text-xl font-medium text-ink-gray-4"
-        >
-          <div class="flex flex-col items-center justify-center space-y-3">
-            <component :is="tab.icon" class="!h-10 !w-10" />
-            <div>{{ __('No {0} Found', [__(tab.label)]) }}</div>
-          </div>
-        </div>
+          :icon="tab.icon"
+          :name="__(tab.label)"
+        />
       </template>
     </Tabs>
   </div>
@@ -331,7 +327,7 @@ function website(url) {
 
 function openWebsite() {
   if (!organization.doc.website) {
-    toast.error(__('No website found'))
+    toast.error(__('No Website Found'))
     return
   }
 
@@ -373,12 +369,12 @@ const tabIndex = ref(0)
 const tabs = [
   {
     label: 'Deals',
-    icon: h(DealsIcon, { class: 'h-4 w-4' }),
+    icon: DealsIcon,
     count: computed(() => deals.data?.length),
   },
   {
     label: 'Contacts',
-    icon: h(ContactsIcon, { class: 'h-4 w-4' }),
+    icon: ContactsIcon,
     count: computed(() => contacts.data?.length),
   },
 ]
@@ -513,17 +509,17 @@ const dealColumns = [
     width: '12rem',
   },
   {
-    label: __('Mobile no'),
+    label: __('Mobile No.'),
     key: 'mobile_no',
     width: '11rem',
   },
   {
-    label: __('Deal owner'),
+    label: __('Deal Owner'),
     key: 'deal_owner',
     width: '10rem',
   },
   {
-    label: __('Last modified'),
+    label: __('Last Modified'),
     key: 'modified',
     width: '8rem',
   },
@@ -551,7 +547,7 @@ const contactColumns = [
     width: '12rem',
   },
   {
-    label: __('Last modified'),
+    label: __('Last Modified'),
     key: 'modified',
     width: '8rem',
   },

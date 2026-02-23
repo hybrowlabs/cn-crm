@@ -25,7 +25,7 @@
         />
         <Button
           v-if="editing && isAdmin()"
-          :label="__('Reset to default')"
+          :label="__('Reset to Default')"
           :iconLeft="LucideUndo2"
           @click="resetToDefault"
         />
@@ -47,7 +47,7 @@
         :options="options"
         class="form-control"
         v-model="preset"
-        :placeholder="__('Select range')"
+        :placeholder="__('Select Range')"
         :button="{
           label: __(preset),
           class:
@@ -90,7 +90,7 @@
         doctype="User"
         :filters="{ name: ['in', users.data.crmUsers?.map((u) => u.name)] }"
         @change="(v) => updateFilter('user', v)"
-        :placeholder="__('Sales user')"
+        :placeholder="__('Sales User')"
         :hideMe="true"
       >
         <template #prefix>
@@ -301,6 +301,6 @@ function resetToDefault() {
 }
 
 usePageMeta(() => {
-  return { title: __('CRM dashboard') }
+  return { title: __('CRM Dashboard') }
 })
 </script>

@@ -100,7 +100,7 @@
                         {{ fields[titleField] }}
                       </div>
                       <div class="text-ink-gray-4" v-else>
-                        {{ __('No title') }}
+                        {{ __('No Title') }}
                       </div>
                     </div>
                   </slot>
@@ -137,7 +137,7 @@
               class="flex items-center justify-center"
             >
               <Button
-                :label="__('Load more')"
+                :label="__('Load More')"
                 @click="emit('loadMore', column.column.name)"
               />
             </div>
@@ -154,7 +154,7 @@
         <template #target="{ togglePopover }">
           <Button
             class="w-full mt-2.5 mb-1 mr-5"
-            :label="__('Add column')"
+            :label="__('Add Column')"
             iconLeft="plus"
             @click="togglePopover()"
           />

@@ -6,7 +6,7 @@
         <h2
           class="flex gap-2 text-xl font-semibold leading-none h-5 items-center"
         >
-          {{ __('Lead sources') }}
+          {{ __('Lead Sources') }}
           <Badge theme="orange" size="sm">Beta</Badge>
         </h2>
         <p class="text-p-base text-ink-gray-6">
@@ -43,7 +43,7 @@
     <!-- Empty State -->
     <EmptyState
       v-if="!sources.loading && !sources.data?.length"
-      name="lead sources"
+      name="Lead Sources"
       description="Manage your lead sources here. Add new sources to start syncing leads automatically."
       icon="refresh-cw"
     />
@@ -114,7 +114,7 @@
             class="mt-3.5 p-2"
             @click="() => sources.next()"
             :loading="sources.loading"
-            :label="__('Load more')"
+            :label="__('Load More')"
             icon-left="refresh-cw"
           />
         </div>
@@ -199,7 +199,7 @@ function getDropdownOptions(source) {
       condition: () => !confirmDelete.value,
     },
     {
-      label: __('Confirm delete'),
+      label: __('Confirm Delete'),
       icon: 'trash-2',
       theme: 'red',
       onClick: () => deleteLeadSource(source),
