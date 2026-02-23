@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: frappe\n"
 "Report-Msgid-Bugs-To: shariq@frappe.io\n"
 "POT-Creation-Date: 2025-12-21 09:37+0000\n"
-"PO-Revision-Date: 2026-02-19 19:13\n"
+"PO-Revision-Date: 2026-02-23 20:04\n"
 "Last-Translator: shariq@frappe.io\n"
 "Language-Team: Portuguese, Brazilian\n"
 "MIME-Version: 1.0\n"
@@ -3351,7 +3351,7 @@ msgstr ""
 #. Label of the is_group (Check) field in DocType 'CRM Territory'
 #: crm/fcrm/doctype/crm_territory/crm_territory.json
 msgid "Is Group"
-msgstr ""
+msgstr "É Grupo"
 
 #. Label of the is_helpdesk_in_different_site (Check) field in DocType
 #. 'Helpdesk CRM Settings'
@@ -5828,12 +5828,12 @@ msgstr "Território"
 #. Label of the territory_manager (Link) field in DocType 'CRM Territory'
 #: crm/fcrm/doctype/crm_territory/crm_territory.json
 msgid "Territory Manager"
-msgstr ""
+msgstr "Gestor do Território"
 
 #. Label of the territory_name (Data) field in DocType 'CRM Territory'
 #: crm/fcrm/doctype/crm_territory/crm_territory.json
 msgid "Territory Name"
-msgstr ""
+msgstr "Nome do Território"
 
 #: crm/templates/emails/helpdesk_invitation.html:16
 msgid "Thanks"
