@@ -32,7 +32,8 @@ add_to_apps_screen = [
 app_include_js = [
 	"/assets/crm/js/followup_widget.js",
 	"/assets/crm/js/am_dashboard_widget.js",
-	"/assets/crm/js/frequency_bucket_widget.js"
+	"/assets/crm/js/frequency_bucket_widget.js",
+	"/assets/crm/js/sm_pipeline_dashboard_widget.js"
 ]
 
 # include js, css files in header of web template
