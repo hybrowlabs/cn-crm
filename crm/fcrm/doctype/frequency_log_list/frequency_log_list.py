@@ -126,6 +126,140 @@ def get_followup_logs_for_user():
 
 
 @frappe.whitelist()
+def get_frequency_buckets():
+	"""
+	Get customer order frequency data grouped into day-range buckets.
+	Buckets: 1-10, 11-20, 21-30, 31-40, 41-50, 51+
+	Each bucket contains customers with items falling in that frequency range,
+	along with the computed next_order_date.
+	"""
+	user = frappe.session.user
+
+	# Determine which customers the user can see
+	if "Administrator" in frappe.get_roles(user):
+		freq_records = frappe.get_all(
+			"Customer Order Frequancy",
+			fields=["name", "customer_id", "customer_name"]
+		)
+	else:
+		employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
+		sales_person = frappe.db.get_value("Sales Person", {"employee": employee}, "name") if employee else None
+
+		if not sales_person:
+			return {"buckets": []}
+
+		customer_list = frappe.db.sql("""
+			SELECT DISTINCT parent
+			FROM `tabSales Team`
+			WHERE sales_person = %(sales_person)s
+				AND parenttype = 'Customer'
+		""", {'sales_person': sales_person}, as_dict=True)
+
+		if not customer_list:
+			return {"buckets": []}
+
+		customer_ids = [c.parent for c in customer_list]
+
+		freq_records = frappe.get_all(
+			"Customer Order Frequancy",
+			filters={"customer_id": ["in", customer_ids]},
+			fields=["name", "customer_id", "customer_name"]
+		)
+
+	# Define buckets
+	bucket_defs = [
+		{"label": "1 – 10 Days", "min": 1, "max": 10},
+		{"label": "11 – 20 Days", "min": 11, "max": 20},
+		{"label": "21 – 30 Days", "min": 21, "max": 30},
+		{"label": "31 – 40 Days", "min": 31, "max": 40},
+		{"label": "41 – 50 Days", "min": 41, "max": 50},
+		{"label": "51+ Days", "min": 51, "max": 999999},
+	]
+
+	# Initialise bucket data structures
+	buckets = {b["label"]: {"label": b["label"], "min": b["min"], "max": b["max"], "customers": {}} for b in bucket_defs}
+
+	for rec in freq_records:
+		try:
+			doc = frappe.get_doc("Customer Order Frequancy", rec.name)
+		except Exception:
+			continue
+
+		if not doc.item_wise_frequency:
+			continue
+
+		for item_row in doc.item_wise_frequency:
+			freq_day = item_row.frequency_day or 0
+			if freq_day <= 0:
+				continue
+
+			# Find the bucket
+			target_bucket = None
+			for b in bucket_defs:
+				if b["min"] <= freq_day <= b["max"]:
+					target_bucket = b["label"]
+					break
+			if not target_bucket:
+				continue
+
+			# Calculate next_order_date
+			last_order = _get_last_order_date_for_bucket(rec.customer_id, item_row.item)
+			next_order_date = None
+			if last_order:
+				next_order_date = str(add_days(last_order, freq_day))
+
+			bucket_customers = buckets[target_bucket]["customers"]
+			if rec.customer_id not in bucket_customers:
+				bucket_customers[rec.customer_id] = {
+					"customer_code": rec.customer_id,
+					"customer_name": rec.customer_name or rec.customer_id,
+					"items": []
+				}
+
+			bucket_customers[rec.customer_id]["items"].append({
+				"item": item_row.item,
+				"frequency_day": freq_day,
+				"quantity": item_row.quantity,
+				"next_order_date": next_order_date
+			})
+
+	# Convert to list, drop empty buckets
+	result = []
+	for b in bucket_defs:
+		bucket = buckets[b["label"]]
+		customers_list = list(bucket["customers"].values())
+		if customers_list:
+			customers_list.sort(key=lambda c: c["customer_name"])
+			result.append({
+				"label": bucket["label"],
+				"min": bucket["min"],
+				"max": bucket["max"],
+				"count": sum(len(c["items"]) for c in customers_list),
+				"customers": customers_list
+			})
+
+	return {"buckets": result}
+
+
+def _get_last_order_date_for_bucket(customer_id, item_code):
+	"""Helper: get the most recent Sales Order date for a customer + item."""
+	result = frappe.db.sql("""
+		SELECT so.transaction_date
+		FROM `tabSales Order` so
+		INNER JOIN `tabSales Order Item` soi ON soi.parent = so.name
+		WHERE so.customer = %(customer)s
+			AND soi.item_code = %(item)s
+			AND so.docstatus = 1
+		ORDER BY so.transaction_date DESC
+		LIMIT 1
+	""", {'customer': customer_id, 'item': item_code}, as_dict=True)
+
+	if result:
+		return result[0].transaction_date
+	return None
+
+
+@frappe.whitelist()
 def mark_followup_done(log_id):
 	"""
 	Mark a frequency log as followed up.
