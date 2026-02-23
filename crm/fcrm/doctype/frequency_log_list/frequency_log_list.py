@@ -513,3 +513,148 @@ def create_log_entry(customer_code, customer_name, item, qty, next_order_date, v
 	log_doc.value = value
 	log_doc.next_order_date_as_per_frequency = next_order_date
 	log_doc.insert(ignore_permissions=True)
+
+
+
+@frappe.whitelist()
+def generate_crm_tasks_for_customer(customer_id):
+	"""
+	Whitelist method to generate CRM Tasks for a specific customer's expiring frequency items.
+	Called from the Customer Order Frequancy form button.
+	"""
+	if not customer_id:
+		frappe.throw("Customer ID is required")
+
+	freq_doc_name = frappe.db.exists("Customer Order Frequancy", {"customer_id": customer_id})
+	if not freq_doc_name:
+		frappe.throw(f"No frequency record found for customer {customer_id}")
+
+	freq_doc = frappe.get_doc("Customer Order Frequancy", freq_doc_name)
+	if not freq_doc.item_wise_frequency:
+		frappe.msgprint("No items with frequency data found")
+		return
+
+	current_date = getdate(today())
+	tasks_created = 0
+
+	for item_freq in freq_doc.item_wise_frequency:
+		if not item_freq.frequency_day or item_freq.frequency_day == 0:
+			continue
+
+		last_order_data = get_last_order_date(customer_id, item_freq.item)
+		if not last_order_data:
+			continue
+
+		last_order_date = last_order_data.transaction_date
+		next_order_date = getdate(add_days(last_order_date, item_freq.frequency_day))
+
+		days_until_expiry = (next_order_date - current_date).days
+		if days_until_expiry < 0 or days_until_expiry > 3:
+			continue
+
+		task_title = f"Frequency Expiry: {item_freq.item}"
+
+		existing_task = frappe.db.exists("CRM Task", {
+			"title": task_title,
+			"reference_doctype": "Customer",
+			"reference_docname": customer_id,
+			"status": ["not in", ["Done", "Canceled"]]
+		})
+
+		if existing_task:
+			continue
+
+		task_doc = frappe.new_doc("CRM Task")
+		task_doc.title = task_title
+		task_doc.reference_doctype = "Customer"
+		task_doc.reference_docname = customer_id
+		task_doc.status = "Todo"
+		task_doc.priority = "Medium"
+		task_doc.description = item_freq.item
+		task_doc.start_date = current_date
+		task_doc.due_date = add_days(current_date, 4)
+		task_doc.insert(ignore_permissions=True)
+		tasks_created += 1
+
+	frappe.db.commit()
+	frappe.msgprint(f"Created {tasks_created} CRM Task(s) for expiring items")
+
+
+def create_crm_tasks_for_expiring_items():
+	"""
+	Create CRM Tasks for items whose order frequency is about to expire within 3 days.
+	Runs as a scheduled task alongside generate_frequency_logs.
+	"""
+	try:
+		frappe.logger().info("Starting CRM Task creation for expiring frequency items")
+
+		frequency_records = frappe.get_all(
+			"Customer Order Frequancy",
+			fields=["name", "customer_id", "customer_name"]
+		)
+
+		tasks_created = 0
+		current_date = getdate(today())
+
+		for freq_record in frequency_records:
+			try:
+				freq_doc = frappe.get_doc("Customer Order Frequancy", freq_record.name)
+
+				if not freq_doc.item_wise_frequency:
+					continue
+
+				for item_freq in freq_doc.item_wise_frequency:
+					if not item_freq.frequency_day or item_freq.frequency_day == 0:
+						continue
+
+					# Get last order date for this customer + item
+					last_order_data = get_last_order_date(freq_record.customer_id, item_freq.item)
+					if not last_order_data:
+						continue
+
+					last_order_date = last_order_data.transaction_date
+					next_order_date = getdate(add_days(last_order_date, item_freq.frequency_day))
+
+					# Check if next_order_date is within 3 days from today
+					days_until_expiry = (next_order_date - current_date).days
+					if days_until_expiry < 0 or days_until_expiry > 3:
+						continue
+
+					task_title = f"Frequency Expiry: {item_freq.item}"
+
+					# Check if a CRM Task already exists for this customer + item
+					existing_task = frappe.db.exists("CRM Task", {
+						"title": task_title,
+						"reference_doctype": "Customer",
+						"reference_docname": freq_record.customer_id,
+						"status": ["not in", ["Done", "Canceled"]]
+					})
+
+					if existing_task:
+						continue
+
+					# Create the CRM Task
+					task_doc = frappe.new_doc("CRM Task")
+					task_doc.title = task_title
+					task_doc.reference_doctype = "Customer"
+					task_doc.reference_docname = freq_record.customer_id
+					task_doc.status = "Todo"
+					task_doc.priority = "Medium"
+					task_doc.description = item_freq.item
+					task_doc.start_date = current_date
+					task_doc.due_date = add_days(current_date, 4)
+					task_doc.insert(ignore_permissions=True)
+					tasks_created += 1
+
+			except Exception as e:
+				frappe.logger().error(
+					f"Error creating CRM Task for {freq_record.customer_id}: {str(e)}"
+				)
+				continue
+
+		frappe.db.commit()
+		frappe.logger().info(f"CRM Task creation completed. Created {tasks_created} tasks.")
+
+	except Exception as e:
+		frappe.logger().error(f"Error in create_crm_tasks_for_expiring_items: {str(e)}")
+		frappe.db.rollback()

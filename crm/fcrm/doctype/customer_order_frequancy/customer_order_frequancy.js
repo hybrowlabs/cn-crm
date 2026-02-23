@@ -24,6 +24,26 @@ frappe.ui.form.on('Customer Order Frequancy', {
                     }
                 });
             });
+
+            // Add "Generate Tasks" button
+            frm.add_custom_button(__('Generate Tasks'), function () {
+                frappe.call({
+                    method: 'crm.fcrm.doctype.frequency_log_list.frequency_log_list.generate_crm_tasks_for_customer',
+                    args: {
+                        customer_id: frm.doc.customer_id
+                    },
+                    freeze: true,
+                    freeze_message: __('Generating CRM Tasks for expiring items...'),
+                    callback: function (r) {
+                        if (!r.exc) {
+                            frappe.show_alert({
+                                message: __('Task generation completed'),
+                                indicator: 'green'
+                            }, 5);
+                        }
+                    }
+                });
+            });
         }
 
         // Add "Generate Logs" button

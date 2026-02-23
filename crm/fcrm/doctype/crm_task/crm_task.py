@@ -23,9 +23,9 @@ class CRMTask(Document):
 
 	def validate_lead_reference(self):
 		"""Ensure Task references CRM Lead or CRM Deal"""
-		if self.reference_doctype and self.reference_doctype not in ["CRM Lead", "CRM Deal"]:
+		if self.reference_doctype and self.reference_doctype not in ["CRM Lead", "CRM Deal", "Customer"]:
 			frappe.throw(
-				_("Task can only reference CRM Lead or CRM Deal. Current reference: {0}").format(
+				_("Task can only reference CRM Lead, CRM Deal, or Customer. Current reference: {0}").format(
 					frappe.bold(self.reference_doctype)
 				),
 				frappe.ValidationError,
