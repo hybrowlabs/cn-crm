@@ -13,7 +13,7 @@
             <Button
               v-if="isManager() && !isMobileView"
               variant="ghost"
-              :tooltip="__('Edit fields layout')"
+              :tooltip="__('Edit Fields Layout')"
               :icon="EditIcon"
               class="w-7"
               @click="openQuickEntryModal"
@@ -95,7 +95,7 @@ const { document: callLog, triggerOnBeforeCreate } = useDocument(
 )
 
 const dialogOptions = computed(() => {
-  let title = !editMode.value ? __('Log a call') : __('Edit call log')
+  let title = !editMode.value ? __('Log a Call') : __('Edit Call Log')
   let size = 'xl'
   let actions = [
     {

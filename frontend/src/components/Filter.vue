@@ -18,7 +18,7 @@
         </Button>
         <Button
           v-if="filters?.size"
-          :tooltip="__('Clear all filter')"
+          :tooltip="__('Clear All Filters')"
           class="rounded-l-none border-l"
           icon="x"
           @click.stop="clearfilter(close)"
@@ -54,7 +54,7 @@
                   :value="f.field.fieldname"
                   :options="filterableFields.data"
                   @change="(e) => updateFilter(e, i)"
-                  :placeholder="__('First name')"
+                  :placeholder="__('First Name')"
                 />
               </div>
               <div id="operator">
@@ -85,7 +85,7 @@
                     :value="f.field.fieldname"
                     :options="filterableFields.data"
                     @change="(e) => updateFilter(e, i)"
-                    :placeholder="__('First name')"
+                    :placeholder="__('First Name')"
                   />
                 </div>
                 <div id="operator">
@@ -120,20 +120,20 @@
             v-else
             class="mb-3 flex h-7 items-center px-3 text-sm text-ink-gray-5"
           >
-            {{ __('Empty - Choose a field to filter by') }}
+            {{ __('Empty - choose a field to filter by') }}
           </div>
           <div class="flex items-center justify-between gap-2">
             <Autocomplete
               value=""
               :options="availableFilters"
               @change="(e) => setfilter(e)"
-              :placeholder="__('First name')"
+              :placeholder="__('First Name')"
             >
               <template #target="{ togglePopover }">
                 <Button
                   class="!text-ink-gray-5"
                   variant="ghost"
-                  :label="__('Add filter')"
+                  :label="__('Add Filter')"
                   iconLeft="plus"
                   @click="togglePopover()"
                 />
@@ -143,7 +143,7 @@
               v-if="filters?.size"
               class="!text-ink-gray-5"
               variant="ghost"
-              :label="__('Clear all filter')"
+              :label="__('Clear All Filters')"
               @click="clearfilter(close)"
             />
           </div>
@@ -558,7 +558,7 @@ function placeholder(f) {
   } else if (f.operator === 'is' || f.operator === 'is not') {
     return __('Set')
   } else if (f.operator === 'timespan') {
-    return __('Last week')
+    return __('Last Week')
   } else if (typeNumber.includes(f.field.fieldtype)) {
     return __('1000')
   } else if (typeDate.includes(f.field.fieldtype)) {
@@ -566,13 +566,13 @@ function placeholder(f) {
   } else if (typeCheck.includes(f.field.fieldtype)) {
     return __('Yes')
   } else if (typeLink.includes(f.field.fieldtype)) {
-    return __('Select a value')
+    return __('Select a Value')
   } else if (typeSelect.includes(f.field.fieldtype)) {
-    return __('Select an option')
+    return __('Select an Option')
   } else if (typeString.includes(f.field.fieldtype)) {
     return __('John Doe')
   }
-  return __('Enter value')
+  return __('Enter Value')
 }
 
 const operatorMap = {
@@ -616,23 +616,23 @@ const oppositeOperatorMap = {
 
 const timespanOptions = [
   {
-    label: __('Last week'),
+    label: __('Last Week'),
     value: 'last week',
   },
   {
-    label: __('Last month'),
+    label: __('Last Month'),
     value: 'last month',
   },
   {
-    label: __('Last quarter'),
+    label: __('Last Quarter'),
     value: 'last quarter',
   },
   {
-    label: __('Last 6 months'),
+    label: __('Last 6 Months'),
     value: 'last 6 months',
   },
   {
-    label: __('Last year'),
+    label: __('Last Year'),
     value: 'last year',
   },
   {
@@ -648,39 +648,39 @@ const timespanOptions = [
     value: 'tomorrow',
   },
   {
-    label: __('This week'),
+    label: __('This Week'),
     value: 'this week',
   },
   {
-    label: __('This month'),
+    label: __('This Month'),
     value: 'this month',
   },
   {
-    label: __('This quarter'),
+    label: __('This Quarter'),
     value: 'this quarter',
   },
   {
-    label: __('This year'),
+    label: __('This Year'),
     value: 'this year',
   },
   {
-    label: __('Next week'),
+    label: __('Next Week'),
     value: 'next week',
   },
   {
-    label: __('Next month'),
+    label: __('Next Month'),
     value: 'next month',
   },
   {
-    label: __('Next quarter'),
+    label: __('Next Quarter'),
     value: 'next quarter',
   },
   {
-    label: __('Next 6 months'),
+    label: __('Next 6 Months'),
     value: 'next 6 months',
   },
   {
-    label: __('Next year'),
+    label: __('Next Year'),
     value: 'next year',
   },
 ]

@@ -3,7 +3,7 @@
     <!-- title and desc -->
     <div role="heading" aria-level="1" class="flex justify-between gap-1">
       <h2 class="text-xl font-semibold text-ink-gray-8">
-        {{ __('Edit email') }}
+        {{ __('Edit Email') }}
       </h2>
     </div>
     <div class="w-fit">
@@ -71,7 +71,7 @@
         @click="emit('update:step', 'email-list')"
       />
       <Button
-        :label="__('Update account')"
+        :label="__('Update Account')"
         variant="solid"
         @click="updateAccount"
         :loading="loading"
@@ -205,11 +205,11 @@ async function callSetValue(values) {
 
 function succesHandler() {
   emit('update:step', 'email-list')
-  toast.success(__('Email account updated successfully'))
+  toast.success(__('Email Account updated successfully'))
 }
 
 function errorHandler() {
   loading.value = false
-  error.value = __('Failed to update email account, Invalid credentials')
+  error.value = __('Failed to update Email Account, Invalid credentials')
 }
 </script>

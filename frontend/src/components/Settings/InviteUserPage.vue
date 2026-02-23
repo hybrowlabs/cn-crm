@@ -3,7 +3,7 @@
     <div class="flex px-2 justify-between">
       <div class="flex flex-col gap-1 w-9/12">
         <h2 class="flex gap-2 text-xl font-semibold leading-none h-5">
-          {{ __('Send invites to') }}
+          {{ __('Send Invites To') }}
         </h2>
         <p class="text-p-base text-ink-gray-6">
           {{
@@ -15,7 +15,7 @@
       </div>
       <div class="flex item-center space-x-2 w-3/12 justify-end">
         <Button
-          :label="__('Send invites')"
+          :label="__('Send Invites')"
           variant="solid"
           :disabled="!invitees.length"
           @click="inviteByEmail.submit()"
@@ -27,7 +27,7 @@
       <div>
         <FormControl
           type="textarea"
-          label="Invite by email"
+          :label="__('Invite By Email')"
           placeholder="user1@example.com, user2@example.com, ..."
           @input="updateInvitees($event.target.value)"
           :debounce="100"
@@ -48,7 +48,7 @@
           type="select"
           class="mt-4"
           v-model="role"
-          :label="__('Invite as')"
+          :label="__('Invite As')"
           :options="roleOptions"
           :description="description"
         />
@@ -58,7 +58,7 @@
           <div
             class="flex items-center justify-between text-base font-semibold"
           >
-            <div>{{ __('Pending invites') }}</div>
+            <div>{{ __('Pending Invites') }}</div>
           </div>
           <ul class="flex flex-col gap-1">
             <li
@@ -76,7 +76,7 @@
               </div>
               <div>
                 <Button
-                  :tooltip="__('Delete invitation')"
+                  :tooltip="__('Delete Invitation')"
                   icon="x"
                   variant="ghost"
                   :loading="
@@ -154,14 +154,14 @@ const description = computed(() => {
 
 const roleOptions = computed(() => {
   return [
-    { value: 'Sales User', label: __('Sales user') },
+    { value: 'Sales User', label: __('Sales User') },
     ...(isManager() ? [{ value: 'Sales Manager', label: __('Manager') }] : []),
     ...(isAdmin() ? [{ value: 'System Manager', label: __('Admin') }] : []),
   ]
 })
 
 const roleMap = {
-  'Sales User': __('Sales user'),
+  'Sales User': __('Sales User'),
   'Sales Manager': __('Manager'),
   'System Manager': __('Admin'),
 }

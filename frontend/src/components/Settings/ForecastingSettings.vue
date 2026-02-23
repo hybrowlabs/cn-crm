@@ -17,12 +17,12 @@
       <div class="flex items-center justify-between py-3 px-2">
         <div class="flex flex-col">
           <div class="text-p-base font-medium text-ink-gray-7 truncate">
-            {{ __('Enable forecasting') }}
+            {{ __('Enable Forecasting') }}
           </div>
           <div class="text-p-sm text-ink-gray-5 truncate">
             {{
               __(
-                'Makes "Expected closure date" and "Expected deal value" mandatory for deal value forecasting',
+                'Makes "Expected Closure Date" and "Expected Deal Value" mandatory for deal value forecasting',
               )
             }}
           </div>
@@ -39,12 +39,12 @@
       <div class="flex items-center justify-between py-3 px-2">
         <div class="flex flex-col">
           <div class="text-p-base font-medium text-ink-gray-7 truncate">
-            {{ __('Auto update expected deal value') }}
+            {{ __('Auto Update Expected Deal Value') }}
           </div>
           <div class="text-p-sm text-ink-gray-5 truncate">
             {{
               __(
-                'Automatically update "Expected deal value" based on the total value of associated products in a deal',
+                'Automatically update "Expected Deal Value" based on the total value of associated products in a deal',
               )
             }}
           </div>
@@ -84,8 +84,8 @@ function autoUpdateExpectedDealValue() {
     onSuccess: () => {
       toast.success(
         settings.doc.auto_update_expected_deal_value
-          ? __('Auto update of expected deal value enabled')
-          : __('Auto update of expected deal value disabled'),
+          ? __('Auto Update of Expected Deal Value enabled')
+          : __('Auto Update of Expected Deal Value disabled'),
       )
     },
   })

@@ -2,11 +2,11 @@
     <div v-if="selectedLog">
         <div class="flex justify-between items-center">
             <Button variant="ghost" icon-left="chevron-left" @click="selectedLog = null">
-                {{ __("Back to all logs") }}
+                {{ __("Back to All Logs") }}
             </Button>
             <Button v-if="logDoc?.document?.retrySync && selectedLog.type != 'Synced'" :loading="logDoc?.document?.retrySync.loading"
                 @click="logDoc?.document?.retrySync.submit()">
-                {{ __("Retry sync") }}
+                {{ __("Retry Sync") }}
             </Button>
         </div>
 
@@ -18,7 +18,7 @@
 
         <div class="mt-4 flex flex-col gap-8">
             <div>
-                <Textarea class="h-[250px]" :label="__('Lead data')" :value="selectedLog.lead_data" disabled />
+                <Textarea class="h-[250px]" :label="__('Lead Data')" :value="selectedLog.lead_data" disabled />
             </div>
 
             <div>
@@ -35,7 +35,7 @@
             showTooltip: true,
             resizeColumn: false,
             emptyState: {
-                title: __('No failure logs found'),
+                title: __('No Failure Logs Found'),
                 description: __('Any failed lead syncs will show up here'),
             },
             onRowClick: (row) => {
@@ -94,10 +94,10 @@ watch(selectedLog, () => {
             retrySync: {
                 method: 'retry_sync',
                 onSuccess() {
-                    toast.success(__("Sync successful!"))
+                    toast.success(__("Sync Successful!"))
                 },
                 onError(e) {
-                    toast.error(e.message || (e.messages ?? e.messages[0]) || e.exc_type || __("Error syncing lead"))
+                    toast.error(e.message || (e.messages ?? e.messages[0]) || e.exc_type || __("Error Syncing Lead"))
                 }
             }
         }

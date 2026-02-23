@@ -1,7 +1,7 @@
 <template>
   <Dialog
     v-model="show"
-    :options="{ title: __('Add existing user') }"
+    :options="{ title: __('Add Existing User') }"
     @close="show = false"
   >
     <template #body-content>
@@ -35,6 +35,10 @@
           :error-message="
             (value) => __('{0} is an invalid email address', [value])
           "
+<<<<<<< HEAD
+=======
+          :emptyPlaceholder="__('No Users Found')"
+>>>>>>> c8f805af (fix: casing)
         />
       </div>
       <FormControl
@@ -87,7 +91,7 @@ const description = computed(() => {
 
 const roleOptions = computed(() => {
   return [
-    { value: 'Sales User', label: __('Sales user') },
+    { value: 'Sales User', label: __('Sales User') },
     ...(isManager() ? [{ value: 'Sales Manager', label: __('Manager') }] : []),
     ...(isAdmin() ? [{ value: 'System Manager', label: __('Admin') }] : []),
   ]
@@ -100,13 +104,13 @@ const addNewUser = createResource({
     role: role.value,
   }),
   onSuccess: () => {
-    toast.success(__('Users added successfully'))
+    toast.success(__('Users Added Successfully'))
     newUsers.value = []
     show.value = false
     users.reload()
   },
   onError: (error) => {
-    toast.error(error.messages[0] || __('Failed to add users'))
+    toast.error(error.messages[0] || __('Failed to Add Users'))
   },
 })
 </script>

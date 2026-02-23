@@ -201,10 +201,10 @@ watch(error, (err) => {
   if (err) {
     errorTitle.value = __(
       err.exc_type == 'DoesNotExistError'
-        ? __('Document not found')
-        : __('Error occurred'),
+        ? __('Document Not Found')
+        : __('Error Occurred'),
     )
-    errorMessage.value = __(err.messages?.[0] || 'An error occurred')
+    errorMessage.value = __(err.messages?.[0] || 'An Error Occurred')
   } else {
     errorTitle.value = ''
     errorMessage.value = ''

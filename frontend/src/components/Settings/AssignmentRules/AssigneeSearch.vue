@@ -6,7 +6,7 @@
           variant="subtle"
           icon-left="plus"
           @click="togglePopover()"
-          :label="__('Add assignee')"
+          :label="__('Add Assignee')"
         />
       </template>
       <template #body="{ togglePopover }">
@@ -67,7 +67,7 @@
               v-if="usersList.length == 0"
               class="mt-1.5 rounded-md p-1.5 text-base text-gray-600"
             >
-              {{ __('No results found') }}
+              {{ __('No Results Found') }}
             </li>
           </ComboboxOptions>
           <div class="border-t p-1.5 pb-0.5 *:w-full">
@@ -75,7 +75,7 @@
               variant="ghost"
               icon-left="plus"
               class="w-full"
-              :label="__('Invite agent')"
+              :label="__('Invite Agent')"
               @click="
                 () => {
                   inviteAgent()
@@ -146,14 +146,14 @@ const addAssignee = (user) => {
 
 const inviteAgent = () => {
   $dialog({
-    title: __('Invite agent'),
+    title: __('Invite Agent'),
     message: __(
       'You will be redirected to invite user page, unsaved changes will be lost.',
     ),
     variant: 'solid',
     actions: [
       {
-        label: __('Go to invite page'),
+        label: __('Go to Invite Page'),
         variant: 'solid',
         onClick: (close) => {
           activeSettingsPage.value = 'Invite User'

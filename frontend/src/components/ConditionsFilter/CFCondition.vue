@@ -44,7 +44,7 @@
             v-if="!props.condition[0]"
             disabled
             type="text"
-            :placeholder="__('operator')"
+            :placeholder="__('Operator')"
             class="w-[100px]"
           />
           <FormControl
@@ -62,7 +62,7 @@
             v-if="!props.condition[0]"
             disabled
             type="text"
-            :placeholder="__('condition')"
+            :placeholder="__('Condition')"
             class="w-full"
           />
           <component
@@ -70,7 +70,7 @@
             :is="getValueControl()"
             v-model="props.condition[2]"
             @change="updateValue"
-            :placeholder="__('condition')"
+            :placeholder="__('Condition')"
           />
         </div>
       </div>
@@ -85,7 +85,7 @@
         variant="outline"
         v-if="props.isGroup && (props.level == 2 || props.level == 4)"
         @click="show = true"
-        :label="__('Open nested conditions')"
+        :label="__('Open Nested Conditions')"
       />
     </div>
     <div :class="'w-max'">
@@ -96,7 +96,7 @@
   </div>
   <Dialog
     v-model="show"
-    :options="{ size: '3xl', title: __('Nested conditions') }"
+    :options="{ size: '3xl', title: __('Nested Conditions') }"
   >
     <template #body-content>
       <CFConditions
@@ -170,7 +170,7 @@ const dropdownOptions = computed(() => {
 
   if (!props.isGroup && props.level < 4) {
     options.push({
-      label: __('Turn into a group'),
+      label: __('Turn into a Group'),
       icon: () => h(GroupIcon),
       onClick: () => {
         emit('turnIntoGroup')
@@ -180,7 +180,7 @@ const dropdownOptions = computed(() => {
 
   if (props.isGroup) {
     options.push({
-      label: __('Ungroup conditions'),
+      label: __('Ungroup Conditions'),
       icon: () => h(UnGroupIcon),
       onClick: () => {
         emit('unGroupConditions')
@@ -197,7 +197,7 @@ const dropdownOptions = computed(() => {
   })
 
   options.push({
-    label: __('Remove group'),
+    label: __('Remove Group'),
     icon: 'trash-2',
     variant: 'red',
     onClick: () => emit('remove'),

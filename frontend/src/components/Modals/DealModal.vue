@@ -13,7 +13,7 @@
               v-if="isManager() && !isMobileView"
               variant="ghost"
               class="w-7"
-              :tooltip="__('Edit fields layout')"
+              :tooltip="__('Edit Fields Layout')"
               :icon="EditIcon"
               @click="openQuickEntryModal"
             />
@@ -34,14 +34,14 @@
               v-if="hasOrganizationSections"
               class="flex items-center gap-3 text-sm text-ink-gray-5"
             >
-              <div>{{ __('Choose existing organization') }}</div>
+              <div>{{ __('Choose Existing Organization') }}</div>
               <Switch v-model="chooseExistingOrganization" />
             </div>
             <div
               v-if="hasContactSections"
               class="flex items-center gap-3 text-sm text-ink-gray-5"
             >
-              <div>{{ __('Choose existing contact') }}</div>
+              <div>{{ __('Choose Existing Contact') }}</div>
               <Switch v-model="chooseExistingContact" />
             </div>
           </div>
@@ -196,7 +196,7 @@ async function createDeal() {
         if (typeof deal.doc.annual_revenue === 'string') {
           deal.doc.annual_revenue = deal.doc.annual_revenue.replace(/,/g, '')
         } else if (isNaN(deal.doc.annual_revenue)) {
-          error.value = __('Annual revenue should be a number')
+          error.value = __('Annual Revenue should be a number')
           return error.value
         }
       }
@@ -204,7 +204,7 @@ async function createDeal() {
         deal.doc.mobile_no &&
         isNaN(deal.doc.mobile_no.replace(/[-+() ]/g, ''))
       ) {
-        error.value = __('Mobile no should be a number')
+        error.value = __('Mobile No. should be a number')
         return error.value
       }
       if (deal.doc.email && !deal.doc.email.includes('@')) {

@@ -52,7 +52,7 @@ let links = [
     icon: LucideGlobe,
   },
   {
-    label: __('GitHub repository'),
+    label: __('GitHub Repository'),
     url: 'https://github.com/frappe/crm',
     icon: LucideGitHub,
   },
@@ -62,12 +62,12 @@ let links = [
     icon: LucideBookOpen,
   },
   {
-    label: __('Report an issue'),
+    label: __('Report an Issue'),
     url: 'https://github.com/frappe/crm/issues',
     icon: LucideBug,
   },
   {
-    label: __('Contact support'),
+    label: __('Contact Support'),
     url: 'https://support.frappe.io',
     icon: LucideHeadset,
   },

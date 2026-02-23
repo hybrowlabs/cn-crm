@@ -6,7 +6,7 @@
         <Button
           variant="ghost"
           icon-left="chevron-left"
-          :label="isLocal ? __('New lead sync source') : syncSource.name"
+          :label="isLocal ? __('New Lead Sync Source') : syncSource.name"
           size="md"
           @click="() => emit('updateStep', 'source-list')"
           class="cursor-pointer hover:bg-transparent focus:bg-transparent focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:none active:bg-transparent active:outline-none active:ring-0 active:ring-offset-0 active:text-ink-gray-5 font-semibold text-xl hover:opacity-70 !pr-0 !max-w-96 !justify-start"
@@ -20,7 +20,7 @@
 
         <Button
           v-if="!isLocal && docResource?.document?.syncLeads"
-          :label="__('Sync now')"
+          :label="__('Sync Now')"
           variant="outline"
           :loading="docResource?.document?.syncLeads.loading"
           @click="docResource?.document?.syncLeads.submit()"
@@ -53,8 +53,8 @@
               required="true"
               v-model="syncSource.type"
               :options="supportedSourceTypes"
-              :label="__('Source type')"
-              :placeholder="__('Select source type')"
+              :label="__('Source Type')"
+              :placeholder="__('Select Source Type')"
             >
               <template v-if="syncSource.type" #prefix>
                 <component class="mr-2 size-4" :is="syncSource.type.icon" />
@@ -70,8 +70,8 @@
               v-if="isLocal"
               required="true"
               v-model="syncSource.name"
-              :label="__('Source name')"
-              :placeholder="__('Enter source name')"
+              :label="__('Source Name')"
+              :placeholder="__('Enter Source Name')"
             />
 
             <FormControl
@@ -80,15 +80,15 @@
               required="true"
               :options="fieldsMap.background_sync_frequency.options"
               v-model="syncSource.background_sync_frequency"
-              :label="__('Background sync frequency')"
+              :label="__('Background Sync Frequency')"
             />
 
             <FormControl
               type="password"
               required="true"
               v-model="syncSource.access_token"
-              :label="__('Access token')"
-              :placeholder="__('Enter access token')"
+              :label="__('Access Token')"
+              :placeholder="__('Enter Access Token')"
             >
               <template #suffix>
                 <a
@@ -105,7 +105,7 @@
               :modelValue="formatDate(sourceDoc.last_synced_at)"
               disabled
               type="datetime"
-              :label="__('Last synced at')"
+              :label="__('Last Synced At')"
             />
 
             <Link
@@ -145,7 +145,7 @@
                   {
                     fieldname: 'mapped_to_crm_field',
                     options: getCRMLeadFields,
-                    placeholder: __('Not synced'),
+                    placeholder: __('Not Synced'),
                   },
                 ],
               }"
@@ -204,7 +204,7 @@ const tabs = computed(() => {
 
   if (!isLocal.value) {
     tabList.push({
-      label: __('Failure logs'),
+      label: __('Failure Logs'),
       icon: RefreshIcon,
     })
   }
@@ -271,7 +271,7 @@ function updateSource(data) {
         mappingFormDocResource.value.document.save.submit()
       },
       onError(e) {
-        toast.error(e.messages[0] || __('Error updating Lead sync source'))
+        toast.error(e.messages[0] || __('Error updating Lead Sync Source'))
       },
     },
   )
@@ -285,12 +285,12 @@ function createSource() {
     },
     {
       onSuccess: (newDoc) => {
-        toast.success(__('Lead sync source created successfully'))
+        toast.success(__('Lead Sync Source created successfully'))
         isLocal.value = false
         docResource.value = getSourceDocResource(newDoc.name)
       },
       onError(error) {
-        toast.error(error.messages[0] || __('Error creating lead sync source'))
+        toast.error(error.messages[0] || __('Error creating Lead Sync Source'))
       },
     },
   )

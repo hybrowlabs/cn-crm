@@ -180,7 +180,7 @@
         <div class="flex gap-2">
           <Button
             class="bg-surface-gray-6 text-ink-white hover:bg-surface-gray-5"
-            :tooltip="__('Add a note')"
+            :tooltip="__('Add a Note')"
             size="md"
             :icon="NoteIcon"
             @click="showNoteWindow"
@@ -188,7 +188,7 @@
           <Button
             class="bg-surface-gray-6 text-ink-white hover:bg-surface-gray-5"
             size="md"
-            :tooltip="__('Add a task')"
+            :tooltip="__('Add a Task')"
             :icon="TaskIcon"
             @click="showTaskWindow"
           />

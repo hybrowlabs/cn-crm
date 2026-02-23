@@ -13,7 +13,7 @@
   />
   <div class="w-full" v-else>
     <div class="flex items-center py-2 px-4 text-sm text-ink-gray-5">
-      <div class="w-7/12">{{ __('Assignment rule') }}</div>
+      <div class="w-7/12">{{ __('Assignment Rule') }}</div>
       <div class="w-3/12">{{ __('Priority') }}</div>
       <div class="w-2/12">{{ __('Enabled') }}</div>
     </div>

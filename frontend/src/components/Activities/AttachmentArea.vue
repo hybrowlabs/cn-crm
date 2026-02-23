@@ -40,7 +40,7 @@
           <div class="flex gap-1">
             <Button
               :tooltip="
-                attachment.is_private ? __('Make public') : __('Make private')
+                attachment.is_private ? __('Make Public') : __('Make Private')
               "
               class="!size-5"
               @click.stop="
@@ -55,7 +55,7 @@
               </template>
             </Button>
             <Button
-              :tooltip="__('Delete attachment')"
+              :tooltip="__('Delete Attachment')"
               class="!size-5"
               @click.stop="() => deleteAttachment(attachment.name)"
             >
@@ -124,7 +124,7 @@ function togglePrivate(fileName, isPrivate) {
 
 function deleteAttachment(fileName) {
   $dialog({
-    title: __('Delete attachment'),
+    title: __('Delete Attachment'),
     message: __('Are you sure you want to delete this attachment?'),
     actions: [
       {

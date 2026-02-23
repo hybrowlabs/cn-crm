@@ -3,15 +3,15 @@
     v-model="show"
     :options="{
       title: editMode
-        ? __('Edit view')
+        ? __('Edit View')
         : duplicateMode
-          ? __('Duplicate view')
-          : __('Create view'),
+          ? __('Duplicate View')
+          : __('Create View'),
     }"
   >
     <template #body-content>
       <div class="mb-1.5 block text-base text-ink-gray-5">
-        {{ __('View name') }}
+        {{ __('View Name') }}
       </div>
       <div class="flex gap-2">
         <IconPicker v-model="view.icon" v-slot="{ togglePopover }">
@@ -26,7 +26,7 @@
           class="flex-1"
           size="md"
           type="text"
-          :placeholder="__('My open deals')"
+          :placeholder="__('My Open Deals')"
           v-model="view.label"
         />
       </div>
@@ -37,7 +37,7 @@
           variant="solid"
           :label="
             editMode
-              ? __('Save changes')
+              ? __('Save Changes')
               : duplicateMode
                 ? __('Duplicate')
                 : __('Create')

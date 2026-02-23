@@ -20,7 +20,7 @@
           <Button
             v-if="files.length"
             variant="subtle"
-            :label="__('Remove all')"
+            :label="__('Remove All')"
             :disabled="fileUploadStarted"
             @click="removeAllFiles"
           />
@@ -28,7 +28,7 @@
             v-if="
               filesUploaderArea?.showWebLink || filesUploaderArea?.showCamera
             "
-            :label="isMobileView ? __('Back') : __('Back to file upload')"
+            :label="isMobileView ? __('Back') : __('Back to File Upload')"
             iconLeft="arrow-left"
             @click="
               () => {
@@ -43,7 +43,7 @@
             v-if="
               filesUploaderArea?.showCamera && !filesUploaderArea?.cameraImage
             "
-            :label="__('Switch camera')"
+            :label="__('Switch Camera')"
             @click="() => filesUploaderArea.switchCamera()"
           />
           <Button

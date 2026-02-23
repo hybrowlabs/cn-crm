@@ -26,13 +26,13 @@
                             {
                               icon: 'upload',
                               label: profile.user_image
-                                ? __('Change image')
-                                : __('Upload image'),
+                                ? __('Change Image')
+                                : __('Upload Image'),
                               onClick: openFileSelector,
                             },
                             {
                               icon: 'trash-2',
-                              label: __('Remove image'),
+                              label: __('Remove Image'),
                               onClick: () => updateImage(),
                             },
                           ],
@@ -75,14 +75,14 @@
         <div class="flex items-center justify-between">
           <div class="flex gap-2 items-center">
             <div class="text-base font-semibold text-ink-gray-9">
-              {{ __('Account info & security') }}
+              {{ __('Account Info & Security') }}
             </div>
             <Badge
               v-if="dirty || isLanguageChanged"
               :variant="'subtle'"
               :theme="'orange'"
               size="sm"
-              :label="__('Unsaved')"
+              :label="__('Not Saved')"
             />
           </div>
           <Button
@@ -95,13 +95,13 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6">
           <FormControl
             class="w-full"
-            :label="__('First name')"
+            :label="__('First Name')"
             maxlength="40"
             v-model="profile.first_name"
           />
           <FormControl
             class="w-full"
-            :label="__('Last name')"
+            :label="__('Last Name')"
             maxlength="40"
             v-model="profile.last_name"
           />
@@ -201,7 +201,7 @@ const setUser = createResource({
   async onSuccess() {
     await users.reload()
     profile.value = { ...user.value }
-    toast.success(__('Profile updated'))
+    toast.success(__('Profile Updated'))
   },
   onError: (err) => {
     toast.error(err.messages?.[0] || __('Failed to update profile'))
@@ -220,7 +220,7 @@ const saveLanguageResource = createResource({
     }
   },
   onSuccess() {
-    toast.success(__('Language updated'))
+    toast.success(__('Language Updated'))
     clearCache()
     window.location.reload()
   },

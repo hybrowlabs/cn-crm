@@ -18,11 +18,11 @@
         <Dropdown
           :options="[
             {
-              label: __('Add existing user'),
+              label: __('Add Existing User'),
               onClick: () => (showAddExistingModal = true),
             },
             {
-              label: __('Invite new user'),
+              label: __('Invite New User'),
               onClick: () => (activeSettingsPage = 'Invite User'),
             },
           ]"
@@ -66,7 +66,7 @@
         <TextInput
           ref="searchRef"
           v-model="search"
-          :placeholder="__('Search user')"
+          :placeholder="__('Search User')"
           class="w-1/3"
           :debounce="300"
         >
@@ -81,7 +81,7 @@
             { label: __('All'), value: 'All' },
             { label: __('Admin'), value: 'System Manager' },
             { label: __('Manager'), value: 'Sales Manager' },
-            { label: __('Sales user'), value: 'Sales User' },
+            { label: __('Sales User'), value: 'Sales User' },
           ]"
         />
       </div>
@@ -148,7 +148,7 @@
             class="mt-3.5 p-2"
             @click="() => users.next()"
             :loading="users.loading"
-            :label="__('Load more')"
+            :label="__('Load More')"
             icon-left="refresh-cw"
           />
         </div>
@@ -188,7 +188,7 @@ const currentRole = ref('All')
 const roleMap = {
   'System Manager': __('Admin'),
   'Sales Manager': __('Manager'),
-  'Sales User': __('Sales user'),
+  'Sales User': __('Sales User'),
 }
 
 const usersList = computed(() => {
@@ -222,7 +222,7 @@ function getMoreOptions(user) {
       condition: () => !confirmRemove.value,
     },
     {
-      label: __('Confirm remove'),
+      label: __('Confirm Remove'),
       icon: 'trash-2',
       theme: 'red',
       onClick: () => removeUser(user, true),
@@ -256,10 +256,10 @@ function getDropdownOptions(user) {
       condition: () => isManager(),
     },
     {
-      label: __('Sales user'),
+      label: __('Sales User'),
       component: () =>
         DropdownOption({
-          option: __('Sales user'),
+          option: __('Sales User'),
           icon: 'user-check',
           selected: user.role === 'Sales User',
         }),

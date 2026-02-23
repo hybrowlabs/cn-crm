@@ -32,7 +32,7 @@ const props = defineProps({
 })
 
 const computedTitle = computed(() => {
-  return props.title ? props.title : __('No {0} found', [__(props.name)])
+  return props.title ? props.title : __('No {0} Found', [__(props.name)])
 })
 
 const computedDescription = computed(() => {

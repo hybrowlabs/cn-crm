@@ -1,7 +1,7 @@
 <template>
   <Dialog
     v-model="show"
-    :options="{ title: __('Lost reason') }"
+    :options="{ title: __('Lost Reason') }"
     @close="cancel"
   >
     <template #body-content>
@@ -16,7 +16,7 @@
       <div class="flex flex-col gap-3">
         <div>
           <div class="mb-2 text-sm text-ink-gray-5">
-            {{ __('Lost reason') }}
+            {{ __('Lost Reason') }}
             <span class="text-ink-red-2">*</span>
           </div>
           <Link
@@ -30,7 +30,7 @@
         </div>
         <div>
           <div class="mb-2 text-sm text-ink-gray-5">
-            {{ __('Lost notes') }}
+            {{ __('Lost Notes') }}
             <span v-if="lostReason == 'Other'" class="text-ink-red-2">*</span>
           </div>
           <FormControl
@@ -87,11 +87,11 @@ function cancel() {
 
 function save() {
   if (!lostReason.value) {
-    error.value = __('Lost reason is required')
+    error.value = __('Lost Reason is required')
     return
   }
   if (lostReason.value === 'Other' && !lostNotes.value) {
-    error.value = __('Lost notes are required when lost reason is "Other"')
+    error.value = __('Lost Notes are required when Lost Reason is "Other"')
     return
   }
 

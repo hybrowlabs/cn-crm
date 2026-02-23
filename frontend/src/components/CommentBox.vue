@@ -46,7 +46,7 @@
               @update:modelValue="() => appendEmoji()"
             >
               <Button
-                :tooltip="__('Insert emoji')"
+                :tooltip="__('Insert Emoji')"
                 :icon="SmileIcon"
                 variant="ghost"
                 @click="togglePopover()"
@@ -62,7 +62,7 @@
             >
               <template #default="{ openFileSelector }">
                 <Button
-                  :tooltip="__('Attach a file')"
+                  :tooltip="__('Attach a File')"
                   variant="ghost"
                   :icon="AttachmentIcon"
                   @click="openFileSelector()"

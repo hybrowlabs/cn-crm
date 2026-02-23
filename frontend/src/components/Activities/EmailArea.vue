@@ -38,7 +38,7 @@
             @click="reply(activity.data)"
           />
           <Button
-            :tooltip="__('Reply all')"
+            :tooltip="__('Reply All')"
             variant="ghost"
             :icon="ReplyAllIcon"
             class="text-ink-gray-7"

@@ -59,7 +59,7 @@
         variant="ghost"
         class="!h-6.5 !text-ink-gray-5 hover:!text-ink-gray-9"
         @click="addTab"
-        :label="__('Add tab')"
+        :label="__('Add Tab')"
       >
         <template v-slot:[slotName]>
           <FeatherIcon name="plus" class="h-4" />
@@ -89,7 +89,7 @@
                     italic: !section.label,
                   }"
                 >
-                  {{ __(section.label) || __('No label') }}
+                  {{ __(section.label) || __('No Label') }}
                   <FeatherIcon
                     v-if="section.collapsible"
                     name="chevron-down"
@@ -169,7 +169,7 @@
                         <Button
                           class="w-full !h-8 !bg-surface-modal"
                           variant="outline"
-                          :label="__('Add field')"
+                          :label="__('Add Field')"
                           iconLeft="plus"
                           @click="togglePopover()"
                         />
@@ -194,11 +194,11 @@
         <Button
           class="w-full h-8"
           variant="subtle"
-          :label="__('Add section')"
+          :label="__('Add Section')"
           iconLeft="plus"
           @click="
             tabs[tabIndex].sections.push({
-              label: __('New section'),
+              label: __('New Section'),
               name: 'section_' + getRandom(),
               opened: true,
               columns: [{ name: 'column_' + getRandom(), fields: [] }],
@@ -290,12 +290,12 @@ const fields = createResource({
 
 function addTab() {
   if (props.tabs.length == 1 && !props.tabs[0].label) {
-    props.tabs[0].label = __('New tab')
+    props.tabs[0].label = __('New Tab')
     return
   }
 
   props.tabs.push({
-    label: __('New tab'),
+    label: __('New Tab'),
     name: 'tab_' + getRandom(),
     sections: [],
   })
@@ -315,7 +315,7 @@ function getTabOptions(tab) {
       onClick: () => (tab.editingLabel = true),
     },
     {
-      label: __('Remove tab'),
+      label: __('Remove Tab'),
       icon: 'trash-2',
       onClick: () => {
         if (props.tabs.length == 1) {
@@ -346,17 +346,17 @@ function getSectionOptions(i, section, tab) {
           onClick: () => (section.collapsible = !section.collapsible),
         },
         {
-          label: section.hideLabel ? __('Show label') : __('Hide label'),
+          label: section.hideLabel ? __('Show Label') : __('Hide Label'),
           icon: section.hideLabel ? 'eye' : 'eye-off',
           onClick: () => (section.hideLabel = !section.hideLabel),
         },
         {
-          label: section.hideBorder ? __('Show border') : __('Hide border'),
+          label: section.hideBorder ? __('Show Border') : __('Hide Border'),
           icon: 'minus',
           onClick: () => (section.hideBorder = !section.hideBorder),
         },
         {
-          label: __('Remove section'),
+          label: __('Remove Section'),
           icon: 'trash-2',
           onClick: () => {
             tab.sections.splice(tab.sections.indexOf(section), 1)
@@ -384,7 +384,7 @@ function getSectionOptions(i, section, tab) {
           condition: () => section.editable !== false && section.columns.length,
         },
         {
-          label: __('Move to previous tab'),
+          label: __('Move to Previous Tab'),
           icon: 'corner-up-left',
           onClick: () => {
             let previousTab = props.tabs[tabIndex.value - 1]
@@ -398,7 +398,7 @@ function getSectionOptions(i, section, tab) {
           condition: () => props.tabs[tabIndex.value - 1],
         },
         {
-          label: __('Move to next tab'),
+          label: __('Move to Next Tab'),
           icon: 'corner-up-right',
           onClick: () => {
             let nextTab = props.tabs[tabIndex.value + 1]
@@ -417,7 +417,7 @@ function getSectionOptions(i, section, tab) {
       group: __('Column'),
       items: [
         {
-          label: __('Add column'),
+          label: __('Add Column'),
           icon: 'columns',
           onClick: () => {
             section.columns.push({
@@ -429,7 +429,7 @@ function getSectionOptions(i, section, tab) {
           condition: () => section.columns.length < 4,
         },
         {
-          label: __('Remove column'),
+          label: __('Remove Column'),
           icon: 'trash-2',
           onClick: () => section.columns.pop(),
           condition: () => section.columns.length > 1,
@@ -445,7 +445,7 @@ function getSectionOptions(i, section, tab) {
           condition: () => section.columns.length > 1 && column.fields.length,
         },
         {
-          label: __('Move to next section'),
+          label: __('Move to Next Section'),
           icon: 'corner-up-right',
           onClick: () => {
             let nextSection = tab.sections[i + 1]
@@ -455,7 +455,7 @@ function getSectionOptions(i, section, tab) {
           condition: () => tab.sections[i + 1],
         },
         {
-          label: __('Move to previous section'),
+          label: __('Move to Previous Section'),
           icon: 'corner-up-left',
           onClick: () => {
             let previousSection = tab.sections[i - 1]
