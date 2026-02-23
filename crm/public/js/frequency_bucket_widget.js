@@ -57,7 +57,7 @@ crm.frequency_bucket_widget = {
 					font-size: 14px;
 				}
 
-				/* ---- Bucket Section ---- */
+				/* Bucket Section */
 				.freq-bucket-section {
 					border-bottom: 2px solid #e2e8f0;
 				}
@@ -71,11 +71,9 @@ crm.frequency_bucket_widget = {
 					padding: 11px 16px;
 					cursor: pointer;
 					transition: background 0.15s ease;
-					background: #eef2ff;
-					border-bottom: 1px solid #e2e8f0;
 				}
 				.freq-bucket-bar:hover {
-					background: #e0e7ff;
+					background: #e0e7ff !important;
 				}
 				.freq-bucket-bar-left {
 					display: flex;
@@ -114,87 +112,111 @@ crm.frequency_bucket_widget = {
 					max-height: 8000px;
 				}
 
-				/* ---- Customer Row (flat list, no second accordion) ---- */
-				.freq-cust-row {
-					display: flex;
-					align-items: flex-start;
-					padding: 10px 16px;
-					border-bottom: 1px solid #f1f5f9;
-					background: #fff;
-					transition: background 0.15s ease;
+				/* Customer card inside bucket */
+				.freq-customer-card {
+					border-bottom: 1px solid #e2e8f0;
 				}
-				.freq-cust-row:last-child {
+				.freq-customer-card:last-child {
 					border-bottom: none;
 				}
-				.freq-cust-row:hover {
-					background: #f8fafc;
+				.freq-customer-hdr {
+					display: flex;
+					justify-content: space-between;
+					align-items: center;
+					padding: 10px 16px;
+					cursor: pointer;
+					transition: background 0.15s ease;
+					background: #fff;
 				}
-				.freq-cust-name {
+				.freq-customer-hdr:hover {
+					background: #eef2f7;
+				}
+				.freq-customer-link {
 					font-size: 13px;
 					font-weight: 600;
 					color: #1e293b;
 					cursor: pointer;
-					transition: color 0.15s;
-					white-space: nowrap;
-					min-width: 140px;
-					flex-shrink: 0;
+					transition: color 0.15s ease;
 				}
-				.freq-cust-name:hover {
+				.freq-customer-link:hover {
 					color: #3b82f6;
 				}
-				.freq-cust-items-list {
-					flex: 1;
-					margin-left: 16px;
-				}
-				.freq-item-pill {
-					display: inline-flex;
+				.freq-cust-right {
+					display: flex;
 					align-items: center;
-					gap: 6px;
-					background: #f1f5f9;
-					border: 1px solid #e2e8f0;
-					border-radius: 6px;
-					padding: 4px 10px;
-					margin: 2px 4px 2px 0;
-					font-size: 12px;
-					color: #334155;
-					transition: border-color 0.15s;
+					gap: 8px;
 				}
-				.freq-item-pill:hover {
-					border-color: #94a3b8;
-				}
-				.freq-pill-item-name {
-					font-weight: 600;
-					color: #1e293b;
-				}
-				.freq-pill-sep {
-					color: #cbd5e1;
-				}
-				.freq-pill-detail {
+				.freq-cust-item-count {
+					font-size: 11px;
 					color: #64748b;
-					font-size: 11px;
 				}
-				.freq-pill-freq {
-					background: #dbeafe;
-					color: #1d4ed8;
-					font-weight: 700;
-					font-size: 10px;
-					padding: 1px 6px;
-					border-radius: 8px;
+				.freq-cust-chevron {
+					font-size: 9px;
+					color: #94a3b8;
+					transition: transform 0.25s ease;
+					display: inline-block;
 				}
-				.freq-pill-date {
+				.freq-cust-chevron.rotate {
+					transform: rotate(90deg);
+				}
+				.freq-customer-items {
+					max-height: 0;
+					overflow: hidden;
+					transition: max-height 0.3s ease;
+					background: #ffffff;
+				}
+				.freq-customer-items.open {
+					max-height: 3000px;
+				}
+
+				/* Table inside customer */
+				.freq-table {
+					width: 100%;
+					border-collapse: collapse;
+					font-size: 12px;
+				}
+				.freq-table thead th {
+					background: #f1f5f9;
+					color: #475569;
+					font-weight: 600;
 					font-size: 11px;
+					text-transform: uppercase;
+					letter-spacing: 0.5px;
+					padding: 8px 12px;
+					text-align: left;
+					border-bottom: 2px solid #e2e8f0;
+				}
+				.freq-table tbody td {
+					padding: 8px 12px;
+					color: #334155;
+					border-bottom: 1px solid #f1f5f9;
+					vertical-align: middle;
+				}
+				.freq-table tbody tr:last-child td {
+					border-bottom: none;
+				}
+				.freq-table tbody tr:hover td {
+					background: #f8fafc;
+				}
+				.freq-table .td-item {
 					font-weight: 500;
 				}
-				.freq-pill-date.overdue {
+				.freq-table .td-freq {
+					font-weight: 600;
+					color: #1d4ed8;
+				}
+				.freq-table .td-date.overdue {
 					color: #dc2626;
+					font-weight: 600;
 				}
-				.freq-pill-date.due-today {
+				.freq-table .td-date.due-today {
 					color: #d97706;
+					font-weight: 600;
 				}
-				.freq-pill-date.upcoming {
+				.freq-table .td-date.upcoming {
 					color: #16a34a;
 				}
-				.freq-pill-date.no-date {
+				.freq-table .td-date.no-date {
 					color: #94a3b8;
 				}
 			</style>
@@ -237,9 +259,27 @@ crm.frequency_bucket_widget = {
             }
         });
 
+        // Toggle customer items
+        container.off('click', '.freq-customer-hdr');
+        container.on('click', '.freq-customer-hdr', function () {
+            const card = $(this).closest('.freq-customer-card');
+            const items = card.find('.freq-customer-items');
+            const icon = $(this).find('.freq-cust-chevron');
+            const isOpen = items.hasClass('open');
+
+            // close all in this bucket
+            card.closest('.freq-bucket-body').find('.freq-customer-items').removeClass('open');
+            card.closest('.freq-bucket-body').find('.freq-cust-chevron').removeClass('rotate');
+
+            if (!isOpen) {
+                items.addClass('open');
+                icon.addClass('rotate');
+            }
+        });
+
         // Open customer doc
-        container.off('click', '.freq-cust-name');
-        container.on('click', '.freq-cust-name', function (e) {
+        container.off('click', '.freq-customer-link');
+        container.on('click', '.freq-customer-link', function (e) {
             e.stopPropagation();
             const name = $(this).data('name');
             frappe.set_route('Form', 'Customer', name);
@@ -266,7 +306,7 @@ crm.frequency_bucket_widget = {
                 content.show();
 
                 if (r.message?.buckets?.length) {
-                    this.render_buckets(list, r.message.buckets);
+                    this.render_buckets(list, r.message.buckets, container);
                     empty.hide();
                     list.show();
                 } else {
@@ -280,17 +320,15 @@ crm.frequency_bucket_widget = {
     // -------------------------------------------
 
     _bucket_colors: [
-        { bg: '#10b981', bar: '#ecfdf5' },  // green
-        { bg: '#3b82f6', bar: '#eff6ff' },  // blue
-        { bg: '#8b5cf6', bar: '#f5f3ff' },  // violet
-        { bg: '#f59e0b', bar: '#fffbeb' },  // amber
-        { bg: '#ef4444', bar: '#fef2f2' },  // red
-        { bg: '#6b7280', bar: '#f9fafb' },  // gray
+        { bg: '#10b981', bar: '#ecfdf5' },
+        { bg: '#3b82f6', bar: '#eff6ff' },
+        { bg: '#f59e0b', bar: '#fffbeb' },
+        { bg: '#6b7280', bar: '#f9fafb' },
     ],
 
     // -------------------------------------------
 
-    render_buckets(container, buckets) {
+    render_buckets(container, buckets, widget) {
         container.empty();
         const today = frappe.datetime.get_today();
 
@@ -316,17 +354,39 @@ crm.frequency_bucket_widget = {
 
             bucket.customers.forEach(customer => {
 
-                const row = $(`<div class="freq-cust-row"></div>`);
-
-                // Customer name
-                const nameEl = $(`
-					<div class="freq-cust-name" data-name="${customer.customer_code}">
-						${customer.customer_name}
+                const custCard = $(`
+					<div class="freq-customer-card">
+						<div class="freq-customer-hdr">
+							<div>
+								<strong class="freq-customer-link"
+										data-name="${customer.customer_code}">
+									${customer.customer_name}
+								</strong>
+							</div>
+							<div class="freq-cust-right">
+								<span class="freq-cust-item-count">${customer.items.length} item${customer.items.length !== 1 ? 's' : ''}</span>
+								<span class="freq-cust-chevron">▶</span>
+							</div>
+						</div>
+						<div class="freq-customer-items"></div>
 					</div>
 				`);
 
-                // Items pills
-                const pillsContainer = $(`<div class="freq-cust-items-list"></div>`);
+                const itemsContainer = custCard.find('.freq-customer-items');
+
+                // Build table
+                let tableHTML = `
+					<table class="freq-table">
+						<thead>
+							<tr>
+								<th>Item Name</th>
+								<th>Qty</th>
+								<th>Frequency Day</th>
+								<th>Next Order Date</th>
+							</tr>
+						</thead>
+						<tbody>
+				`;
 
                 customer.items.forEach(item => {
                     let dateClass = 'upcoming';
@@ -340,24 +400,20 @@ crm.frequency_bucket_widget = {
                         dateClass = 'no-date';
                     }
 
-                    const pill = $(`
-						<span class="freq-item-pill">
-							<span class="freq-pill-item-name">${item.item}</span>
-							<span class="freq-pill-sep">|</span>
-							<span class="freq-pill-freq">${item.frequency_day}d</span>
-							<span class="freq-pill-sep">|</span>
-							<span class="freq-pill-detail">Qty ${item.quantity || 0}</span>
-							<span class="freq-pill-sep">|</span>
-							<span class="freq-pill-date ${dateClass}">${dateLabel}</span>
-						</span>
-					`);
-
-                    pillsContainer.append(pill);
+                    tableHTML += `
+						<tr>
+							<td class="td-item">${item.item}</td>
+							<td>${item.quantity || 0}</td>
+							<td class="td-freq">${item.frequency_day}</td>
+							<td class="td-date ${dateClass}">${dateLabel}</td>
+						</tr>
+					`;
                 });
 
-                row.append(nameEl);
-                row.append(pillsContainer);
-                body.append(row);
+                tableHTML += `</tbody></table>`;
+                itemsContainer.html(tableHTML);
+
+                body.append(custCard);
             });
 
             container.append(section);

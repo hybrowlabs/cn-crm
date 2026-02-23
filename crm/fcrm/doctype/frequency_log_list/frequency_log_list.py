@@ -168,12 +168,10 @@ def get_frequency_buckets():
 
 	# Define buckets
 	bucket_defs = [
-		{"label": "1 – 10 Days", "min": 1, "max": 10},
-		{"label": "11 – 20 Days", "min": 11, "max": 20},
-		{"label": "21 – 30 Days", "min": 21, "max": 30},
-		{"label": "31 – 40 Days", "min": 31, "max": 40},
-		{"label": "41 – 50 Days", "min": 41, "max": 50},
-		{"label": "51+ Days", "min": 51, "max": 999999},
+		{"label": "1 – 15 Days", "min": 1, "max": 15},
+		{"label": "16 – 30 Days", "min": 16, "max": 30},
+		{"label": "31 – 60 Days", "min": 31, "max": 60},
+		{"label": "60+ Days", "min": 61, "max": 999999},
 	]
 
 	# Initialise bucket data structures

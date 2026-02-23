@@ -47,6 +47,8 @@ crm.followup_widget = {
 				.followup-content {
 					background: #f8fafc;
 					border-radius: 0 0 10px 10px;
+					border: 1px solid #e2e8f0;
+					border-top: none;
 				}
 				.customer-card {
 					border-bottom: 1px solid #e2e8f0;
@@ -61,6 +63,7 @@ crm.followup_widget = {
 					padding: 10px 16px;
 					cursor: pointer;
 					transition: background 0.15s ease;
+					background: #fff;
 				}
 				.customer-header:hover {
 					background: #eef2f7;
@@ -74,6 +77,15 @@ crm.followup_widget = {
 				}
 				.customer-link:hover {
 					color: #3b82f6;
+				}
+				.cust-right {
+					display: flex;
+					align-items: center;
+					gap: 8px;
+				}
+				.cust-item-count {
+					font-size: 11px;
+					color: #64748b;
 				}
 				.chevron {
 					font-size: 10px;
@@ -91,37 +103,51 @@ crm.followup_widget = {
 					background: #ffffff;
 				}
 				.customer-items.open {
-					max-height: 2000px;
+					max-height: 3000px;
 				}
-				.item-row {
-					display: flex;
-					justify-content: space-between;
-					align-items: center;
-					padding: 8px 16px 8px 28px;
-					border-top: 1px solid #f1f5f9;
-					transition: background 0.15s ease;
+
+				/* Table */
+				.followup-table {
+					width: 100%;
+					border-collapse: collapse;
+					font-size: 12px;
 				}
-				.item-row:hover {
+				.followup-table thead th {
+					background: #f1f5f9;
+					color: #475569;
+					font-weight: 600;
+					font-size: 11px;
+					text-transform: uppercase;
+					letter-spacing: 0.5px;
+					padding: 8px 12px;
+					text-align: left;
+					border-bottom: 2px solid #e2e8f0;
+				}
+				.followup-table tbody td {
+					padding: 8px 12px;
+					color: #334155;
+					border-bottom: 1px solid #f1f5f9;
+					vertical-align: middle;
+				}
+				.followup-table tbody tr:last-child td {
+					border-bottom: none;
+				}
+				.followup-table tbody tr:hover td {
 					background: #f8fafc;
 				}
-				.item-title {
-					font-size: 13px;
+				.followup-table .td-item {
 					font-weight: 500;
-					color: #334155;
-					margin-bottom: 2px;
 				}
-				.item-meta {
-					font-size: 11px;
-					color: #64748b;
-					line-height: 1.5;
+				.followup-table .td-date.overdue {
+					color: #dc2626;
+					font-weight: 600;
 				}
-				.item-meta span {
-					display: inline-block;
-					margin-right: 10px;
+				.followup-table .td-date.due-today {
+					color: #d97706;
+					font-weight: 600;
 				}
-				.item-right {
-					flex-shrink: 0;
-					margin-left: 12px;
+				.followup-table .td-date.upcoming {
+					color: #16a34a;
 				}
 				.urgency-badge {
 					font-size: 10px;
@@ -130,48 +156,21 @@ crm.followup_widget = {
 					border-radius: 10px;
 					text-transform: uppercase;
 					letter-spacing: 0.5px;
+					white-space: nowrap;
 				}
-				.urgency-overdue .urgency-badge,
-				.urgency-overdue.urgency-badge {
-					background: #fef2f2;
-					color: #dc2626;
-					border: 1px solid #fecaca;
-				}
-				.urgency-today .urgency-badge,
-				.urgency-today.urgency-badge {
-					background: #fffbeb;
-					color: #d97706;
-					border: 1px solid #fde68a;
-				}
-				.urgency-inactive .urgency-badge,
-				.urgency-inactive.urgency-badge {
-					background: #f0f9ff;
-					color: #0284c7;
-					border: 1px solid #bae6fd;
-				}
-				.urgency-escalated .urgency-badge,
-				.urgency-escalated.urgency-badge {
-					background: #fdf4ff;
-					color: #a855f7;
-					border: 1px solid #e9d5ff;
-				}
-				.urgency-dormant .urgency-badge,
-				.urgency-dormant.urgency-badge {
-					background: #f1f5f9;
-					color: #64748b;
-					border: 1px solid #cbd5e1;
-				}
-				.urgency-upcoming .urgency-badge,
-				.urgency-upcoming.urgency-badge {
-					background: #f0fdf4;
-					color: #16a34a;
-					border: 1px solid #bbf7d0;
-				}
+				.urgency-overdue { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+				.urgency-today { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+				.urgency-inactive { background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; }
+				.urgency-escalated { background: #fdf4ff; color: #a855f7; border: 1px solid #e9d5ff; }
+				.urgency-dormant { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+				.urgency-upcoming { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+
+				/* Footer */
 				.items-footer {
 					display: flex;
 					justify-content: space-between;
 					align-items: center;
-					padding: 10px 16px 10px 28px;
+					padding: 10px 12px;
 					border-top: 1px solid #e2e8f0;
 					background: #f8fafc;
 				}
@@ -325,7 +324,10 @@ crm.followup_widget = {
 								${customer.customer_name}
 							</strong>
 						</div>
-						<span class="chevron">▶</span>
+						<div class="cust-right">
+							<span class="cust-item-count">${customer.items.length} item${customer.items.length !== 1 ? 's' : ''}</span>
+							<span class="chevron">▶</span>
+						</div>
 					</div>
 					<div class="customer-items"></div>
 				</div>
@@ -334,6 +336,22 @@ crm.followup_widget = {
 			const itemsContainer = card.find('.customer-items');
 
 			//-------------------------------------
+			// BUILD TABLE
+			//-------------------------------------
+
+			let tableHTML = `
+				<table class="followup-table">
+					<thead>
+						<tr>
+							<th>Item Name</th>
+							<th>Qty</th>
+							<th>Rate</th>
+							<th>Next Order Date</th>
+							<th>Status</th>
+						</tr>
+					</thead>
+					<tbody>
+			`;
 
 			customer.items.forEach(item => {
 
@@ -343,6 +361,7 @@ crm.followup_widget = {
 
 				let urgencyClass = "urgency-upcoming";
 				let urgencyLabel = "Upcoming";
+				let dateClass = "upcoming";
 
 				if (item.next_order_date < today) {
 					const diffDays = frappe.datetime.get_diff(today, item.next_order_date);
@@ -360,39 +379,36 @@ crm.followup_widget = {
 						urgencyClass = "urgency-overdue";
 						urgencyLabel = "Overdue";
 					}
+					dateClass = "overdue";
 				}
 				else if (item.next_order_date === today) {
 					urgencyClass = "urgency-today";
 					urgencyLabel = "Due Today";
+					dateClass = "due-today";
 				}
 
-				//---------------------------------
+				const dateLabel = item.next_order_date
+					? frappe.datetime.str_to_user(item.next_order_date)
+					: 'N/A';
 
-				const row = $(`
-					<div class="item-row" data-id="${item.log_id}">
-						<div>
-							<div class="item-title">${item.item}</div>
-							<div class="item-meta">
-								<span>Qty: ${item.qty}</span>
-								<span>Rate: ${format_currency(item.rate)}</span>
-								<br>
-								<span>Next Order Date: ${frappe.datetime.str_to_user(item.next_order_date)}</span>
-							</div>
-						</div>
-						<div class="item-right">
-							<span class="urgency-badge ${urgencyClass}">${urgencyLabel}</span>
-						</div>
-					</div>
-				`);
-
-				itemsContainer.append(row);
+				tableHTML += `
+					<tr>
+						<td class="td-item">${item.item}</td>
+						<td>${item.qty}</td>
+						<td>${format_currency(item.rate)}</td>
+						<td class="td-date ${dateClass}">${dateLabel}</td>
+						<td><span class="urgency-badge ${urgencyClass}">${urgencyLabel}</span></td>
+					</tr>
+				`;
 			});
+
+			tableHTML += `</tbody></table>`;
 
 			//-------------------------------------
 			// FOOTER: Total Amount + Create Quotation
 			//-------------------------------------
 
-			const footer = $(`
+			const footerHTML = `
 				<div class="items-footer">
 					<span class="total-amount">
 						Total: ${format_currency(customer.total_value || 0)}
@@ -401,11 +417,17 @@ crm.followup_widget = {
 						Create Quotation
 					</button>
 				</div>
-			`);
+			`;
 
-			footer.find('.create-quotation-btn').on('click', (e) => {
+			itemsContainer.html(tableHTML + footerHTML);
+
+			//-------------------------------------
+			// Create Quotation handler
+			//-------------------------------------
+
+			itemsContainer.find('.create-quotation-btn').on('click', (e) => {
 				e.stopPropagation();
-				const btn = footer.find('.create-quotation-btn');
+				const btn = itemsContainer.find('.create-quotation-btn');
 				btn.prop('disabled', true).text('...');
 
 				frappe.route_options = {
@@ -426,8 +448,6 @@ crm.followup_widget = {
 					btn.prop('disabled', false).text('Create Quotation');
 				}, 1000);
 			});
-
-			itemsContainer.append(footer);
 
 			container.append(card);
 		});
