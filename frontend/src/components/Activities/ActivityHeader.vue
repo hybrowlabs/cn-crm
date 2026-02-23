@@ -61,12 +61,12 @@
     />
     <div class="flex gap-2 shrink-0" v-else-if="title == 'WhatsApp'">
       <Button
-        :label="__('Send template')"
+        :label="__('Send Template')"
         @click="showWhatsappTemplates = true"
       />
       <Button
         variant="solid"
-        :label="__('New message')"
+        :label="__('New Message')"
         iconLeft="plus"
         @click="whatsappBox.show()"
       />
@@ -117,12 +117,12 @@ const defaultActions = computed(() => {
   let actions = [
     {
       icon: h(Email2Icon, { class: 'h-4 w-4' }),
-      label: __('New email'),
+      label: __('Email'),
       onClick: () => (props.emailBox.show = true),
     },
     {
       icon: h(CommentIcon, { class: 'h-4 w-4' }),
-      label: __('New comment'),
+      label: __('Comment'),
       onClick: () => (props.emailBox.showComment = true),
     },
     {
@@ -146,12 +146,12 @@ const defaultActions = computed(() => {
     },
     {
       icon: h(NoteIcon, { class: 'h-4 w-4' }),
-      label: __('New Note'),
+      label: __('Note'),
       onClick: () => props.modalRef.showNote(),
     },
     {
       icon: h(TaskIcon, { class: 'h-4 w-4' }),
-      label: __('New Task'),
+      label: __('Task'),
       onClick: () => props.modalRef.showTask(),
     },
     {
@@ -161,7 +161,7 @@ const defaultActions = computed(() => {
     },
     {
       icon: h(WhatsAppIcon, { class: 'h-4 w-4' }),
-      label: __('New WhatsApp Message'),
+      label: __('WhatsApp Message'),
       onClick: () => (tabIndex.value = getTabIndex('WhatsApp')),
       condition: () => whatsappEnabled.value,
     },
