@@ -37,7 +37,7 @@ def get_sm_pipeline_data():
 
 
 def _get_manager_data(user, lead_stages, deal_stages, stage_columns):
-	"""Get pipeline data for a specific Sales Manager's team."""
+	"""Get pipeline data for a specific Sales Manager's team, including the manager themselves."""
 	employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
 	if not employee:
 		return {"is_sales_manager": True, "view_mode": "manager", "sales_users": [],
@@ -48,8 +48,18 @@ def _get_manager_data(user, lead_stages, deal_stages, stage_columns):
 		return {"is_sales_manager": True, "view_mode": "manager", "sales_users": [],
 				"stage_columns": stage_columns, "error": "No Sales Person record linked to your employee."}
 
+	# Include the manager's own data first
+	manager_sp = frappe.db.get_value("Sales Person", my_sales_person,
+		["name", "sales_person_name", "employee"], as_dict=True)
+	manager_entry = _build_pipeline_for_users([manager_sp], lead_stages, deal_stages)
+	# Mark the manager's row
+	for entry in manager_entry:
+		entry["full_name"] = entry["full_name"] + " ⭐"
+
 	subordinates = _get_subordinates(my_sales_person)
-	sales_users = _build_pipeline_for_users(subordinates, lead_stages, deal_stages)
+	subordinate_users = _build_pipeline_for_users(subordinates, lead_stages, deal_stages)
+
+	sales_users = manager_entry + subordinate_users
 
 	return {
 		"is_sales_manager": True,
@@ -79,11 +89,15 @@ def _get_admin_grouped_data(lead_stages, deal_stages, stage_columns):
 		if mgr_user:
 			mgr_full_name = frappe.db.get_value("User", mgr_user, "full_name") or mgr_full_name
 
-		subordinates = _get_subordinates(mgr.name)
-		if not subordinates:
-			continue
+		# Include the manager's own data
+		manager_entry = _build_pipeline_for_users([mgr], lead_stages, deal_stages)
+		for entry in manager_entry:
+			entry["full_name"] = entry["full_name"] + " ⭐"
 
-		sales_users = _build_pipeline_for_users(subordinates, lead_stages, deal_stages)
+		subordinates = _get_subordinates(mgr.name)
+		subordinate_users = _build_pipeline_for_users(subordinates, lead_stages, deal_stages)
+
+		sales_users = manager_entry + subordinate_users
 		if not sales_users:
 			continue
 
