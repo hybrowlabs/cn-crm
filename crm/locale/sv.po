@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: frappe\n"
 "Report-Msgid-Bugs-To: shariq@frappe.io\n"
 "POT-Creation-Date: 2025-12-21 09:37+0000\n"
-"PO-Revision-Date: 2026-02-21 19:55\n"
+"PO-Revision-Date: 2026-02-23 20:04\n"
 "Last-Translator: shariq@frappe.io\n"
 "Language-Team: Swedish\n"
 "MIME-Version: 1.0\n"
@@ -640,7 +640,7 @@ msgstr "Tilldelning"
 #. Label of a shortcut in the Frappe CRM Workspace
 #: crm/fcrm/workspace/frappe_crm/frappe_crm.json
 msgid "Assignment Rule"
-msgstr "Tilldelning Regel"
+msgstr "Automation Regel"
 
 #: frontend/src/components/Settings/AssignmentRules/AssignmentRuleView.vue:302
 msgid "Assignment Schedule"
@@ -2139,18 +2139,18 @@ msgstr "Affärssystem"
 #. Name of a DocType
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json
 msgid "ERPNext CRM Settings"
-msgstr "Säljstöd Inställningar"
+msgstr "Affärssystem Säljstöd Inställningar"
 
 #. Label of the section_break_oubd (Section Break) field in DocType 'ERPNext
 #. CRM Settings'
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json
 msgid "ERPNext Site API's"
-msgstr "Webbplats API'er"
+msgstr "Affärssystem Webbplats API'er"
 
 #. Label of the erpnext_site_url (Data) field in DocType 'ERPNext CRM Settings'
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.json
 msgid "ERPNext Site URL"
-msgstr "Webbplats URL"
+msgstr "Affärssystem Webbplats URL"
 
 #: crm/fcrm/doctype/erpnext_crm_settings/erpnext_crm_settings.py:25
 msgid "ERPNext is not installed in the current site"
@@ -2163,11 +2163,11 @@ msgstr "Affärssystem är inte integrerat med Säljstöd"
 
 #: frontend/src/components/Settings/ERPNextSettings.vue:4
 msgid "ERPNext settings"
-msgstr "Inställningar"
+msgstr "Affärssystem Inställningar"
 
 #: frontend/src/components/Settings/ERPNextSettings.vue:5
 msgid "ERPNext settings updated"
-msgstr "Inställningar uppdaterade"
+msgstr "Affärssystem Inställningar uppdaterade"
 
 #: frontend/src/components/FieldLayout/Field.vue:91
 #: frontend/src/components/FieldLayoutEditor.vue:313
