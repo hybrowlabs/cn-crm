@@ -9,7 +9,7 @@
           variant="ghost"
           icon-left="chevron-left"
           :label="
-            assignmentRuleData.assignmentRuleName || __('New assignment rule')
+            assignmentRuleData.assignmentRuleName || __('New Assignment Rule')
           "
           size="md"
           @click="goBack()"
@@ -19,7 +19,7 @@
           :variant="'subtle'"
           :theme="'orange'"
           size="sm"
-          :label="__('Unsaved')"
+          :label="__('Not Saved')"
           v-if="isDirty"
         />
       </div>
@@ -122,7 +122,7 @@
           />
         </div>
         <div class="flex flex-col gap-1.5">
-          <FormLabel :label="__('Apply on')" />
+          <FormLabel :label="__('Apply On')" />
           <Select
             :options="[
               {
@@ -142,7 +142,7 @@
       <div>
         <div class="flex flex-col gap-1">
           <span class="text-lg font-semibold text-ink-gray-8">{{
-            __('Assignment condition')
+            __('Assignment Condition')
           }}</span>
           <div class="flex items-center justify-between gap-6">
             <span class="text-p-sm text-ink-gray-6">
@@ -164,7 +164,7 @@
                   <div
                     class="text-sm text-ink-gray-6 flex gap-1 cursor-default text-nowrap items-center"
                   >
-                    <span>{{ __('Old condition') }}</span>
+                    <span>{{ __('Old Condition') }}</span>
                     <FeatherIcon name="info" class="size-4" />
                   </div>
                 </template>
@@ -196,7 +196,7 @@
               }}
             </span>
             <Button
-              :label="__('I understand, add conditions')"
+              :label="__('I understand, Add Conditions')"
               variant="subtle"
               theme="gray"
               @click="useNewUI = true"
@@ -221,7 +221,7 @@
       <div>
         <div class="flex flex-col gap-1">
           <span class="text-lg font-semibold text-ink-gray-8">{{
-            __('Unassignment condition')
+            __('Unassignment Condition')
           }}</span>
           <div class="flex items-center justify-between gap-6">
             <span class="text-p-sm text-ink-gray-6">
@@ -248,7 +248,7 @@
                   <div
                     class="text-sm text-ink-gray-6 flex gap-1 cursor-default text-nowrap items-center"
                   >
-                    <span> {{ __('Old condition') }} </span>
+                    <span> {{ __('Old Condition') }} </span>
                     <FeatherIcon name="info" class="size-4" />
                   </div>
                 </template>
@@ -280,7 +280,7 @@
               }}
             </span>
             <Button
-              :label="__('I understand, add conditions')"
+              :label="__('I understand, Add Conditions')"
               variant="subtle"
               theme="gray"
               @click="useNewUI = true"
@@ -299,7 +299,7 @@
       <div>
         <div class="flex flex-col gap-1">
           <span class="text-lg font-semibold text-ink-gray-8">{{
-            __('Assignment schedule')
+            __('Assignment Schedule')
           }}</span>
           <span class="text-p-sm text-ink-gray-6">
             {{
@@ -432,11 +432,11 @@ const validateAssignmentRule = (key, skipConditionCheck = false) => {
         assignmentRuleErrors.value.assignCondition =
           assignmentRuleData.value.assignConditionJson?.length > 0
             ? ''
-            : __('Assign condition is required')
+            : __('Assign Condition is required')
 
         if (!validateConditions(assignmentRuleData.value.assignConditionJson)) {
           assignmentRuleErrors.value.assignConditionError = __(
-            'Assign conditions are invalid',
+            'Assign Conditions are invalid',
           )
         } else {
           assignmentRuleErrors.value.assignConditionError = ''
@@ -452,7 +452,7 @@ const validateAssignmentRule = (key, skipConditionCheck = false) => {
           !validateConditions(assignmentRuleData.value.unassignConditionJson)
         ) {
           assignmentRuleErrors.value.unassignConditionError = __(
-            'Unassign conditions are invalid',
+            'Unassign Conditions are invalid',
           )
         } else {
           assignmentRuleErrors.value.unassignConditionError = ''
@@ -468,7 +468,7 @@ const validateAssignmentRule = (key, skipConditionCheck = false) => {
         assignmentRuleErrors.value.assignmentDays =
           assignmentRuleData.value.assignmentDays?.length > 0
             ? ''
-            : __('Assignment days are required')
+            : __('Assignment Days are required')
         break
       default:
         break
@@ -572,14 +572,14 @@ if (!step.value.data) {
 const goBack = () => {
   if (isDirty.value && !showConfirmDialog.value.show) {
     $dialog({
-      title: __('Unsaved changes'),
+      title: __('Unsaved Changes'),
       message: __(
         'Are you sure you want to go back? Unsaved changes will be lost.',
       ),
       variant: 'solid',
       actions: [
         {
-          label: __('Go back'),
+          label: __('Go Back'),
           variant: 'solid',
           onClick: (close) => {
             updateStep('list', null)
@@ -637,7 +637,7 @@ const saveAssignmentRule = () => {
     if (isOldSla.value && useNewUI.value) {
       showConfirmDialog.value = {
         show: true,
-        title: __('Confirm overwrite'),
+        title: __('Confirm Overwrite'),
         message: __(
           'Your old condition will be overwritten. Are you sure you want to save?',
         ),
@@ -695,7 +695,7 @@ const createAssignmentRule = () => {
         })
         .then(() => {
           isLoading.value = false
-          toast.success(__('Assignment rule created'))
+          toast.success(__('Assignment Rule Created'))
         })
       updateStep('view', data)
     },
@@ -777,7 +777,7 @@ const updateAssignmentRule = async () => {
     getAssignmentRuleData.reload()
   }
   isLoading.value = false
-  toast.success(__('Assignment rule updated'))
+  toast.success(__('Assignment Rule Updated'))
 }
 
 watch(

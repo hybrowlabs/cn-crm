@@ -8,7 +8,7 @@
         >
           <MultipleAvatar :avatars="assignees" />
         </component>
-        <Button v-else :label="__('Assign to')" />
+        <Button v-else :label="__('Assign To')" />
       </div>
     </template>
     <template #body="{ isOpen }">

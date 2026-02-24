@@ -7,7 +7,7 @@
           variant="ghost"
           icon-left="chevron-left"
           :label="
-            templateData?.name ? __('Duplicate template') : __('New template')
+            templateData?.name ? __('Duplicate Template') : __('New Template')
           "
           size="md"
           @click="() => emit('updateStep', 'template-list')"
@@ -35,7 +35,7 @@
           <FormControl
             size="md"
             v-model="template.name"
-            :placeholder="__('Payment reminder')"
+            :placeholder="__('Payment Reminder')"
             :label="__('Name')"
             :required="true"
           />
@@ -66,7 +66,7 @@
           size="md"
           v-model="template.subject"
           :label="__('Subject')"
-          :placeholder="__('Payment reminder from Frappé - (#{{ name }})')"
+          :placeholder="__('Payment Reminder from Frappé - (#{{ name }})')"
           :required="true"
         />
       </div>
@@ -75,10 +75,10 @@
           type="select"
           size="md"
           v-model="template.content_type"
-          :label="__('Content type')"
+          :label="__('Content Type')"
           default="Rich Text"
           :options="['Rich Text', 'HTML']"
-          :placeholder="__('Rich text')"
+          :placeholder="__('Rich Text')"
         />
       </div>
       <div>

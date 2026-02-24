@@ -41,7 +41,7 @@
             :options="taskStatusOptions(modalRef.updateTaskStatus, task)"
           >
             <Button
-              :tooltip="__('Change status')"
+              :tooltip="__('Change Status')"
               variant="ghosted"
               class="hover:bg-surface-gray-4"
               @click.stop.prevent
@@ -56,7 +56,7 @@
                 icon: 'trash-2',
                 onClick: () => {
                   $dialog({
-                    title: __('Delete task'),
+                    title: __('Delete Task'),
                     message: __('Are you sure you want to delete this task?'),
                     actions: [
                       {

@@ -24,7 +24,7 @@
         />
         <Button
           v-if="!isNew && !option.selected"
-          :tooltip="__('Set as primary')"
+          :tooltip="__('Set As Primary')"
           variant="ghost"
           :icon="SuccessIcon"
           class="opacity-0 hover:bg-surface-gray-4 group-hover:opacity-100"

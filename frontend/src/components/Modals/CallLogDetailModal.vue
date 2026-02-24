@@ -5,7 +5,7 @@
         <div class="mb-5 flex items-center justify-between">
           <div>
             <h3 class="text-2xl font-semibold leading-6 text-ink-gray-9">
-              {{ __('Call details') }}
+              {{ __('Call Details') }}
             </h3>
           </div>
           <div class="flex items-center gap-1">
@@ -16,12 +16,12 @@
                   hideLabel: true,
                   items: [
                     {
-                      label: note?.name ? __('Edit note') : __('Add note'),
+                      label: note?.name ? __('Edit Note') : __('Add Note'),
                       icon: NoteIcon,
                       onClick: addEditNote,
                     },
                     {
-                      label: task?.name ? __('Edit task') : __('Add task'),
+                      label: task?.name ? __('Edit Task') : __('Add Task'),
                       icon: TaskIcon,
                       onClick: addEditTask,
                     },
@@ -36,7 +36,7 @@
             <Button
               v-if="!isMobileView"
               variant="ghost"
-              :tooltip="__('Edit call log')"
+              :tooltip="__('Edit Call Log')"
               :icon="EditIcon"
               class="w-7"
               @click="openCallLogModal"
@@ -148,7 +148,7 @@
         <Button
           class="w-full"
           variant="solid"
-          :label="__('Create lead')"
+          :label="__('Create Lead')"
           @click="createLead"
         />
       </div>

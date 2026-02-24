@@ -26,7 +26,7 @@
   {
    "fieldname": "restore_defaults",
    "fieldtype": "Button",
-   "label": "Restore defaults"
+   "label": "Restore Defaults"
   },
   {
    "fieldname": "dropdown_items",
@@ -67,10 +67,10 @@
   },
   {
    "default": "0",
-   "description": "It will make deal's \"Expected closure date\" & \"Expected deal value\" mandatory to get accurate forecasting insights",
+   "description": "It will make deal's \"Expected Closure Date\" & \"Expected Deal Value\" mandatory to get accurate forecasting insights",
    "fieldname": "enable_forecasting",
    "fieldtype": "Check",
-   "label": "Enable forecasting"
+   "label": "Enable Forecasting"
   },
   {
    "fieldname": "currency",
@@ -93,14 +93,14 @@
    "default": "frankfurter.app",
    "fieldname": "service_provider",
    "fieldtype": "Select",
-   "label": "Service provider",
+   "label": "Service Provider",
    "options": "frankfurter.app\nexchangerate.host"
   },
   {
    "depends_on": "eval:doc.service_provider == 'exchangerate.host';",
    "fieldname": "access_key",
    "fieldtype": "Data",
-   "label": "Access key",
+   "label": "Access Key",
    "mandatory_depends_on": "eval:doc.service_provider == 'exchangerate.host';"
   },
   {
@@ -109,17 +109,17 @@
   },
   {
    "default": "1",
-   "description": "Automatically update \"Expected deal value\" based on the total value of associated products in a deal",
+   "description": "Automatically update \"Expected Deal Value\" based on the total value of associated products in a deal",
    "fieldname": "auto_update_expected_deal_value",
    "fieldtype": "Check",
-   "label": "Auto update Expected deal value"
+   "label": "Auto update Expected Deal Value"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-01-28 17:26:11.672401",
- "modified_by": "shariq@frappe.io",
+ "modified": "2026-02-23 12:33:43.914603",
+ "modified_by": "Administrator",
  "module": "FCRM",
  "name": "FCRM Settings",
  "owner": "Administrator",

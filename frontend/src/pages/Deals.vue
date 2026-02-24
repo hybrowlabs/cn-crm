@@ -102,7 +102,7 @@
         >
           {{ getRow(itemName, titleField).label }}
         </div>
-        <div class="text-ink-gray-4" v-else>{{ __('No title') }}</div>
+        <div class="text-ink-gray-4" v-else>{{ __('No Title') }}</div>
       </div>
     </template>
 
@@ -228,7 +228,7 @@
   />
   <EmptyState
     v-else-if="deals.data && !rows.length"
-    name="deals"
+    name="Deals"
     :icon="DealsIcon"
   />
   <DealModal
@@ -510,18 +510,18 @@ function actions(itemName) {
   let actions = [
     {
       icon: h(PhoneIcon, { class: 'h-4 w-4' }),
-      label: __('Make a call'),
+      label: __('Make a Call'),
       onClick: () => makeCall(mobile_no),
       condition: () => mobile_no && callEnabled.value,
     },
     {
       icon: h(NoteIcon, { class: 'h-4 w-4' }),
-      label: __('New note'),
+      label: __('New Note'),
       onClick: () => showNote(itemName),
     },
     {
       icon: h(TaskIcon, { class: 'h-4 w-4' }),
-      label: __('New task'),
+      label: __('New Task'),
       onClick: () => showTask(itemName),
     },
   ]

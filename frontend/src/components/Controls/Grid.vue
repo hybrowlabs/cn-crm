@@ -24,7 +24,7 @@
         <div
           class="inline-flex items-center justify-center border-r border-outline-gray-2 py-2 px-1 w-12"
         >
-          {{ __('No') }}
+          {{ __('No.') }}
         </div>
         <div
           class="grid w-full truncate"
@@ -54,7 +54,7 @@
         </div>
         <div class="flex items-center justify-center w-12">
           <Button
-            :tooltip="__('Edit grid fields')"
+            :tooltip="__('Edit Grid Fields')"
             class="rounded !bg-surface-gray-2 border-0 !text-ink-gray-5"
             variant="outline"
             icon="settings"
@@ -288,7 +288,7 @@
               </div>
               <div class="edit-row flex items-center justify-center w-12">
                 <Button
-                  :tooltip="__('Edit row')"
+                  :tooltip="__('Edit Row')"
                   class="rounded border-0 !text-ink-gray-7"
                   variant="outline"
                   :icon="EditIcon"
@@ -313,7 +313,7 @@
         v-else
         class="flex flex-col items-center rounded p-5 text-sm text-ink-gray-5"
       >
-        {{ __('No data') }}
+        {{ __('No Data') }}
       </div>
     </div>
 
@@ -325,7 +325,7 @@
         theme="red"
         @click="deleteRows"
       />
-      <Button :label="__('Add row')" @click="addRow" />
+      <Button :label="__('Add Row')" @click="addRow" />
     </div>
     <GridRowFieldsModal
       v-if="showGridRowFieldsModal"

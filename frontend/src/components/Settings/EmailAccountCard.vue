@@ -36,11 +36,11 @@ const badgeTitle = computed(() => {
     props.emailAccount.default_incoming &&
     props.emailAccount.default_outgoing
   ) {
-    return __('Default sending and inbox')
+    return __('Default Sending & Inbox')
   } else if (props.emailAccount.default_incoming) {
-    return __('Default inbox')
+    return __('Default Inbox')
   } else if (props.emailAccount.default_outgoing) {
-    return __('Default sending')
+    return __('Default Sending')
   } else {
     return __('Inbox')
   }

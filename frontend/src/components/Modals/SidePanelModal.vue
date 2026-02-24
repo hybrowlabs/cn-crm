@@ -4,10 +4,10 @@
       <h3
         class="flex items-center gap-2 text-2xl font-semibold leading-6 text-ink-gray-9"
       >
-        <div>{{ __('Edit field layout') }}</div>
+        <div>{{ __('Edit Field Layout') }}</div>
         <Badge
           v-if="dirty"
-          :label="__('Not saved')"
+          :label="__('Not Saved')"
           variant="subtle"
           theme="orange"
         />
@@ -17,7 +17,7 @@
       <div class="flex flex-col gap-5.5">
         <div class="flex justify-between gap-2">
           <Button
-            :label="preview ? __('Hide preview') : __('Show preview')"
+            :label="preview ? __('Hide Preview') : __('Show Preview')"
             @click="preview = !preview"
           />
           <div class="flex flex-row-reverse gap-2">
@@ -48,7 +48,7 @@
                 v-if="section.name == 'contacts_section'"
                 class="flex h-16 items-center justify-center text-base text-ink-gray-5"
               >
-                {{ __('No contacts added') }}
+                {{ __('No Contacts Added') }}
               </div>
             </SidePanelLayout>
           </div>
@@ -56,7 +56,7 @@
             v-else
             class="flex flex-1 justify-center items-center text-ink-gray-5 bg-surface-gray-2 rounded"
           >
-            {{ __('Toggle on for preview') }}
+            {{ __('Toggle on for Preview') }}
           </div>
         </div>
       </div>

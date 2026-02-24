@@ -20,7 +20,7 @@
           </h2>
           <Badge
             v-if="data.isDirty"
-            :label="__('Not saved')"
+            :label="__('Not Saved')"
             variant="subtle"
             theme="orange"
           />

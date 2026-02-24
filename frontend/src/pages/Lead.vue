@@ -35,7 +35,7 @@
         </template>
       </Dropdown>
       <Button
-        :label="__('Convert to deal')"
+        :label="__('Convert to Deal')"
         variant="solid"
         @click="showConvertToDealModal = true"
       />
@@ -89,13 +89,13 @@
                           {
                             icon: 'upload',
                             label: doc.image
-                              ? __('Change image')
-                              : __('Upload image'),
+                              ? __('Change Image')
+                              : __('Upload Image'),
                             onClick: openFileSelector,
                           },
                           {
                             icon: 'trash-2',
-                            label: __('Remove image'),
+                            label: __('Remove Image'),
                             onClick: () => updateField('image', ''),
                           },
                         ],
@@ -116,7 +116,7 @@
               </component>
             </div>
             <div class="flex flex-col gap-2.5 truncate">
-              <Tooltip :text="doc.lead_name || __('Set first name')">
+              <Tooltip :text="doc.lead_name || __('Set First Name')">
                 <div class="truncate text-2xl font-medium text-ink-gray-9">
                   {{ title }}
                 </div>
@@ -124,35 +124,41 @@
               <div class="flex gap-1.5">
                 <Button
                   v-if="callEnabled"
-                  :tooltip="__('Make a call')"
+                  :tooltip="__('Make a Call')"
                   :icon="PhoneIcon"
                   @click="
                     () =>
                       doc.mobile_no
                         ? makeCall(doc.mobile_no)
-                        : toast.error(__('No phone number set'))
+                        : toast.error(
+                            __('Please set a mobile number to make calls'),
+                          )
                   "
                 />
 
                 <Button
-                  :tooltip="__('Send an email')"
+                  :tooltip="__('Send an Email')"
                   :icon="Email2Icon"
                   @click="
-                    doc.email ? openEmailBox() : toast.error(__('No email set'))
+                    doc.email
+                      ? openEmailBox()
+                      : toast.error(
+                          __('Please set an email address to send emails'),
+                        )
                   "
                 />
                 <Button
-                  :tooltip="__('Go to website')"
+                  :tooltip="__('Go to Website')"
                   :icon="LinkIcon"
                   @click="
                     doc.website
                       ? openWebsite(doc.website)
-                      : toast.error(__('No website set'))
+                      : toast.error(__('Please set a website to visit'))
                   "
                 />
 
                 <Button
-                  :tooltip="__('Attach a file')"
+                  :tooltip="__('Attach a File')"
                   :icon="AttachmentIcon"
                   @click="showFilesUploader = true"
                 />

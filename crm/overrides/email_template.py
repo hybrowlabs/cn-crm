@@ -32,7 +32,7 @@ class CustomEmailTemplate(EmailTemplate):
 				"width": "12rem",
 			},
 			{
-				"label": "Last modified",
+				"label": "Last Modified",
 				"type": "Datetime",
 				"key": "modified",
 				"width": "8rem",

@@ -5,7 +5,7 @@
         <div class="flex items-center justify-between mb-5">
           <div>
             <h3 class="text-2xl font-semibold leading-6 text-ink-gray-9">
-              {{ __('New organization') }}
+              {{ __('New Organization') }}
             </h3>
           </div>
           <div class="flex items-center gap-1">
@@ -13,7 +13,7 @@
               v-if="isManager() && !isMobileView"
               variant="ghost"
               class="w-7"
-              :tooltip="__('Edit fields layout')"
+              :tooltip="__('Edit Fields Layout')"
               :icon="EditIcon"
               @click="openQuickEntryModal"
             />

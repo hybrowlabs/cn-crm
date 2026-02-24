@@ -40,8 +40,9 @@ class CRMTask(Document):
 			self.unassign_from_previous_user(self.get_doc_before_save().assigned_to)
 			self.assign_to()
 
-	def unassign_from_previous_user(self, user):
-		unassign(self.doctype, self.name, user)
+	def unassign_from_previous_user(self, user: str | None):
+		if user:
+			unassign(self.doctype, self.name, user)
 
 	def assign_to(self):
 		if self.assigned_to:
@@ -76,19 +77,19 @@ class CRMTask(Document):
 				"width": "8rem",
 			},
 			{
-				"label": "Due date",
+				"label": "Due Date",
 				"type": "Date",
 				"key": "due_date",
 				"width": "8rem",
 			},
 			{
-				"label": "Assigned to",
+				"label": "Assigned To",
 				"type": "Link",
 				"key": "assigned_to",
 				"width": "10rem",
 			},
 			{
-				"label": "Last modified",
+				"label": "Last Modified",
 				"type": "Datetime",
 				"key": "modified",
 				"width": "8rem",

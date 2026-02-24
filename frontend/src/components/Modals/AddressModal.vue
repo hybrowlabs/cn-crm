@@ -11,7 +11,7 @@
           <div class="flex items-center gap-1">
             <Button
               v-if="isManager() && !isMobileView"
-              :tooltip="__('Edit fields layout')"
+              :tooltip="__('Edit Fields Layout')"
               variant="ghost"
               :icon="EditIcon"
               class="w-7"
@@ -90,7 +90,7 @@ const { document: _address, triggerOnBeforeCreate } = useDocument(
 
 const dialogOptions = computed(() => {
   let title = !editMode.value
-    ? __('New address')
+    ? __('New Address')
     : __(_address.doc?.address_title)
   let size = 'xl'
   let actions = [

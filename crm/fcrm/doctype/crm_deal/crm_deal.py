@@ -266,7 +266,7 @@ class CRMDeal(Document):
 				"width": "11rem",
 			},
 			{
-				"label": "Annual revenue",
+				"label": "Annual Revenue",
 				"type": "Currency",
 				"key": "annual_revenue",
 				"align": "right",
@@ -285,19 +285,19 @@ class CRMDeal(Document):
 				"width": "12rem",
 			},
 			{
-				"label": "Mobile no",
+				"label": "Mobile No.",
 				"type": "Data",
 				"key": "mobile_no",
 				"width": "11rem",
 			},
 			{
-				"label": "Assigned to",
+				"label": "Assigned To",
 				"type": "Text",
 				"key": "_assign",
 				"width": "10rem",
 			},
 			{
-				"label": "Last modified",
+				"label": "Last Modified",
 				"type": "Datetime",
 				"key": "modified",
 				"width": "8rem",

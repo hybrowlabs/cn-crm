@@ -2,7 +2,7 @@
   <div
     class="flex flex-col gap-2 my-2 w-[470px] rounded-lg bg-surface-modal shadow-2xl ring-1 ring-black p-3 ring-opacity-5 focus:outline-none"
   >
-    <div class="text-base text-ink-gray-5">{{ __('Assign to') }}</div>
+    <div class="text-base text-ink-gray-5">{{ __('Assign To') }}</div>
     <Link
       class="form-control"
       value=""
@@ -60,7 +60,7 @@
         class="text-base text-ink-gray-5 cursor-pointer select-none"
         @click="assignToMe = !assignToMe"
       >
-        {{ __('Assign to me') }}
+        {{ __('Assign To Me') }}
       </div>
       <Switch v-model="assignToMe" @click.stop />
     </div>

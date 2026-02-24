@@ -4,7 +4,7 @@
       <div class="mb-6 flex items-center justify-between">
         <div>
           <h3 class="text-2xl font-semibold leading-6 text-ink-gray-9">
-            {{ __('Convert to deal') }}
+            {{ __('Convert to Deal') }}
           </h3>
         </div>
         <div class="flex items-center gap-1">
@@ -26,7 +26,7 @@
       </div>
       <div class="ml-6 text-ink-gray-9">
         <div class="flex items-center justify-between text-base">
-          <div>{{ __('Choose existing') }}</div>
+          <div>{{ __('Choose Existing') }}</div>
           <Switch v-model="existingOrganizationChecked" />
         </div>
         <Link
@@ -52,7 +52,7 @@
       </div>
       <div class="ml-6 text-ink-gray-9">
         <div class="flex items-center justify-between text-base">
-          <div>{{ __('Choose existing') }}</div>
+          <div>{{ __('Choose Existing') }}</div>
           <Switch v-model="existingContactChecked" />
         </div>
         <Link

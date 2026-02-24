@@ -685,23 +685,23 @@ const top = computed(() => {
 })
 
 const emptyText = computed(() => {
-  let text = 'No activities found'
+  let text = 'No Activities Found'
   if (title.value == 'Emails') {
-    text = 'No emails found'
+    text = 'No Emails Found'
   } else if (title.value == 'Comments') {
-    text = 'No comments found'
+    text = 'No Comments Found'
   } else if (title.value == 'Data') {
-    text = 'No data fields added yet'
+    text = 'No Data Fields Added Yet'
   } else if (title.value == 'Calls') {
-    text = 'No call history'
+    text = 'No Call History'
   } else if (title.value == 'Notes') {
-    text = 'No notes found'
+    text = 'No Notes Found'
   } else if (title.value == 'Tasks') {
-    text = 'No tasks found'
+    text = 'No Tasks Found'
   } else if (title.value == 'Attachments') {
-    text = 'No attachments found'
+    text = 'No Attachments Found'
   } else if (title.value == 'WhatsApp') {
-    text = 'No WhatsApp messages found'
+    text = 'No WhatsApp Messages Found'
   }
   return text
 })

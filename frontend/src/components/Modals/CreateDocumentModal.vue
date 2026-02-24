@@ -13,7 +13,7 @@
               v-if="isManager() && !isMobileView"
               variant="ghost"
               class="w-7"
-              :tooltip="__('Edit fields layout')"
+              :tooltip="__('Edit Fields Layout')"
               :icon="EditIcon"
               @click="openQuickEntryModal"
             />

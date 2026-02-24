@@ -206,7 +206,7 @@
                     v-else
                     class="flex h-20 items-center justify-center text-base text-ink-gray-5"
                   >
-                    {{ __('No contacts added') }}
+                    {{ __('No Contacts Added') }}
                   </div>
                 </div>
               </template>
@@ -523,7 +523,7 @@ function contactOptions(contact) {
 
   if (!contact.is_primary) {
     options.push({
-      label: __('Set as primary contact'),
+      label: __('Set as Primary Contact'),
       icon: h(SuccessIcon, { class: 'h-4 w-4' }),
       onClick: () => setPrimaryContact(contact.name),
     })
@@ -534,7 +534,7 @@ function contactOptions(contact) {
 
 async function addContact(contact) {
   if (dealContacts.data?.find((c) => c.name === contact)) {
-    toast.error(__('Contact already added'))
+    toast.error(__('Contact Already Added'))
     return
   }
 
@@ -544,7 +544,7 @@ async function addContact(contact) {
   })
   if (d) {
     dealContacts.reload()
-    toast.success(__('Contact added'))
+    toast.success(__('Contact Added'))
   }
 }
 
@@ -555,7 +555,7 @@ async function removeContact(contact) {
   })
   if (d) {
     dealContacts.reload()
-    toast.success(__('Contact removed'))
+    toast.success(__('Contact Removed'))
   }
 }
 
@@ -566,7 +566,7 @@ async function setPrimaryContact(contact) {
   })
   if (d) {
     dealContacts.reload()
-    toast.success(__('Primary contact set'))
+    toast.success(__('Primary Contact Set'))
   }
 }
 
