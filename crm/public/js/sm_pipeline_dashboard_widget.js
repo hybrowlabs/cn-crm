@@ -17,7 +17,7 @@ crm.sm_pipeline_dashboard_widget = {
 
                 <div class="sm-loading" style="text-align: center; padding: 30px; color: var(--text-muted);">Loading…</div>
                 <div class="sm-error" style="display:none; text-align:center; padding:20px; color:var(--text-muted);"></div>
-                <div class="sm-content" style="display:none;"></div>
+                <div class="sm-content" style="display:none; overflow-x: auto;"></div>
 
                 <!-- Drill-down overlay -->
                 <div class="sm-drilldown-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.45); z-index:1050;"></div>
@@ -113,7 +113,7 @@ crm.sm_pipeline_dashboard_widget = {
         }
 
         const table = this.build_table(data.stage_columns, data.sales_users);
-        $content.html(table);
+        $content.html(`<div style="overflow-x: auto; width: 100%;">${table}</div>`);
         this.attach_badge_clicks($content, $wrapper);
     },
 
