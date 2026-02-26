@@ -18,9 +18,14 @@ def get_sm_pipeline_data():
 		return {"is_sales_manager": False}
 
 	# Lead stages (CRM Lead statuses)
-	lead_stages = ["New", "Contacted", "Nurture", "Qualified", "Unqualified", "Junk"]
+	lead_stages = frappe.get_all("CRM Lead Status", pluck="name", order_by="position asc")
+	if not lead_stages:
+		lead_stages = ["New", "Contacted", "Nurture", "Qualified", "Unqualified", "Junk"]
+		
 	# Deal stages (CRM Deal statuses)
-	deal_stages = ["Qualification", "Demo/Making", "Proposal/Quotation", "Negotiation", "Won", "Lost"]
+	deal_stages = frappe.get_all("CRM Deal Status", pluck="name", order_by="position asc")
+	if not deal_stages:
+		deal_stages = ["Qualification", "Demo/Making", "Proposal/Quotation", "Negotiation", "Won", "Lost"]
 
 	stage_columns = [
 		{"stage": s, "doctype": "CRM Lead"} for s in lead_stages
@@ -143,9 +148,9 @@ def _build_pipeline_for_users(subordinates, lead_stages, deal_stages):
 		lead_data = frappe.db.sql("""
 			SELECT status, COUNT(name) as count
 			FROM `tabCRM Lead`
-			WHERE lead_owner = %(user)s
+			WHERE lead_owner = %(user)s OR _assign LIKE %(assign_query)s
 			GROUP BY status
-		""", {"user": sp_user}, as_dict=True)
+		""", {"user": sp_user, "assign_query": f'%"{sp_user}"%'}, as_dict=True)
 
 		for row in lead_data:
 			lead_counts[row.status] = row["count"]
@@ -155,9 +160,9 @@ def _build_pipeline_for_users(subordinates, lead_stages, deal_stages):
 		deal_data = frappe.db.sql("""
 			SELECT status, COUNT(name) as count
 			FROM `tabCRM Deal`
-			WHERE deal_owner = %(user)s
+			WHERE deal_owner = %(user)s OR _assign LIKE %(assign_query)s
 			GROUP BY status
-		""", {"user": sp_user}, as_dict=True)
+		""", {"user": sp_user, "assign_query": f'%"{sp_user}"%'}, as_dict=True)
 
 		for row in deal_data:
 			deal_counts[row.status] = row["count"]
@@ -193,9 +198,9 @@ def get_stage_details(user, doctype, status):
 		records = frappe.db.sql("""
 			SELECT name as id, organization, first_name, last_name, status, mobile_no
 			FROM `tabCRM Lead`
-			WHERE lead_owner = %(user)s AND status = %(status)s
+			WHERE (lead_owner = %(user)s OR _assign LIKE %(assign_query)s) AND status = %(status)s
 			ORDER BY modified DESC
-		""", {"user": user, "status": status}, as_dict=True)
+		""", {"user": user, "status": status, "assign_query": f'%"{user}"%'}, as_dict=True)
 
 		for r in records:
 			r["doc_route"] = f"/app/crm-lead/{r['id']}"
@@ -204,9 +209,9 @@ def get_stage_details(user, doctype, status):
 		records = frappe.db.sql("""
 			SELECT name as id, organization, organization_name, status, deal_value
 			FROM `tabCRM Deal`
-			WHERE deal_owner = %(user)s AND status = %(status)s
+			WHERE (deal_owner = %(user)s OR _assign LIKE %(assign_query)s) AND status = %(status)s
 			ORDER BY modified DESC
-		""", {"user": user, "status": status}, as_dict=True)
+		""", {"user": user, "status": status, "assign_query": f'%"{user}"%'}, as_dict=True)
 
 		for r in records:
 			r["doc_route"] = f"/app/crm-deal/{r['id']}"
