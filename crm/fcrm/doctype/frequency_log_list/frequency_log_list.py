@@ -203,8 +203,10 @@ def get_frequency_buckets():
 			# Calculate next_order_date
 			last_order = _get_last_order_date_for_bucket(rec.customer_id, item_row.item)
 			next_order_date = None
+			rate = 0.0
 			if last_order:
-				next_order_date = str(add_days(last_order, freq_day))
+				next_order_date = str(add_days(last_order.transaction_date, freq_day))
+				rate = last_order.base_price_list_rate or 0.0
 
 			bucket_customers = buckets[target_bucket]["customers"]
 			if rec.customer_id not in bucket_customers:
@@ -218,6 +220,7 @@ def get_frequency_buckets():
 				"item": item_row.item,
 				"frequency_day": freq_day,
 				"quantity": item_row.quantity,
+				"rate": rate,
 				"next_order_date": next_order_date
 			})
 
@@ -253,7 +256,7 @@ def _get_last_order_date_for_bucket(customer_id, item_code):
 	""", {'customer': customer_id, 'item': item_code}, as_dict=True)
 
 	if result:
-		return result[0].transaction_date
+		return result[0]
 	return None
 
 

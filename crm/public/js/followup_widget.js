@@ -338,7 +338,7 @@ crm.followup_widget = {
                         </span>
                         <div style="display: flex; gap: 10px; align-items: center;">
 							<span style="font-size: 13px; font-weight: 600; color: #1e293b;">
-								Total: ${format_currency(customer.total_value || 0)}
+								Total: ${format_currency(customer.total_value || 0, customer.default_currency, 0).replace(/\.00$/, '')}
 							</span>
 							<span style="font-size: 12px; font-weight: 600; color: #64748b; background: #e2e8f0; padding: 2px 8px; border-radius: 10px;">
 								${customer.items.length} item${customer.items.length !== 1 ? 's' : ''}
@@ -354,7 +354,7 @@ crm.followup_widget = {
                                 <tr style="background: #fff; text-align: left; color: #64748b; font-size: 12px; text-transform: uppercase;">
                                     <th style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600;">Item Name</th>
                                     <th style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600; width: 80px;">Qty</th>
-                                    <th style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600; width: 100px;">Rate</th>
+                                    <th style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600; width: 180px;">Rate</th>
                                     <th style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600; width: 120px;">Next Order</th>
                                 </tr>
                             </thead>
@@ -379,7 +379,7 @@ crm.followup_widget = {
                     <tr style="border-bottom: 1px solid #f1f5f9;">
                         <td style="padding: 10px 16px; color: #334155;">${item.item}</td>
                         <td style="padding: 10px 16px; color: #334155;">${item.qty}</td>
-                        <td style="padding: 10px 16px; font-weight: 600; color: #1d4ed8;">${format_currency(item.rate)}</td>
+                        <td style="padding: 10px 16px; font-weight: 600; color: #1d4ed8;">${format_currency(item.rate, customer.default_currency, 0).replace(/\.00$/, '')}</td>
                         <td style="padding: 10px 16px; color: ${dateColor}; font-weight: 600;">${dateLabel}</td>
                     </tr>
                 `;

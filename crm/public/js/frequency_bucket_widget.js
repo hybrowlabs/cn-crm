@@ -313,6 +313,7 @@ crm.frequency_bucket_widget = {
                                 <tr style="background: #fff; text-align: left; color: #64748b; font-size: 12px; text-transform: uppercase;">
                                     <th style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600;">Item Name</th>
                                     <th style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600; width: 80px;">Qty</th>
+                                    <th style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600; width: 140px;">Rate</th>
                                     <th style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600; width: 100px;">Freq Day</th>
                                     <th style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600; width: 120px;">Next Order</th>
                                 </tr>
@@ -338,6 +339,7 @@ crm.frequency_bucket_widget = {
                     <tr style="border-bottom: 1px solid #f1f5f9;">
                         <td style="padding: 10px 16px; color: #334155;">${item.item}</td>
                         <td style="padding: 10px 16px; color: #334155;">${item.quantity || 0}</td>
+                        <td style="padding: 10px 16px; font-weight: 600; color: #1d4ed8;">${format_currency(item.rate || 0, customer.default_currency, 0).replace(/\.00$/, '')}</td>
                         <td style="padding: 10px 16px; font-weight: 600; color: #1d4ed8;">${item.frequency_day}</td>
                         <td style="padding: 10px 16px; color: ${dateColor}; font-weight: 600;">${dateLabel}</td>
                     </tr>
