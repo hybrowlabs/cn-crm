@@ -158,11 +158,11 @@ crm.followup_widget = {
 
 	build_buckets(customers) {
 		const bucket_defs = [
-			{ label: "0-1lac", min: 0, max: 100000 },
-			{ label: "1lac-5lac", min: 100000, max: 500000 },
-			{ label: "5lac-20lac", min: 500000, max: 2000000 },
-			{ label: "20lac-50lac", min: 2000000, max: 5000000 },
-			{ label: "50+", min: 5000000, max: Infinity }
+			{ label: "0-1Lakh", min: 0, max: 100000 },
+			{ label: "1Lakh-5Lakh", min: 100000, max: 500000 },
+			{ label: "5Lakh-20Lakh", min: 500000, max: 2000000 },
+			{ label: "20Lakh-50Lakh", min: 2000000, max: 5000000 },
+			{ label: "50Lakh+", min: 5000000, max: Infinity }
 		];
 
 		let buckets = bucket_defs.map(b => ({ ...b, count: 0, customers: [] }));
