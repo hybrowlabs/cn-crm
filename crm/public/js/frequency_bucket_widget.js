@@ -168,7 +168,7 @@ crm.frequency_bucket_widget = {
 		container.empty();
 
 		// 1) Pie chart container
-		const chartWrapper = $('<div class="freq-pie-chart" style="margin: 20px auto; max-width: 400px; padding: 10px;"></div>');
+		const chartWrapper = $('<div class="freq-pie-chart" style="margin: 20px auto; max-width: 100%; padding: 10px;"></div>');
 		container.append(chartWrapper);
 
 		// 2) Summary list
@@ -215,7 +215,7 @@ crm.frequency_bucket_widget = {
 						},
 						title: "Breakdown by Days",
 						type: 'pie',
-						height: 250,
+						height: 350,
 						colors: this._bucket_colors.map(c => c.bg),
 						isNavigable: 1
 					});
@@ -238,6 +238,43 @@ crm.frequency_bucket_widget = {
 							this.open_bucket_drawer(selected_bucket);
 						}
 					});
+
+					// Fallback DOM click event for slices
+					setTimeout(() => {
+						const paths = chartWrapper[0].querySelectorAll('.pie-path');
+						paths.forEach((path, idx) => {
+							path.style.cursor = 'pointer';
+							path.addEventListener('click', (e) => {
+								e.stopPropagation();
+
+								// We can also identify the bucket by the path's color
+								const pathColor = path.getAttribute('fill') || path.style.fill;
+
+								let bucketIdx = this._bucket_colors.findIndex(c => {
+									let tempDiv = document.createElement('div');
+									tempDiv.style.color = c.bg;
+									document.body.appendChild(tempDiv);
+									let rgbColor = getComputedStyle(tempDiv).color;
+									document.body.removeChild(tempDiv);
+
+									return rgbColor === pathColor || c.bg.toLowerCase() === pathColor.toLowerCase() ||
+										(pathColor.includes('16, 185, 129') && c.bg === '#10b981') ||
+										(pathColor.includes('59, 130, 246') && c.bg === '#3b82f6') ||
+										(pathColor.includes('245, 158, 11') && c.bg === '#f59e0b') ||
+										(pathColor.includes('107, 114, 128') && c.bg === '#6b7280');
+								});
+
+								if (bucketIdx === -1) {
+									// If color matching fails, map positionally
+									bucketIdx = idx;
+								}
+
+								if (bucketIdx >= 0 && bucketIdx < buckets.length) {
+									this.open_bucket_drawer(buckets[bucketIdx]);
+								}
+							});
+						});
+					}, 500);
 
 				} catch (err) {
 					console.error("Error drawing pie chart:", err);

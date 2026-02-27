@@ -49,6 +49,15 @@ crm.followup_widget = {
 					border-radius: 0 0 10px 10px;
 					border: 1px solid #e2e8f0;
 					border-top: none;
+					max-height: 400px;
+					overflow-y: auto;
+				}
+				.followup-content::-webkit-scrollbar {
+					width: 6px;
+				}
+				.followup-content::-webkit-scrollbar-thumb {
+					background-color: #cbd5e1;
+					border-radius: 10px;
 				}
 				.customer-card {
 					border-bottom: 1px solid #e2e8f0;
