@@ -49,6 +49,15 @@ crm.frequency_bucket_widget = {
 					border-radius: 0 0 10px 10px;
 					border: 1px solid #e2e8f0;
 					border-top: none;
+					max-height: 350px;
+					overflow-y: auto;
+				}
+				.freq-content::-webkit-scrollbar {
+					width: 6px;
+				}
+				.freq-content::-webkit-scrollbar-thumb {
+					background-color: #cbd5e1;
+					border-radius: 10px;
 				}
 				.freq-empty {
 					text-align: center;
@@ -213,16 +222,20 @@ crm.frequency_bucket_widget = {
 
 					// Add click event for slices
 					chartWrapper[0].addEventListener('data-select', (e) => {
-						let idx = -1;
-						if (e && e.detail !== undefined && e.detail.index !== undefined) {
-							idx = e.detail.index;
+						let selected_bucket = null;
+
+						if (e && e.detail) {
+							if (e.detail.label) {
+								selected_bucket = buckets.find(b => b.label === e.detail.label);
+							} else if (e.detail.index !== undefined) {
+								selected_bucket = buckets[e.detail.index];
+							}
 						} else if (e && typeof e.detail === 'number') {
-							idx = e.detail;
+							selected_bucket = buckets[e.detail];
 						}
 
-						if (idx >= 0 && idx < buckets.length) {
-							const bucket = buckets[idx];
-							this.open_bucket_drawer(bucket);
+						if (selected_bucket) {
+							this.open_bucket_drawer(selected_bucket);
 						}
 					});
 
