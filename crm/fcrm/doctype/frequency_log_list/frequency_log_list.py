@@ -105,15 +105,19 @@ def get_followup_logs_for_user():
 					"total_value": 0.0
 				}
 		
+		# Fetch latest rate from Sales Order
+		last_order = get_last_order_date(customer_code, log.item)
+		rate = last_order.base_price_list_rate if last_order else (log.value or 0)
+
 		# Calculate value for this item (rate * qty)
-		item_value = (log.value or 0) * (log.qty or 0)
+		item_value = rate * (log.qty or 0)
 		customers[customer_code]["total_value"] += item_value
 
 		customers[customer_code]["items"].append({
 			"log_id": log.name,
 			"item": log.item,
 			"qty": log.qty,
-			"rate": log.value,
+			"rate": rate,
 			"value": item_value,
 			"next_order_date": log.next_order_date_as_per_frequency
 		})
