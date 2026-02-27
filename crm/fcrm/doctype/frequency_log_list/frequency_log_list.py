@@ -205,7 +205,7 @@ def get_frequency_buckets():
 				continue
 
 			# Calculate next_order_date
-			last_order = _get_last_order_date_for_bucket(rec.customer_id, item_row.item)
+			last_order = get_last_order_date(rec.customer_id, item_row.item)
 			next_order_date = None
 			rate = 0.0
 			if last_order:
@@ -245,23 +245,6 @@ def get_frequency_buckets():
 
 	return {"buckets": result}
 
-
-def _get_last_order_date_for_bucket(customer_id, item_code):
-	"""Helper: get the most recent Sales Order date for a customer + item."""
-	result = frappe.db.sql("""
-		SELECT so.transaction_date
-		FROM `tabSales Order` so
-		INNER JOIN `tabSales Order Item` soi ON soi.parent = so.name
-		WHERE so.customer = %(customer)s
-			AND soi.item_code = %(item)s
-			AND so.docstatus = 1
-		ORDER BY so.transaction_date DESC
-		LIMIT 1
-	""", {'customer': customer_id, 'item': item_code}, as_dict=True)
-
-	if result:
-		return result[0]
-	return None
 
 
 @frappe.whitelist()
