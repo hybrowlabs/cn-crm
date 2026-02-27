@@ -26,7 +26,7 @@ crm.followup_widget = {
 					font-weight: 600;
 					letter-spacing: 0.3px;
 				}
-				.refresh-btn {
+				.followup-refresh-btn {
 					background: rgba(255,255,255,0.15) !important;
 					border: 1px solid rgba(255,255,255,0.2) !important;
 					color: #fff !important;
@@ -35,7 +35,7 @@ crm.followup_widget = {
 					border-radius: 6px;
 					transition: all 0.2s ease;
 				}
-				.refresh-btn:hover {
+				.followup-refresh-btn:hover {
 					background: rgba(255,255,255,0.25) !important;
 				}
 				.followup-loading {
@@ -49,7 +49,7 @@ crm.followup_widget = {
 					border-radius: 0 0 10px 10px;
 					border: 1px solid #e2e8f0;
 					border-top: none;
-					max-height: 400px;
+					max-height: 450px;
 					overflow-y: auto;
 				}
 				.followup-content::-webkit-scrollbar {
@@ -59,254 +59,96 @@ crm.followup_widget = {
 					background-color: #cbd5e1;
 					border-radius: 10px;
 				}
-				.customer-card {
-					border-bottom: 1px solid #e2e8f0;
-				}
-				.customer-card:last-child {
-					border-bottom: none;
-				}
-				.customer-header {
-					display: flex;
-					justify-content: space-between;
-					align-items: center;
-					padding: 10px 16px;
-					cursor: pointer;
-					transition: background 0.15s ease;
-					background: #fff;
-				}
-				.customer-header:hover {
-					background: #eef2f7;
-				}
-				.customer-link {
-					font-size: 13px;
-					font-weight: 600;
-					color: #1e293b;
-					cursor: pointer;
-					transition: color 0.15s ease;
-				}
-				.customer-link:hover {
-					color: #3b82f6;
-				}
-				.cust-right {
-					display: flex;
-					align-items: center;
-					gap: 8px;
-				}
-				.cust-item-count {
-					font-size: 11px;
-					color: #64748b;
-				}
-				.chevron {
-					font-size: 10px;
-					color: #94a3b8;
-					transition: transform 0.25s ease;
-					display: inline-block;
-				}
-				.chevron.rotate {
-					transform: rotate(90deg);
-				}
-				.customer-items {
-					max-height: 0;
-					overflow: hidden;
-					transition: max-height 0.3s ease;
-					background: #ffffff;
-				}
-				.customer-items.open {
-					max-height: 3000px;
-				}
-
-				/* Table */
-				.followup-table {
-					width: 100%;
-					border-collapse: collapse;
-					font-size: 12px;
-				}
-				.followup-table thead th {
-					background: #f1f5f9;
-					color: #475569;
-					font-weight: 600;
-					font-size: 11px;
-					text-transform: uppercase;
-					letter-spacing: 0.5px;
-					padding: 8px 12px;
-					text-align: left;
-					border-bottom: 2px solid #e2e8f0;
-				}
-				.followup-table tbody td {
-					padding: 8px 12px;
-					color: #334155;
-					border-bottom: 1px solid #f1f5f9;
-					vertical-align: middle;
-				}
-				.followup-table tbody tr:last-child td {
-					border-bottom: none;
-				}
-				.followup-table tbody tr:hover td {
-					background: #f8fafc;
-				}
-				.followup-table .td-item {
-					font-weight: 500;
-				}
-				.followup-table .td-date.overdue {
-					color: #dc2626;
-					font-weight: 600;
-				}
-				.followup-table .td-date.due-today {
-					color: #d97706;
-					font-weight: 600;
-				}
-				.followup-table .td-date.upcoming {
-					color: #16a34a;
-				}
-				.urgency-badge {
-					font-size: 10px;
-					font-weight: 600;
-					padding: 2px 8px;
-					border-radius: 10px;
-					text-transform: uppercase;
-					letter-spacing: 0.5px;
-					white-space: nowrap;
-				}
-				.urgency-overdue { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
-				.urgency-today { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
-				.urgency-inactive { background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; }
-				.urgency-escalated { background: #fdf4ff; color: #a855f7; border: 1px solid #e9d5ff; }
-				.urgency-dormant { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
-				.urgency-upcoming { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
-
-				/* Footer */
-				.items-footer {
-					display: flex;
-					justify-content: space-between;
-					align-items: center;
-					padding: 10px 12px;
-					border-top: 1px solid #e2e8f0;
-					background: #f8fafc;
-				}
-				.items-footer .total-amount {
-					font-size: 13px;
-					font-weight: 600;
-					color: #1e293b;
-				}
-				.items-footer .create-quotation-btn {
-					font-size: 12px;
-					padding: 5px 14px;
-					border-radius: 6px;
-					font-weight: 500;
-					transition: all 0.2s ease;
-				}
-				.empty-state {
+				.followup-empty {
 					text-align: center;
 					padding: 32px 16px;
 					color: #94a3b8;
 					font-size: 14px;
 				}
+
+				/* Bucket Summary Item */
+				.followup-summary-item {
+					display: flex;
+					justify-content: space-between;
+					align-items: center;
+					padding: 11px 16px;
+					cursor: pointer;
+					transition: background 0.15s ease;
+					border: 1px solid #e2e8f0;
+					border-radius: 6px;
+					margin-bottom: 8px;
+				}
+				.followup-summary-item:hover {
+					opacity: 0.8;
+				}
+				.followup-summary-label {
+					font-size: 14px;
+					font-weight: 600;
+					color: #1e293b;
+					display: flex;
+					align-items: center;
+					gap: 10px;
+				}
+				.followup-summary-count {
+					font-size: 11px;
+					font-weight: 700;
+					padding: 2px 8px;
+					border-radius: 10px;
+					color: #fff;
+					min-width: 24px;
+					text-align: center;
+				}
 			</style>
 
 			<div class="followup-widget">
 				<div class="followup-header">
-					<div class="followup-title">Follow-ups Needed</div>
-					<button class="btn btn-sm refresh-btn">Refresh</button>
+					<div class="followup-title">Follow-ups by Value</div>
+					<button class="btn btn-sm followup-refresh-btn">Refresh</button>
 				</div>
 
 				<div class="followup-loading">Loading...</div>
 
 				<div class="followup-content" style="display:none;">
-					<div class="customer-list"></div>
-					<div class="empty-state" style="display:none;">No follow-ups 🎉</div>
+					<div class="followup-bucket-list"></div>
+					<div class="followup-empty" style="display:none;">No follow-ups 🎉</div>
 				</div>
 			</div>
 		`);
 
-		//-----------------------------------------
 		// Refresh
-		//-----------------------------------------
-
-		container.off('click', '.refresh-btn');
-		container.on('click', '.refresh-btn', () => {
+		container.off('click', '.followup-refresh-btn');
+		container.on('click', '.followup-refresh-btn', () => {
 			this.load_data(container);
-		});
-
-		//-----------------------------------------
-		// Toggle Customers
-		//-----------------------------------------
-
-		container.off('click', '.customer-header');
-
-		container.on('click', '.customer-header', function () {
-
-			const card = $(this).closest('.customer-card');
-			const items = card.find('.customer-items');
-			const icon = $(this).find('.chevron');
-
-			const isOpen = items.hasClass('open');
-
-			// Close all
-			container.find('.customer-items').removeClass('open');
-			container.find('.chevron').removeClass('rotate');
-
-			// Open if previously closed
-			if (!isOpen) {
-				items.addClass('open');
-				icon.addClass('rotate');
-			}
-		});
-
-		//-----------------------------------------
-		// OPEN CUSTOMER DOC
-		//-----------------------------------------
-
-		container.off('click', '.customer-link');
-
-		container.on('click', '.customer-link', function (e) {
-
-			e.stopPropagation();
-
-			const customerName = $(this).data('name');
-
-			frappe.set_route(
-				'Form',
-				'Customer',
-				customerName
-			);
 		});
 
 		this.load_data(container);
 	},
 
-	//-----------------------------------------
+	// -------------------------------------------
 
 	load_data(container) {
-
 		const loading = container.find('.followup-loading');
 		const content = container.find('.followup-content');
-		const list = container.find('.customer-list');
-		const empty = container.find('.empty-state');
+		const list = container.find('.followup-bucket-list');
+		const empty = container.find('.followup-empty');
 
 		loading.show();
 		content.hide();
 
 		frappe.call({
 			method: 'crm.fcrm.doctype.frequency_log_list.frequency_log_list.get_followup_logs_for_user',
-
 			callback: (r) => {
-
 				loading.hide();
 				content.show();
 
-				if (r.message?.customers?.length) {
+				if (r.message && r.message.customers && r.message.customers.length) {
+					// Build buckets
+					const buckets = this.build_buckets(r.message.customers);
 
-					this.render_customers(
-						list,
-						r.message.customers,
-						container
-					);
-
+					this.render_buckets(list, buckets, container);
 					empty.hide();
 					list.show();
-
 				} else {
-
 					list.hide();
 					empty.show();
 				}
@@ -314,152 +156,292 @@ crm.followup_widget = {
 		});
 	},
 
-	//-----------------------------------------
+	build_buckets(customers) {
+		const bucket_defs = [
+			{ label: "0-1lac", min: 0, max: 100000 },
+			{ label: "1lac-5lac", min: 100000, max: 500000 },
+			{ label: "5lac-15lac", min: 500000, max: 1500000 },
+			{ label: "15lac-30lac", min: 1500000, max: 3000000 },
+			{ label: "30lac-50lac", min: 3000000, max: 5000000 },
+			{ label: "50+", min: 5000000, max: Infinity }
+		];
 
-	render_customers(container, customers, widget) {
-
-		container.empty();
-
-		const today = frappe.datetime.get_today();
+		let buckets = bucket_defs.map(b => ({ ...b, count: 0, customers: [] }));
 
 		customers.forEach(customer => {
+			const val = customer.total_value || 0;
+			let target = buckets[buckets.length - 1]; // default 50+
+			for (let b of buckets) {
+				if (val >= b.min && val < b.max) {
+					target = b;
+					break;
+				}
+			}
+			target.customers.push(customer);
+			target.count += 1;
+		});
 
-			const card = $(`
-				<div class="customer-card">
-					<div class="customer-header">
-						<div>
-							<strong class="customer-link"
-									data-name="${customer.name}">
-								${customer.customer_name}
-							</strong>
-						</div>
-						<div class="cust-right">
-							<span class="cust-item-count">${customer.items.length} item${customer.items.length !== 1 ? 's' : ''}</span>
-							<span class="chevron">▶</span>
-						</div>
-					</div>
-					<div class="customer-items"></div>
-				</div>
-			`);
+		return buckets;
+	},
 
-			const itemsContainer = card.find('.customer-items');
+	// -------------------------------------------
 
-			//-------------------------------------
-			// BUILD TABLE
-			//-------------------------------------
+	_bucket_colors: [
+		{ bg: '#3b82f6', bar: '#eff6ff' },
+		{ bg: '#10b981', bar: '#ecfdf5' },
+		{ bg: '#f59e0b', bar: '#fffbeb' },
+		{ bg: '#8b5cf6', bar: '#f3e8ff' },
+		{ bg: '#ec4899', bar: '#fdf2f8' },
+		{ bg: '#6b7280', bar: '#f9fafb' },
+	],
 
-			let tableHTML = `
-				<table class="followup-table">
-					<thead>
-						<tr>
-							<th>Item Name</th>
-							<th>Qty</th>
-							<th>Rate</th>
-							<th>Next Order Date</th>
-							<th>Status</th>
-						</tr>
-					</thead>
-					<tbody>
-			`;
+	// -------------------------------------------
+
+	render_buckets(container, buckets, widget) {
+		container.empty();
+
+		// 1) Pie chart container
+		const chartWrapper = $('<div class="followup-pie-chart" style="margin: 20px auto; max-width: 100%; padding: 10px;"></div>');
+		container.append(chartWrapper);
+
+		// 2) Summary list
+		const listWrapper = $('<div class="followup-summary-list" style="padding: 0 16px 16px 16px;"></div>');
+
+		buckets.forEach((bucket, bIdx) => {
+			const palette = this._bucket_colors[bIdx % this._bucket_colors.length];
+
+			const itemHtml = $(`
+                <div class="followup-summary-item" style="background:${palette.bar};">
+                    <span class="followup-summary-label">
+                        <div style="width:12px; height:12px; border-radius:50%; background:${palette.bg}"></div>
+                        ${bucket.label}
+                    </span>
+                    <span class="followup-summary-count" style="background:${palette.bg};">
+                        ${bucket.count}
+                    </span>
+                </div>
+            `);
+
+			itemHtml.on('click', () => {
+				this.open_bucket_drawer(bucket);
+			});
+
+			listWrapper.append(itemHtml);
+		});
+
+		container.append(listWrapper);
+
+		// Render standard Frappe pie chart
+		setTimeout(() => {
+			if (typeof frappe !== 'undefined' && typeof frappe.Chart !== 'undefined') {
+				try {
+					let hasData = buckets.some(b => b.count > 0);
+					if (!hasData) {
+						chartWrapper.html('<div style="text-align:center;color:#94a3b8;padding:20px;">No Data</div>');
+						return;
+					}
+
+					const chart = new frappe.Chart(chartWrapper[0], {
+						data: {
+							labels: buckets.map(b => b.label),
+							datasets: [{ values: buckets.map(b => b.count) }]
+						},
+						title: "Follow-ups by Value",
+						type: 'pie',
+						height: 350,
+						colors: this._bucket_colors.map(c => c.bg),
+						isNavigable: 1
+					});
+
+					// Add click event for slices
+					chartWrapper[0].addEventListener('data-select', (e) => {
+						let selected_bucket = null;
+
+						if (e && e.detail) {
+							if (e.detail.label) {
+								selected_bucket = buckets.find(b => b.label === e.detail.label);
+							} else if (e.detail.index !== undefined) {
+								selected_bucket = buckets[e.detail.index];
+							}
+						} else if (e && typeof e.detail === 'number') {
+							selected_bucket = buckets[e.detail];
+						}
+
+						if (selected_bucket) {
+							this.open_bucket_drawer(selected_bucket);
+						}
+					});
+
+					// Fallback DOM click event for slices
+					setTimeout(() => {
+						const paths = chartWrapper[0].querySelectorAll('.pie-path');
+						paths.forEach((path, idx) => {
+							path.style.cursor = 'pointer';
+							path.addEventListener('click', (e) => {
+								e.stopPropagation();
+
+								const pathColor = path.getAttribute('fill') || path.style.fill;
+
+								let bucketIdx = this._bucket_colors.findIndex(c => {
+									let tempDiv = document.createElement('div');
+									tempDiv.style.color = c.bg;
+									document.body.appendChild(tempDiv);
+									let rgbColor = getComputedStyle(tempDiv).color;
+									document.body.removeChild(tempDiv);
+
+									return rgbColor === pathColor || c.bg.toLowerCase() === pathColor.toLowerCase() ||
+										(pathColor.includes('59, 130, 246') && c.bg === '#3b82f6') ||
+										(pathColor.includes('16, 185, 129') && c.bg === '#10b981') ||
+										(pathColor.includes('245, 158, 11') && c.bg === '#f59e0b') ||
+										(pathColor.includes('139, 92, 246') && c.bg === '#8b5cf6') ||
+										(pathColor.includes('236, 72, 153') && c.bg === '#ec4899') ||
+										(pathColor.includes('107, 114, 128') && c.bg === '#6b7280');
+								});
+
+								if (bucketIdx === -1) {
+									bucketIdx = idx;
+								}
+
+								if (bucketIdx >= 0 && bucketIdx < buckets.length) {
+									this.open_bucket_drawer(buckets[bucketIdx]);
+								}
+							});
+						});
+					}, 500);
+
+				} catch (err) {
+					console.error("Error drawing pie chart:", err);
+				}
+			} else {
+				chartWrapper.hide();
+			}
+		}, 100);
+	},
+
+	open_bucket_drawer(bucket) {
+		if (!bucket || !bucket.customers || bucket.customers.length === 0) {
+			frappe.show_alert({ message: __('No data in ' + bucket.label), indicator: 'orange' });
+			return;
+		}
+
+		const today = frappe.datetime.get_today();
+		let html = `<div style="padding: 5px 0 20px 0;" class="followup-drawer-content">`;
+
+		bucket.customers.forEach((customer, idx) => {
+			html += `
+                <div style="margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; background: #fff;">
+                    <div style="background: #f8fafc; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 600; font-size: 14px; color: #1e293b;">
+                            <a href="/app/customer/${encodeURIComponent(customer.customer_code)}" style="color: inherit; text-decoration: none;" target="_blank">
+                                ${customer.customer_name}
+                            </a>
+                        </span>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+							<span style="font-size: 13px; font-weight: 600; color: #1e293b;">
+								Total: ${format_currency(customer.total_value || 0)}
+							</span>
+							<span style="font-size: 12px; font-weight: 600; color: #64748b; background: #e2e8f0; padding: 2px 8px; border-radius: 10px;">
+								${customer.items.length} item${customer.items.length !== 1 ? 's' : ''}
+							</span>
+							<button class="btn btn-xs btn-primary create-quotation-btn" data-idx="${idx}" style="margin-left: 10px;">
+								Create Quotation
+							</button>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; font-size: 13px; border-collapse: collapse; min-width: 500px;">
+                            <thead>
+                                <tr style="background: #fff; text-align: left; color: #64748b; font-size: 12px; text-transform: uppercase;">
+                                    <th style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600;">Item Name</th>
+                                    <th style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600; width: 80px;">Qty</th>
+                                    <th style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600; width: 100px;">Rate</th>
+                                    <th style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600; width: 120px;">Next Order</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
 
 			customer.items.forEach(item => {
-
-				//---------------------------------
-				// URGENCY CALCULATION
-				//---------------------------------
-
-				let urgencyClass = "urgency-upcoming";
-				let urgencyLabel = "Upcoming";
-				let dateClass = "upcoming";
-
-				if (item.next_order_date < today) {
-					const diffDays = frappe.datetime.get_diff(today, item.next_order_date);
-
-					if (diffDays > 180) {
-						urgencyClass = "urgency-dormant";
-						urgencyLabel = "Dormant";
-					} else if (diffDays > 90) {
-						urgencyClass = "urgency-escalated";
-						urgencyLabel = "Escalated";
-					} else if (diffDays > 60) {
-						urgencyClass = "urgency-inactive";
-						urgencyLabel = "Inactive";
-					} else {
-						urgencyClass = "urgency-overdue";
-						urgencyLabel = "Overdue";
+				let dateColor = '#16a34a'; // Default green (upcoming)
+				let dateLabel = 'N/A';
+				if (item.next_order_date) {
+					dateLabel = frappe.datetime.str_to_user(item.next_order_date);
+					if (item.next_order_date < today) {
+						dateColor = '#dc2626'; // Overdue (red)
+					} else if (item.next_order_date === today) {
+						dateColor = '#d97706'; // Due today (orange)
 					}
-					dateClass = "overdue";
-				}
-				else if (item.next_order_date === today) {
-					urgencyClass = "urgency-today";
-					urgencyLabel = "Due Today";
-					dateClass = "due-today";
+				} else {
+					dateColor = '#94a3b8'; // No date (gray)
 				}
 
-				const dateLabel = item.next_order_date
-					? frappe.datetime.str_to_user(item.next_order_date)
-					: 'N/A';
-
-				tableHTML += `
-					<tr>
-						<td class="td-item">${item.item}</td>
-						<td>${item.qty}</td>
-						<td>${format_currency(item.rate)}</td>
-						<td class="td-date ${dateClass}">${dateLabel}</td>
-						<td><span class="urgency-badge ${urgencyClass}">${urgencyLabel}</span></td>
-					</tr>
-				`;
+				html += `
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 10px 16px; color: #334155;">${item.item}</td>
+                        <td style="padding: 10px 16px; color: #334155;">${item.qty}</td>
+                        <td style="padding: 10px 16px; font-weight: 600; color: #1d4ed8;">${format_currency(item.rate)}</td>
+                        <td style="padding: 10px 16px; color: ${dateColor}; font-weight: 600;">${dateLabel}</td>
+                    </tr>
+                `;
 			});
 
-			tableHTML += `</tbody></table>`;
-
-			//-------------------------------------
-			// FOOTER: Total Amount + Create Quotation
-			//-------------------------------------
-
-			const footerHTML = `
-				<div class="items-footer">
-					<span class="total-amount">
-						Total: ${format_currency(customer.total_value || 0)}
-					</span>
-					<button class="btn btn-xs btn-primary create-quotation-btn">
-						Create Quotation
-					</button>
-				</div>
-			`;
-
-			itemsContainer.html(tableHTML + footerHTML);
-
-			//-------------------------------------
-			// Create Quotation handler
-			//-------------------------------------
-
-			itemsContainer.find('.create-quotation-btn').on('click', (e) => {
-				e.stopPropagation();
-				const btn = itemsContainer.find('.create-quotation-btn');
-				btn.prop('disabled', true).text('...');
-
-				frappe.route_options = {
-					quotation_to: "Customer",
-					party_name: customer.customer_code,
-					currency: customer.default_currency,
-					custom_branch: customer.custom_branch,
-					custom_sale_by: frappe.session.user,
-					items: customer.items.map(i => ({
-						item_code: i.item,
-						qty: i.qty
-					}))
-				};
-
-				frappe.new_doc('Quotation', frappe.route_options);
-
-				setTimeout(() => {
-					btn.prop('disabled', false).text('Create Quotation');
-				}, 1000);
-			});
-
-			container.append(card);
+			html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
 		});
-	}
 
+		html += `</div>`;
+
+		let d = new frappe.ui.Dialog({
+			title: __(`Follow-ups: ${bucket.label}`),
+			size: 'extra-large',
+			fields: [
+				{
+					fieldname: 'html_content',
+					fieldtype: 'HTML',
+					options: html
+				}
+			]
+		});
+
+		if (d.$body) {
+			d.$body.css('background-color', '#f8fafc');
+			d.$body.css('padding', '20px');
+
+			// Attach quotation click handlers
+			setTimeout(() => {
+				d.$wrapper.find('.create-quotation-btn').on('click', function (e) {
+					e.stopPropagation();
+					const btn = $(this);
+					const idx = btn.data('idx');
+					const customer = bucket.customers[idx];
+
+					btn.prop('disabled', true).text('...');
+
+					frappe.route_options = {
+						quotation_to: "Customer",
+						party_name: customer.customer_code,
+						currency: customer.default_currency,
+						custom_branch: customer.custom_branch,
+						custom_sale_by: frappe.session.user,
+						items: customer.items.map(i => ({
+							item_code: i.item,
+							qty: i.qty
+						}))
+					};
+
+					frappe.new_doc('Quotation', frappe.route_options);
+
+					setTimeout(() => {
+						btn.prop('disabled', false).text('Create Quotation');
+					}, 1000);
+				});
+			}, 100);
+		}
+
+		d.show();
+	}
 };
