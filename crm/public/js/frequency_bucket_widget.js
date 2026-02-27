@@ -2,12 +2,12 @@ frappe.provide('crm.frequency_bucket_widget');
 
 crm.frequency_bucket_widget = {
 
-    render(wrapper) {
+	render(wrapper) {
 
-        const container = $(wrapper);
-        container.empty();
+		const container = $(wrapper);
+		container.empty();
 
-        container.html(`
+		container.html(`
 			<style>
 				.freq-bucket-widget {
 					font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -57,173 +57,43 @@ crm.frequency_bucket_widget = {
 					font-size: 14px;
 				}
 
-				/* Bucket Section */
-				.freq-bucket-section {
-					border-bottom: 2px solid #e2e8f0;
-				}
-				.freq-bucket-section:last-child {
-					border-bottom: none;
-				}
-				.freq-bucket-bar {
+				/* Bucket Summary Item */
+				.freq-summary-item {
 					display: flex;
 					justify-content: space-between;
 					align-items: center;
 					padding: 11px 16px;
 					cursor: pointer;
 					transition: background 0.15s ease;
+					border: 1px solid #e2e8f0;
+					border-radius: 6px;
+					margin-bottom: 8px;
 				}
-				.freq-bucket-bar:hover {
-					background: #e0e7ff !important;
+				.freq-summary-item:hover {
+					opacity: 0.8;
 				}
-				.freq-bucket-bar-left {
+				.freq-summary-label {
+					font-size: 14px;
+					font-weight: 600;
+					color: #1e293b;
 					display: flex;
 					align-items: center;
 					gap: 10px;
 				}
-				.freq-bucket-label {
-					font-size: 14px;
-					font-weight: 700;
-					color: #1e293b;
-				}
-				.freq-bucket-count {
-					font-size: 10px;
+				.freq-summary-count {
+					font-size: 11px;
 					font-weight: 700;
 					padding: 2px 8px;
 					border-radius: 10px;
 					color: #fff;
-					min-width: 22px;
+					min-width: 24px;
 					text-align: center;
-				}
-				.freq-bucket-chevron {
-					font-size: 10px;
-					color: #64748b;
-					transition: transform 0.25s ease;
-					display: inline-block;
-				}
-				.freq-bucket-chevron.rotate {
-					transform: rotate(90deg);
-				}
-				.freq-bucket-body {
-					max-height: 0;
-					overflow: hidden;
-					transition: max-height 0.35s ease;
-				}
-				.freq-bucket-body.open {
-					max-height: 8000px;
-				}
-
-				/* Customer card inside bucket */
-				.freq-customer-card {
-					border-bottom: 1px solid #e2e8f0;
-				}
-				.freq-customer-card:last-child {
-					border-bottom: none;
-				}
-				.freq-customer-hdr {
-					display: flex;
-					justify-content: space-between;
-					align-items: center;
-					padding: 10px 16px;
-					cursor: pointer;
-					transition: background 0.15s ease;
-					background: #fff;
-				}
-				.freq-customer-hdr:hover {
-					background: #eef2f7;
-				}
-				.freq-customer-link {
-					font-size: 13px;
-					font-weight: 600;
-					color: #1e293b;
-					cursor: pointer;
-					transition: color 0.15s ease;
-				}
-				.freq-customer-link:hover {
-					color: #3b82f6;
-				}
-				.freq-cust-right {
-					display: flex;
-					align-items: center;
-					gap: 8px;
-				}
-				.freq-cust-item-count {
-					font-size: 11px;
-					color: #64748b;
-				}
-				.freq-cust-chevron {
-					font-size: 9px;
-					color: #94a3b8;
-					transition: transform 0.25s ease;
-					display: inline-block;
-				}
-				.freq-cust-chevron.rotate {
-					transform: rotate(90deg);
-				}
-				.freq-customer-items {
-					max-height: 0;
-					overflow: hidden;
-					transition: max-height 0.3s ease;
-					background: #ffffff;
-				}
-				.freq-customer-items.open {
-					max-height: 3000px;
-				}
-
-				/* Table inside customer */
-				.freq-table {
-					width: 100%;
-					border-collapse: collapse;
-					font-size: 12px;
-				}
-				.freq-table thead th {
-					background: #f1f5f9;
-					color: #475569;
-					font-weight: 600;
-					font-size: 11px;
-					text-transform: uppercase;
-					letter-spacing: 0.5px;
-					padding: 8px 12px;
-					text-align: left;
-					border-bottom: 2px solid #e2e8f0;
-				}
-				.freq-table tbody td {
-					padding: 8px 12px;
-					color: #334155;
-					border-bottom: 1px solid #f1f5f9;
-					vertical-align: middle;
-				}
-				.freq-table tbody tr:last-child td {
-					border-bottom: none;
-				}
-				.freq-table tbody tr:hover td {
-					background: #f8fafc;
-				}
-				.freq-table .td-item {
-					font-weight: 500;
-				}
-				.freq-table .td-freq {
-					font-weight: 600;
-					color: #1d4ed8;
-				}
-				.freq-table .td-date.overdue {
-					color: #dc2626;
-					font-weight: 600;
-				}
-				.freq-table .td-date.due-today {
-					color: #d97706;
-					font-weight: 600;
-				}
-				.freq-table .td-date.upcoming {
-					color: #16a34a;
-				}
-				.freq-table .td-date.no-date {
-					color: #94a3b8;
 				}
 			</style>
 
 			<div class="freq-bucket-widget">
 				<div class="freq-bucket-header">
-					<div class="freq-bucket-title">Order Frequency Buckets</div>
+					<div class="freq-bucket-title">Order Frequency Distribution</div>
 					<button class="btn btn-sm freq-refresh-btn">Refresh</button>
 				</div>
 
@@ -236,187 +106,216 @@ crm.frequency_bucket_widget = {
 			</div>
 		`);
 
-        // Refresh
-        container.off('click', '.freq-refresh-btn');
-        container.on('click', '.freq-refresh-btn', () => {
-            this.load_data(container);
-        });
+		// Refresh
+		container.off('click', '.freq-refresh-btn');
+		container.on('click', '.freq-refresh-btn', () => {
+			this.load_data(container);
+		});
 
-        // Toggle bucket
-        container.off('click', '.freq-bucket-bar');
-        container.on('click', '.freq-bucket-bar', function () {
-            const section = $(this).closest('.freq-bucket-section');
-            const body = section.find('.freq-bucket-body');
-            const icon = $(this).find('.freq-bucket-chevron');
-            const isOpen = body.hasClass('open');
+		this.load_data(container);
+	},
 
-            container.find('.freq-bucket-body').removeClass('open');
-            container.find('.freq-bucket-chevron').removeClass('rotate');
+	// -------------------------------------------
 
-            if (!isOpen) {
-                body.addClass('open');
-                icon.addClass('rotate');
-            }
-        });
+	load_data(container) {
+		const loading = container.find('.freq-loading');
+		const content = container.find('.freq-content');
+		const list = container.find('.freq-bucket-list');
+		const empty = container.find('.freq-empty');
 
-        // Toggle customer items
-        container.off('click', '.freq-customer-hdr');
-        container.on('click', '.freq-customer-hdr', function () {
-            const card = $(this).closest('.freq-customer-card');
-            const items = card.find('.freq-customer-items');
-            const icon = $(this).find('.freq-cust-chevron');
-            const isOpen = items.hasClass('open');
+		loading.show();
+		content.hide();
 
-            // close all in this bucket
-            card.closest('.freq-bucket-body').find('.freq-customer-items').removeClass('open');
-            card.closest('.freq-bucket-body').find('.freq-cust-chevron').removeClass('rotate');
+		frappe.call({
+			method: 'crm.fcrm.doctype.frequency_log_list.frequency_log_list.get_frequency_buckets',
+			callback: (r) => {
+				loading.hide();
+				content.show();
 
-            if (!isOpen) {
-                items.addClass('open');
-                icon.addClass('rotate');
-            }
-        });
+				if (r.message?.buckets?.length) {
+					this.render_buckets(list, r.message.buckets, container);
+					empty.hide();
+					list.show();
+				} else {
+					list.hide();
+					empty.show();
+				}
+			}
+		});
+	},
 
-        // Open customer doc
-        container.off('click', '.freq-customer-link');
-        container.on('click', '.freq-customer-link', function (e) {
-            e.stopPropagation();
-            const name = $(this).data('name');
-            frappe.set_route('Form', 'Customer', name);
-        });
+	// -------------------------------------------
 
-        this.load_data(container);
-    },
+	_bucket_colors: [
+		{ bg: '#10b981', bar: '#ecfdf5' },
+		{ bg: '#3b82f6', bar: '#eff6ff' },
+		{ bg: '#f59e0b', bar: '#fffbeb' },
+		{ bg: '#6b7280', bar: '#f9fafb' },
+	],
 
-    // -------------------------------------------
+	// -------------------------------------------
 
-    load_data(container) {
-        const loading = container.find('.freq-loading');
-        const content = container.find('.freq-content');
-        const list = container.find('.freq-bucket-list');
-        const empty = container.find('.freq-empty');
+	render_buckets(container, buckets, widget) {
+		container.empty();
 
-        loading.show();
-        content.hide();
+		// 1) Pie chart container
+		const chartWrapper = $('<div class="freq-pie-chart" style="margin: 20px auto; max-width: 400px; padding: 10px;"></div>');
+		container.append(chartWrapper);
 
-        frappe.call({
-            method: 'crm.fcrm.doctype.frequency_log_list.frequency_log_list.get_frequency_buckets',
-            callback: (r) => {
-                loading.hide();
-                content.show();
+		// 2) Summary list
+		const listWrapper = $('<div class="freq-summary-list" style="padding: 0 16px 16px 16px;"></div>');
 
-                if (r.message?.buckets?.length) {
-                    this.render_buckets(list, r.message.buckets, container);
-                    empty.hide();
-                    list.show();
-                } else {
-                    list.hide();
-                    empty.show();
-                }
-            }
-        });
-    },
+		buckets.forEach((bucket, bIdx) => {
+			const palette = this._bucket_colors[bIdx % this._bucket_colors.length];
 
-    // -------------------------------------------
+			const itemHtml = $(`
+                <div class="freq-summary-item" style="background:${palette.bar};">
+                    <span class="freq-summary-label">
+                        <div style="width:12px; height:12px; border-radius:50%; background:${palette.bg}"></div>
+                        ${bucket.label}
+                    </span>
+                    <span class="freq-summary-count" style="background:${palette.bg};">
+                        ${bucket.count}
+                    </span>
+                </div>
+            `);
 
-    _bucket_colors: [
-        { bg: '#10b981', bar: '#ecfdf5' },
-        { bg: '#3b82f6', bar: '#eff6ff' },
-        { bg: '#f59e0b', bar: '#fffbeb' },
-        { bg: '#6b7280', bar: '#f9fafb' },
-    ],
+			itemHtml.on('click', () => {
+				this.open_bucket_drawer(bucket);
+			});
 
-    // -------------------------------------------
+			listWrapper.append(itemHtml);
+		});
 
-    render_buckets(container, buckets, widget) {
-        container.empty();
-        const today = frappe.datetime.get_today();
+		container.append(listWrapper);
 
-        buckets.forEach((bucket, bIdx) => {
-            const palette = this._bucket_colors[bIdx % this._bucket_colors.length];
+		// Render standard Frappe pie chart
+		setTimeout(() => {
+			if (typeof frappe !== 'undefined' && typeof frappe.Chart !== 'undefined') {
+				try {
+					let hasData = buckets.some(b => b.count > 0);
+					if (!hasData) {
+						chartWrapper.html('<div style="text-align:center;color:#94a3b8;padding:20px;">No Data</div>');
+						return;
+					}
 
-            const section = $(`
-				<div class="freq-bucket-section">
-					<div class="freq-bucket-bar" style="background:${palette.bar};">
-						<div class="freq-bucket-bar-left">
-							<span class="freq-bucket-chevron">▶</span>
-							<span class="freq-bucket-label">${bucket.label}</span>
-							<span class="freq-bucket-count" style="background:${palette.bg};">
-								${bucket.count}
-							</span>
-						</div>
-					</div>
-					<div class="freq-bucket-body"></div>
-				</div>
-			`);
+					const chart = new frappe.Chart(chartWrapper[0], {
+						data: {
+							labels: buckets.map(b => b.label),
+							datasets: [{ values: buckets.map(b => b.count) }]
+						},
+						title: "Breakdown by Days",
+						type: 'pie',
+						height: 250,
+						colors: this._bucket_colors.map(c => c.bg),
+						isNavigable: 1
+					});
 
-            const body = section.find('.freq-bucket-body');
+					// Add click event for slices
+					chartWrapper[0].addEventListener('data-select', (e) => {
+						let idx = -1;
+						if (e && e.detail !== undefined && e.detail.index !== undefined) {
+							idx = e.detail.index;
+						} else if (e && typeof e.detail === 'number') {
+							idx = e.detail;
+						}
 
-            bucket.customers.forEach(customer => {
+						if (idx >= 0 && idx < buckets.length) {
+							const bucket = buckets[idx];
+							this.open_bucket_drawer(bucket);
+						}
+					});
 
-                const custCard = $(`
-					<div class="freq-customer-card">
-						<div class="freq-customer-hdr">
-							<div>
-								<strong class="freq-customer-link"
-										data-name="${customer.customer_code}">
-									${customer.customer_name}
-								</strong>
-							</div>
-							<div class="freq-cust-right">
-								<span class="freq-cust-item-count">${customer.items.length} item${customer.items.length !== 1 ? 's' : ''}</span>
-								<span class="freq-cust-chevron">▶</span>
-							</div>
-						</div>
-						<div class="freq-customer-items"></div>
-					</div>
-				`);
+				} catch (err) {
+					console.error("Error drawing pie chart:", err);
+				}
+			} else {
+				chartWrapper.hide();
+			}
+		}, 100);
+	},
 
-                const itemsContainer = custCard.find('.freq-customer-items');
+	open_bucket_drawer(bucket) {
+		if (!bucket || !bucket.customers || bucket.customers.length === 0) {
+			frappe.show_alert({ message: __('No data in ' + bucket.label), indicator: 'orange' });
+			return;
+		}
 
-                // Build table
-                let tableHTML = `
-					<table class="freq-table">
-						<thead>
-							<tr>
-								<th>Item Name</th>
-								<th>Qty</th>
-								<th>Frequency Day</th>
-								<th>Next Order Date</th>
-							</tr>
-						</thead>
-						<tbody>
-				`;
+		const today = frappe.datetime.get_today();
+		let html = `<div style="padding: 5px 0 20px 0;">`;
 
-                customer.items.forEach(item => {
-                    let dateClass = 'upcoming';
-                    let dateLabel = '';
-                    if (item.next_order_date) {
-                        dateLabel = frappe.datetime.str_to_user(item.next_order_date);
-                        if (item.next_order_date < today) dateClass = 'overdue';
-                        else if (item.next_order_date === today) dateClass = 'due-today';
-                    } else {
-                        dateLabel = 'N/A';
-                        dateClass = 'no-date';
-                    }
+		bucket.customers.forEach(customer => {
+			html += `
+                <div style="margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; background: #fff;">
+                    <div style="background: #f8fafc; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 600; font-size: 14px; color: #1e293b;">
+                            <a href="/app/customer/${encodeURIComponent(customer.customer_code)}" style="color: inherit; text-decoration: none;" target="_blank">
+                                ${customer.customer_name}
+                            </a>
+                        </span>
+                        <span style="font-size: 12px; font-weight: 600; color: #64748b; background: #e2e8f0; padding: 2px 8px; border-radius: 10px;">
+                            ${customer.items.length} item${customer.items.length !== 1 ? 's' : ''}
+                        </span>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; font-size: 13px; border-collapse: collapse; min-width: 500px;">
+                            <thead>
+                                <tr style="background: #fff; text-align: left; color: #64748b; font-size: 12px; text-transform: uppercase;">
+                                    <th style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600;">Item Name</th>
+                                    <th style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600; width: 80px;">Qty</th>
+                                    <th style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600; width: 100px;">Freq Day</th>
+                                    <th style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 600; width: 120px;">Next Order</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
 
-                    tableHTML += `
-						<tr>
-							<td class="td-item">${item.item}</td>
-							<td>${item.quantity || 0}</td>
-							<td class="td-freq">${item.frequency_day}</td>
-							<td class="td-date ${dateClass}">${dateLabel}</td>
-						</tr>
-					`;
-                });
+			customer.items.forEach(item => {
+				let dateColor = '#16a34a'; // Default green (upcoming)
+				let dateLabel = 'N/A';
+				if (item.next_order_date) {
+					dateLabel = frappe.datetime.str_to_user(item.next_order_date);
+					if (item.next_order_date < today) {
+						dateColor = '#dc2626'; // Overdue (red)
+					} else if (item.next_order_date === today) {
+						dateColor = '#d97706'; // Due today (orange)
+					}
+				} else {
+					dateColor = '#94a3b8'; // No date (gray)
+				}
 
-                tableHTML += `</tbody></table>`;
-                itemsContainer.html(tableHTML);
+				html += `
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 10px 16px; color: #334155;">${item.item}</td>
+                        <td style="padding: 10px 16px; color: #334155;">${item.quantity || 0}</td>
+                        <td style="padding: 10px 16px; font-weight: 600; color: #1d4ed8;">${item.frequency_day}</td>
+                        <td style="padding: 10px 16px; color: ${dateColor}; font-weight: 600;">${dateLabel}</td>
+                    </tr>
+                `;
+			});
 
-                body.append(custCard);
-            });
+			html += `</tbody></table></div></div>`;
+		});
 
-            container.append(section);
-        });
-    }
+		html += `</div>`;
+
+		let d = new frappe.ui.Dialog({
+			title: __(`Frequency Data: ${bucket.label}`),
+			size: 'extra-large',
+			fields: [
+				{
+					fieldname: 'html_content',
+					fieldtype: 'HTML',
+					options: html
+				}
+			]
+		});
+
+		if (d.$body) {
+			d.$body.css('background-color', '#f8fafc');
+			d.$body.css('padding', '20px');
+		}
+
+		d.show();
+	}
 };
