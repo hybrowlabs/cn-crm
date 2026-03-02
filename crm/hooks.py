@@ -279,6 +279,7 @@ whitelisted_methods = [
 	# Pending Tasks Widget APIs
 	"crm.api.pending_tasks_widget.get_pending_tasks",
 	"crm.api.pending_tasks_widget.mark_task_done",
+	"crm.api.pending_tasks_widget.cancel_task",
 ]
 
 # Testing
