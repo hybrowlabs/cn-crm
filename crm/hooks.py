@@ -31,6 +31,7 @@ add_to_apps_screen = [
 # ]
 app_include_js = [
 	"/assets/crm/js/combined_dashboard_widget.js",
+	"/assets/crm/js/pending_tasks_widget.js",
 	"/assets/crm/js/am_dashboard_widget.js",
 	"/assets/crm/js/sm_pipeline_dashboard_widget.js"
 ]
@@ -274,6 +275,10 @@ whitelisted_methods = [
 	"crm.api.territory_sync_test.quick_sync_test", 
 	"crm.api.territory_sync_test.test_field_mapping",
 	"crm.api.territory_sync_test.test_bulk_sync",
+
+	# Pending Tasks Widget APIs
+	"crm.api.pending_tasks_widget.get_pending_tasks",
+	"crm.api.pending_tasks_widget.mark_task_done",
 ]
 
 # Testing
