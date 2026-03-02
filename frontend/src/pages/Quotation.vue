@@ -8,7 +8,7 @@
       </Breadcrumbs>
     </template>
   </LayoutHeader>
-  <div v-if="quotations.doc" ref="parentRef" class="flex h-full bg-gray-200 justify-center p-9 overflow-y-auto">
+  <div v-if="quotations.doc" ref="parentRef" class="flex h-full bg-gray-200 justify-center p-4 sm:p-9 overflow-y-auto">
     <div class="bg-white w-full h-full max-w-[210mm] max-h-[297mm] aspect-[210/297] shadow-xl  mb-5">
       <!-- Shadow DOM container -->
       <div ref="shadowContainer" class="w-full h-full"></div>

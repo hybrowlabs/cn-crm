@@ -100,11 +100,12 @@ import NotificationsIcon from '@/components/Icons/NotificationsIcon.vue'
 import SidebarLink from '@/components/SidebarLink.vue'
 import {viewsStore} from '@/stores/views'
 import {unreadNotificationsCount} from '@/stores/notifications'
-import {computed, h} from 'vue'
+import {computed, h, markRaw} from 'vue'
 import {mobileSidebarOpened as sidebarOpened} from '@/composables/settings'
 import DashboardIcon from '@/components/Icons/DashboardIcon.vue'
 import CalendarIcon from '@/components/Icons/CalendarIcon.vue'
 import QuotationIcon from '@/components/Icons/QuotationIcon.vue'
+import ReportsIcon from '@/components/Icons/ReportsIcon.vue'
 
 const {getPinnedViews, getPublicViews} = viewsStore()
 
@@ -114,6 +115,11 @@ const links = [
     icon: DashboardIcon,
     to: 'Dashboard',
     default: true,
+  },
+  {
+    label: 'Account Manager Dashboard',
+    icon: DashboardIcon,
+    to: 'Account Manager Dashboard',
   },
   {
     label: 'Dashboard Builder',
@@ -141,9 +147,9 @@ const links = [
     to: 'Quotations',
   },
   {
-    label: 'Visits',
+    label: 'Meetings',
     icon: VisitsIcon,
-    to: 'Visits',
+    to: 'Meetings',
   },
   {
     label: 'Contacts',
@@ -169,6 +175,21 @@ const links = [
     label: 'Call Logs',
     icon: PhoneIcon,
     to: 'Call Logs',
+  },
+  {
+    label: 'Reports',
+    icon: markRaw(ReportsIcon),
+    to: 'Reports',
+  },
+  {
+    label: 'Prospects',
+    icon: ContactsIcon,
+    to: 'Prospects',
+  },
+  {
+    label: 'Customers',
+    icon: OrganizationsIcon,
+    to: 'Customers',
   },
   {
     label: 'Email Templates',

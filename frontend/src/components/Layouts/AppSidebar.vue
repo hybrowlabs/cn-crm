@@ -210,6 +210,11 @@ const links = [
     default: true,
   },
   {
+    label: 'Account Manager Dashboard',
+    icon: DashboardIcon,
+    to: 'Account Manager Dashboard',
+  },
+  {
     label: 'Dashboard Builder',
     icon: DashboardIcon,
     to: 'Dashboard Builder',
@@ -278,6 +283,11 @@ const links = [
     label: 'Customers',
     icon: OrganizationsIcon,
     to: 'Customers',
+  },
+  {
+    label: 'Email Templates',
+    icon: EmailIcon,
+    to: 'Email Templates',
   },
 ]
 

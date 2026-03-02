@@ -24,6 +24,11 @@ const routes = [
     component: () => import('@/pages/DashboardBuilder.vue'),
   },
   {
+    path: '/am-dashboard',
+    name: 'Account Manager Dashboard',
+    component: () => import('@/pages/AccountManagerDashboard.vue'),
+  },
+  {
     path: '/calendar',
     name: 'Calendar',
     component: () => import('@/pages/Calendar.vue'),
@@ -61,7 +66,7 @@ const routes = [
   {
     path: '/quotations/:quotationId',
     name: 'Quotation',
-    component: () => import(`@/pages/Quotation.vue`),
+    component: () => import(`@/pages/${handleMobileView('Quotation')}.vue`),
     props: true,
   },
   {
@@ -152,7 +157,7 @@ const routes = [
 ]
 
 const handleMobileView = (componentName) => {
-  return window.innerWidth < 768 ? `Mobile${componentName}` : componentName
+  return window.innerWidth < 1024 ? `Mobile${componentName}` : componentName
 }
 
 let router = createRouter({
