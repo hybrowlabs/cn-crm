@@ -325,8 +325,6 @@ const task = ref({
 })
 
 function showTask(name) {
-  // Look up from raw data to ensure we always have the correct field values
-  // Handle both list view (flat array) and kanban view (nested column arrays)
   let rawData = tasks.value?.data?.data
   let rawTask = null
   if (Array.isArray(rawData)) {
