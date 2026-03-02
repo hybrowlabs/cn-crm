@@ -92,16 +92,22 @@ def parse_mobile_no(mobile_no: str):
 
 @frappe.whitelist()
 def is_whatsapp_enabled():
-	if not frappe.db.exists("DocType", "WhatsApp Settings"):
+	try:
+		if not frappe.db.exists("DocType", "WhatsApp Settings"):
+			return False
+		return frappe.get_cached_value("WhatsApp Settings", "WhatsApp Settings", "enabled")
+	except (ImportError, frappe.DoesNotExistError):
 		return False
-	return frappe.get_cached_value("WhatsApp Settings", "WhatsApp Settings", "enabled")
 
 
 @frappe.whitelist()
 def is_whatsapp_installed():
-	if not frappe.db.exists("DocType", "WhatsApp Settings"):
+	try:
+		if not frappe.db.exists("DocType", "WhatsApp Settings"):
+			return False
+		return True
+	except (ImportError, frappe.DoesNotExistError):
 		return False
-	return True
 
 
 @frappe.whitelist()
