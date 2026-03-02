@@ -343,6 +343,10 @@ const getPlaceholder = (field) => {
 }
 
 function fieldChange(value, df) {
+  // Directly update the reactive data object so the parent component (e.g. TaskModal's taskDoc)
+  // always reflects the latest field values regardless of document cache state.
+  data.value[df.fieldname] = value
+
   if (isGridRow) {
     triggerOnChange(df.fieldname, value, data.value)
   } else {

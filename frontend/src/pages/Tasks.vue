@@ -325,17 +325,32 @@ const task = ref({
 })
 
 function showTask(name) {
-  let t = rows.value?.find((row) => row.name === name)
+  // Look up from raw data to ensure we always have the correct field values
+  // Handle both list view (flat array) and kanban view (nested column arrays)
+  let rawData = tasks.value?.data?.data
+  let rawTask = null
+  if (Array.isArray(rawData)) {
+    if (tasks.value?.data?.view_type === 'kanban') {
+      for (const col of rawData) {
+        rawTask = col.data?.find((r) => r.name == name)
+        if (rawTask) break
+      }
+    } else {
+      rawTask = rawData.find((row) => row.name == name)
+    }
+  }
+  let t = rows.value?.find((row) => row.name == name)
+
   task.value = {
-    name: t.name,
-    title: t.title,
-    description: t.description,
-    assigned_to: t.assigned_to?.email || '',
-    due_date: t.due_date,
-    status: t.status,
-    priority: t.priority,
-    reference_doctype: t.reference_doctype,
-    reference_docname: t.reference_docname,
+    name: name,
+    title: rawTask?.title || t?.title || '',
+    description: rawTask?.description || t?.description || '',
+    assigned_to: rawTask?.assigned_to || t?.assigned_to?.email || '',
+    due_date: rawTask?.due_date || t?.due_date || '',
+    status: rawTask?.status || t?.status || 'Backlog',
+    priority: rawTask?.priority || t?.priority || 'Low',
+    reference_doctype: rawTask?.reference_doctype || t?.reference_doctype || 'CRM Lead',
+    reference_docname: rawTask?.reference_docname || t?.reference_docname || '',
   }
   showTaskModal.value = true
 }
