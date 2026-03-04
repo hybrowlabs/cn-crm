@@ -62,7 +62,7 @@
             </div>
             <div class="flex flex-col gap-2 truncate">
               <div class="truncate text-lg font-medium text-ink-gray-9">
-                {{ quotations.doc.name }}
+                {{ organization.doc.organization_name }}
               </div>
               <div class="flex items-center gap-1.5">
                 <Button @click="openWebsite">
@@ -197,7 +197,7 @@ const { doctypeMeta } = getMeta('CRM Organization')
 const route = useRoute()
 const router = useRouter()
 
-const quotations = createDocumentResource({
+const organization = createDocumentResource({
   doctype: 'CRM Organization',
   name: props.organizationId,
   cache: ['organization', props.organizationId],
@@ -261,8 +261,8 @@ async function changeOrganizationImage(file) {
 
 async function deleteOrganization() {
   $dialog({
-    title: __('Delete quotations'),
-    message: __('Are you sure you want to delete this quotations?'),
+    title: __('Delete organization'),
+    message: __('Are you sure you want to delete this organization?'),
     actions: [
       {
         label: __('Delete'),
@@ -386,13 +386,12 @@ const contacts = createListResource({
 })
 
 const rows = computed(() => {
-  let list = []
-  list = !tabIndex.value ? deals : contacts
+  let list = tabIndex.value === 1 ? deals : contacts
 
   if (!list.data) return []
 
   return list.data.map((row) => {
-    return !tabIndex.value ? getDealRowObject(row) : getContactRowObject(row)
+    return tabIndex.value === 1 ? getDealRowObject(row) : getContactRowObject(row)
   })
 })
 

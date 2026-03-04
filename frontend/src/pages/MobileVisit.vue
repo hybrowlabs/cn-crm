@@ -455,11 +455,11 @@ function formatDateTime(dateTime) {
 function openLocation() {
   if (visit.data.latitude && visit.data.longitude) {
     const url = `https://www.google.com/maps?q=${visit.data.latitude},${visit.data.longitude}`
-    window.openWindow(url, '_blank')
+    window.open(url, '_blank')
   } else if (visit.data.visit_address) {
     const address = encodeURIComponent(visit.data.visit_address)
     const url = `https://www.google.com/maps/search/?api=1&query=${address}`
-    window.openWindow(url, '_blank')
+    window.open(url, '_blank')
   } else {
     toast.error(__('No location available for this meeting.'))
   }

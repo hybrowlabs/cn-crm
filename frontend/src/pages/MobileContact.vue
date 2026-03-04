@@ -481,7 +481,7 @@ async function setAsPrimary(field, value) {
   })
   if (d) {
     contact.reload()
-    toast.success(___('Contact updated'))
+    toast.success(__('Contact updated'))
   }
 }
 
