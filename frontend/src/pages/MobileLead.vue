@@ -3,7 +3,7 @@
     <div class="flex items-center justify-between h-12 border-b px-3 py-2.5">
       <div class="flex items-center gap-2">
         <CustomActions
-          v-if="lead.data._customActions?.length"
+          v-if="lead.data?._customActions?.length"
           :actions="lead.data._customActions"
         />
         <CustomActions

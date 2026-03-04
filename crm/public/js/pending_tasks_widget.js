@@ -20,10 +20,11 @@ crm.pending_tasks_widget = {
 	// -------------------------------------------------------------------------
 
 	render(wrapper) {
-		const container = $(wrapper);
-		container.empty();
+		try {
+			const container = $(wrapper);
+			container.empty();
 
-		container.html(`
+			container.html(`
 			<style>
 				/* ---- Widget shell ---- */
 				.ptw-widget {
@@ -273,36 +274,40 @@ crm.pending_tasks_widget = {
 			</div>
 		`);
 
-		// Wire up events
-		container.off('click', '.ptw-refresh-btn');
-		container.on('click', '.ptw-refresh-btn', () => this.load_data(container));
+			// Wire up events
+			container.off('click', '.ptw-refresh-btn');
+			container.on('click', '.ptw-refresh-btn', () => this.load_data(container));
 
-		container.off('click', '.ptw-filter-pill');
-		container.on('click', '.ptw-filter-pill', (e) => {
-			const pill = $(e.currentTarget);
-			const bucket = pill.data('bucket');
-			container.find('.ptw-filter-pill').removeClass('active');
-			pill.addClass('active');
-			this._apply_filter(container, bucket);
-		});
+			container.off('click', '.ptw-filter-pill');
+			container.on('click', '.ptw-filter-pill', (e) => {
+				const pill = $(e.currentTarget);
+				const bucket = pill.data('bucket');
+				container.find('.ptw-filter-pill').removeClass('active');
+				pill.addClass('active');
+				this._apply_filter(container, bucket);
+			});
 
-		container.off('click', '.ptw-done-btn');
-		container.on('click', '.ptw-done-btn', (e) => {
-			e.stopPropagation();
-			const btn = $(e.currentTarget);
-			const taskName = btn.data('task');
-			this._mark_done(btn, taskName, container);
-		});
+			container.off('click', '.ptw-done-btn');
+			container.on('click', '.ptw-done-btn', (e) => {
+				e.stopPropagation();
+				const btn = $(e.currentTarget);
+				const taskName = btn.data('task');
+				this._mark_done(btn, taskName, container);
+			});
 
-		container.off('click', '.ptw-cancel-btn');
-		container.on('click', '.ptw-cancel-btn', (e) => {
-			e.stopPropagation();
-			const btn = $(e.currentTarget);
-			const taskName = btn.data('task');
-			this._cancel_task(btn, taskName, container);
-		});
+			container.off('click', '.ptw-cancel-btn');
+			container.on('click', '.ptw-cancel-btn', (e) => {
+				e.stopPropagation();
+				const btn = $(e.currentTarget);
+				const taskName = btn.data('task');
+				this._cancel_task(btn, taskName, container);
+			});
 
-		this.load_data(container);
+			this.load_data(container);
+		} catch (err) {
+			console.error("Error in pending_tasks_widget.render:", err);
+			$(wrapper).html('<div style="padding:15px;color:red;">Failed to render Pending Tasks widget.</div>');
+		}
 	},
 
 	// -------------------------------------------------------------------------
@@ -317,6 +322,12 @@ crm.pending_tasks_widget = {
 		loading.show();
 		content.hide();
 		filters.hide();
+
+		if (typeof frappe === 'undefined' || !frappe.call) {
+			console.warn("frappe.call is not available yet.");
+			setTimeout(() => this.load_data(container), 500);
+			return;
+		}
 
 		frappe.call({
 			method: 'crm.api.pending_tasks_widget.get_pending_tasks',
@@ -342,6 +353,12 @@ crm.pending_tasks_widget = {
 					container.find('.ptw-task-list').empty();
 					container.find('.ptw-empty').show();
 				}
+			},
+			error: (err) => {
+				console.error("API Error in Pending Tasks:", err);
+				loading.hide();
+				container.find('.ptw-task-list').html('<div style="padding:15px;color:red;text-align:center;">Failed to load tasks.</div>');
+				content.show();
 			}
 		});
 	},
@@ -356,7 +373,7 @@ crm.pending_tasks_widget = {
 
 		list.empty();
 
-		if (!tasks.length) {
+		if (!tasks || !tasks.length) {
 			empty.show();
 			return;
 		}
@@ -382,31 +399,41 @@ crm.pending_tasks_widget = {
 		}[task.priority] || 'priority-low';
 
 		// Due-date chip
-		const dueLabel = task.due_date
-			? frappe.datetime.str_to_user(task.due_date)
-			: 'No Date';
+		let dueLabel = 'No Date';
+		try {
+			dueLabel = task.due_date
+				? (frappe.datetime && frappe.datetime.str_to_user ? frappe.datetime.str_to_user(task.due_date) : task.due_date)
+				: 'No Date';
+		} catch (e) {
+			dueLabel = task.due_date || 'No Date';
+		}
+
 		const dueBucket = task.due_bucket || 'none';
 
 		// Reference link
 		let refHtml = '';
 		if (task.ref_name) {
 			const url = task.ref_url || '#';
+			const escapedName = frappe.utils && frappe.utils.escape_html ? frappe.utils.escape_html(task.ref_name) : task.ref_name;
 			refHtml = `
-				<a class="ptw-ref-link" href="${url}" target="_blank" title="${task.ref_name}">
+				<a class="ptw-ref-link" href="${url}" target="_blank" title="${escapedName}">
 					${task.reference_doctype === 'CRM Lead' ? '👤' : (task.reference_doctype === 'CRM Deal' ? '🤝' : '🏢')}
-					${frappe.utils.escape_html(task.ref_name)}
+					${escapedName}
 				</a>`;
 		}
 
+		const escapedOrg = task.organization && frappe.utils && frappe.utils.escape_html ? frappe.utils.escape_html(task.organization) : task.organization;
 		const orgHtml = task.organization && task.organization !== task.ref_name
-			? `<span class="ptw-org" title="Company">${frappe.utils.escape_html(task.organization)}</span>`
+			? `<span class="ptw-org" title="Company">${escapedOrg}</span>`
 			: '';
+
+		const escapedTitle = frappe.utils && frappe.utils.escape_html ? frappe.utils.escape_html(task.title || '') : (task.title || '');
 
 		const card = $(`
 			<div class="ptw-task-card" data-task="${task.name}" data-bucket="${dueBucket}">
 				<div class="ptw-task-left">
-					<div class="ptw-task-title" title="${frappe.utils.escape_html(task.title)}">
-						${frappe.utils.escape_html(task.title)}
+					<div class="ptw-task-title" title="${escapedTitle}">
+						${escapedTitle}
 					</div>
 					<div class="ptw-task-meta">
 						<span class="ptw-badge ${statusClass}">${task.status}</span>
@@ -445,21 +472,26 @@ crm.pending_tasks_widget = {
 	_mark_done(btn, taskName, container) {
 		btn.addClass('marking').prop('disabled', true).text('⌛ Saving…');
 
+		if (typeof frappe === 'undefined' || !frappe.call) {
+			frappe.show_alert({ message: 'System not ready', indicator: 'red' });
+			return;
+		}
+
 		frappe.call({
 			method: 'crm.api.pending_tasks_widget.mark_task_done',
 			args: { task_name: taskName },
 			callback: (r) => {
 				if (r.message && r.message.success) {
 					this._animate_card_away(taskName, container);
-					frappe.show_alert({ message: __('Task marked as Done'), indicator: 'green' });
+					if (frappe.show_alert) frappe.show_alert({ message: 'Task marked as Done', indicator: 'green' });
 				} else {
 					btn.removeClass('marking').prop('disabled', false).text('✓ Done');
-					frappe.show_alert({ message: __('Failed to update task'), indicator: 'red' });
+					if (frappe.show_alert) frappe.show_alert({ message: 'Failed to update task', indicator: 'red' });
 				}
 			},
 			error: () => {
 				btn.removeClass('marking').prop('disabled', false).text('✓ Done');
-				frappe.show_alert({ message: __('Error updating task'), indicator: 'red' });
+				if (frappe.show_alert) frappe.show_alert({ message: 'Error updating task', indicator: 'red' });
 			}
 		});
 	},
@@ -471,21 +503,26 @@ crm.pending_tasks_widget = {
 	_cancel_task(btn, taskName, container) {
 		btn.addClass('canceling').prop('disabled', true).text('⌛ Saving…');
 
+		if (typeof frappe === 'undefined' || !frappe.call) {
+			if (frappe.show_alert) frappe.show_alert({ message: 'System not ready', indicator: 'red' });
+			return;
+		}
+
 		frappe.call({
 			method: 'crm.api.pending_tasks_widget.cancel_task',
 			args: { task_name: taskName },
 			callback: (r) => {
 				if (r.message && r.message.success) {
 					this._animate_card_away(taskName, container);
-					frappe.show_alert({ message: __('Task marked as Canceled'), indicator: 'orange' });
+					if (frappe.show_alert) frappe.show_alert({ message: 'Task marked as Canceled', indicator: 'orange' });
 				} else {
 					btn.removeClass('canceling').prop('disabled', false).text('✗ Cancel');
-					frappe.show_alert({ message: __('Failed to cancel task'), indicator: 'red' });
+					if (frappe.show_alert) frappe.show_alert({ message: 'Failed to cancel task', indicator: 'red' });
 				}
 			},
 			error: () => {
 				btn.removeClass('canceling').prop('disabled', false).text('✗ Cancel');
-				frappe.show_alert({ message: __('Error canceling task'), indicator: 'red' });
+				if (frappe.show_alert) frappe.show_alert({ message: 'Error canceling task', indicator: 'red' });
 			}
 		});
 	},

@@ -163,7 +163,7 @@ frappe.provide('crm.followup_widget');
 
 crm.followup_widget = {
 
-    render(wrapper) {
+    try {
         const container = $(wrapper);
         container.empty();
 
@@ -240,76 +240,80 @@ crm.followup_widget = {
         container.on('click', '.followup-refresh-btn', () => this.load_data(container));
 
         this.load_data(container);
-    },
+    } catch(err) {
+        console.error("Error in followup_widget.render:", err);
+        $(wrapper).html('<div style="padding:15px;color:red;">Failed to render Follow-ups widget.</div>');
+    }
+},
 
     load_data(container) {
-        const loading = container.find('.followup-loading');
-        const content = container.find('.followup-content');
-        const list = container.find('.followup-bucket-list');
-        const empty = container.find('.followup-empty');
+    const loading = container.find('.followup-loading');
+    const content = container.find('.followup-content');
+    const list = container.find('.followup-bucket-list');
+    const empty = container.find('.followup-empty');
 
-        loading.show();
-        content.hide();
+    loading.show();
+    content.hide();
 
-        frappe.call({
-            method: 'crm.fcrm.doctype.frequency_log_list.frequency_log_list.get_followup_logs_for_user',
-            callback: (r) => {
-                loading.hide();
-                content.show();
-                if (r.message && r.message.customers && r.message.customers.length) {
-                    const buckets = this.build_buckets(r.message.customers);
-                    this.render_buckets(list, buckets);
-                    empty.hide();
-                    list.show();
-                } else {
-                    list.hide();
-                    empty.show();
-                }
+    frappe.call({
+        method: 'crm.fcrm.doctype.frequency_log_list.frequency_log_list.get_followup_logs_for_user',
+        callback: (r) => {
+            loading.hide();
+            content.show();
+            if (r.message && r.message.customers && r.message.customers.length) {
+                const buckets = this.build_buckets(r.message.customers);
+                this.render_buckets(list, buckets);
+                empty.hide();
+                list.show();
+            } else {
+                list.hide();
+                empty.show();
             }
-        });
-    },
+        }
+    });
+},
 
-    build_buckets(customers) {
-        const defs = [
-            { label: '0-1Lakh', min: 0, max: 100000 },
-            { label: '1Lakh-5Lakh', min: 100000, max: 500000 },
-            { label: '5Lakh-20Lakh', min: 500000, max: 2000000 },
-            { label: '20Lakh-50Lakh', min: 2000000, max: 5000000 },
-            { label: '50Lakh+', min: 5000000, max: Infinity },
-        ];
-        let buckets = defs.map(b => ({ ...b, count: 0, customers: [] }));
+build_buckets(customers) {
+    const defs = [
+        { label: '0-1Lakh', min: 0, max: 100000 },
+        { label: '1Lakh-5Lakh', min: 100000, max: 500000 },
+        { label: '5Lakh-20Lakh', min: 500000, max: 2000000 },
+        { label: '20Lakh-50Lakh', min: 2000000, max: 5000000 },
+        { label: '50Lakh+', min: 5000000, max: Infinity },
+    ];
+    let buckets = defs.map(b => ({ ...b, count: 0, customers: [] }));
 
-        customers.forEach(customer => {
-            const val = customer.total_value || 0;
-            let target = buckets[buckets.length - 1];
-            for (let b of buckets) {
-                if (val >= b.min && val < b.max) { target = b; break; }
-            }
-            target.customers.push(customer);
-            target.count += 1;
-        });
-        return buckets;
-    },
+    customers.forEach(customer => {
+        const val = customer.total_value || 0;
+        let target = buckets[buckets.length - 1];
+        for (let b of buckets) {
+            if (val >= b.min && val < b.max) { target = b; break; }
+        }
+        target.customers.push(customer);
+        target.count += 1;
+    });
+    return buckets;
+},
 
-    _bucket_colors: [
-        { bg: '#3b82f6', bar: '#eff6ff' },
-        { bg: '#10b981', bar: '#ecfdf5' },
-        { bg: '#f59e0b', bar: '#fffbeb' },
-        { bg: '#8b5cf6', bar: '#f3e8ff' },
-        { bg: '#ec4899', bar: '#fdf2f8' },
-        { bg: '#6b7280', bar: '#f9fafb' },
-    ],
+_bucket_colors: [
+    { bg: '#3b82f6', bar: '#eff6ff' },
+    { bg: '#10b981', bar: '#ecfdf5' },
+    { bg: '#f59e0b', bar: '#fffbeb' },
+    { bg: '#8b5cf6', bar: '#f3e8ff' },
+    { bg: '#ec4899', bar: '#fdf2f8' },
+    { bg: '#6b7280', bar: '#f9fafb' },
+],
 
     render_buckets(container, buckets) {
-        container.empty();
+    container.empty();
 
-        const chartWrapper = $('<div class="followup-pie-chart" style="margin: 20px auto; max-width: 100%; padding: 10px;"></div>');
-        container.append(chartWrapper);
+    const chartWrapper = $('<div class="followup-pie-chart" style="margin: 20px auto; max-width: 100%; padding: 10px;"></div>');
+    container.append(chartWrapper);
 
-        const listWrapper = $('<div class="followup-summary-list" style="padding: 0 16px 16px 16px;"></div>');
-        buckets.forEach((bucket, bIdx) => {
-            const palette = this._bucket_colors[bIdx % this._bucket_colors.length];
-            const item = $(`
+    const listWrapper = $('<div class="followup-summary-list" style="padding: 0 16px 16px 16px;"></div>');
+    buckets.forEach((bucket, bIdx) => {
+        const palette = this._bucket_colors[bIdx % this._bucket_colors.length];
+        const item = $(`
 				<div class="followup-summary-item" style="background:${palette.bar};">
 					<span class="followup-summary-label">
 						<div style="width:12px;height:12px;border-radius:50%;background:${palette.bg}"></div>
@@ -318,39 +322,39 @@ crm.followup_widget = {
 					<span class="followup-summary-count" style="background:${palette.bg};">${bucket.count}</span>
 				</div>
 			`);
-            item.on('click', () => this.open_bucket_drawer(bucket));
-            listWrapper.append(item);
-        });
-        container.append(listWrapper);
+        item.on('click', () => this.open_bucket_drawer(bucket));
+        listWrapper.append(item);
+    });
+    container.append(listWrapper);
 
-        crm._widget_utils.render_pie_chart(
-            chartWrapper, buckets, this._bucket_colors,
-            'Follow-ups by Value',
-            (bucket) => this.open_bucket_drawer(bucket)
-        );
-    },
+    crm._widget_utils.render_pie_chart(
+        chartWrapper, buckets, this._bucket_colors,
+        'Follow-ups by Value',
+        (bucket) => this.open_bucket_drawer(bucket)
+    );
+},
 
-    open_bucket_drawer(bucket) {
-        if (!bucket || !bucket.customers || bucket.customers.length === 0) {
-            frappe.show_alert
-                ? frappe.show_alert({ message: 'No data in ' + bucket.label, indicator: 'orange' })
-                : alert('No data in ' + bucket.label);
-            return;
-        }
+open_bucket_drawer(bucket) {
+    if (!bucket || !bucket.customers || bucket.customers.length === 0) {
+        frappe.show_alert
+            ? frappe.show_alert({ message: 'No data in ' + bucket.label, indicator: 'orange' })
+            : alert('No data in ' + bucket.label);
+        return;
+    }
 
-        const today = frappe.datetime && frappe.datetime.get_today
-            ? frappe.datetime.get_today()
-            : new Date().toISOString().slice(0, 10);
+    const today = frappe.datetime && frappe.datetime.get_today
+        ? frappe.datetime.get_today()
+        : new Date().toISOString().slice(0, 10);
 
-        const fmtDate = (d) => frappe.datetime && frappe.datetime.str_to_user ? frappe.datetime.str_to_user(d) : d;
-        const fmtCur = (val, cur) => typeof format_currency === 'function'
-            ? format_currency(val, cur, 0).replace(/\.00$/, '')
-            : '₹' + parseFloat(val || 0).toLocaleString('en-IN');
+    const fmtDate = (d) => frappe.datetime && frappe.datetime.str_to_user ? frappe.datetime.str_to_user(d) : d;
+    const fmtCur = (val, cur) => typeof format_currency === 'function'
+        ? format_currency(val, cur, 0).replace(/\.00$/, '')
+        : '₹' + parseFloat(val || 0).toLocaleString('en-IN');
 
-        let html = `<div class="followup-drawer-content">`;
+    let html = `<div class="followup-drawer-content">`;
 
-        bucket.customers.forEach((customer, idx) => {
-            html += `
+    bucket.customers.forEach((customer, idx) => {
+        html += `
                 <div style="margin-bottom:16px;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;background:#fff;">
                     <div style="background:#f8fafc;padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
                         <span style="font-weight:600;font-size:14px;color:#1e293b;">
@@ -376,55 +380,55 @@ crm.followup_widget = {
                             </thead>
                             <tbody>`;
 
-            customer.items.forEach(item => {
-                let dateColor = '#16a34a', dateLabel = 'N/A';
-                if (item.next_order_date) {
-                    dateLabel = fmtDate(item.next_order_date);
-                    dateColor = item.next_order_date < today ? '#dc2626'
-                        : item.next_order_date === today ? '#d97706' : '#16a34a';
-                } else {
-                    dateColor = '#94a3b8';
-                }
-                html += `
+        customer.items.forEach(item => {
+            let dateColor = '#16a34a', dateLabel = 'N/A';
+            if (item.next_order_date) {
+                dateLabel = fmtDate(item.next_order_date);
+                dateColor = item.next_order_date < today ? '#dc2626'
+                    : item.next_order_date === today ? '#d97706' : '#16a34a';
+            } else {
+                dateColor = '#94a3b8';
+            }
+            html += `
                                 <tr style="border-bottom:1px solid #f1f5f9;">
                                     <td style="padding:10px 16px;color:#334155;">${item.item}</td>
                                     <td style="padding:10px 16px;color:#334155;">${item.qty}</td>
                                     <td style="padding:10px 16px;font-weight:600;color:#1d4ed8;">${fmtCur(item.rate, customer.default_currency)}</td>
                                     <td style="padding:10px 16px;color:${dateColor};font-weight:600;">${dateLabel}</td>
                                 </tr>`;
-            });
-
-            html += `</tbody></table></div></div>`;
         });
 
-        html += `</div>`;
+        html += `</tbody></table></div></div>`;
+    });
 
-        crm._widget_utils._show_modal(`Follow-ups: ${bucket.label}`, html, (overlay) => {
-            overlay.querySelectorAll('.crm-create-quotation-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const idx = parseInt(btn.dataset.idx, 10);
-                    const customer = bucket.customers[idx];
-                    btn.disabled = true;
-                    btn.textContent = '...';
-                    if (frappe.route_options !== undefined) {
-                        frappe.route_options = {
-                            quotation_to: 'Customer',
-                            party_name: customer.customer_code,
-                            currency: customer.default_currency,
-                            custom_branch: customer.custom_branch,
-                            custom_sale_by: frappe.session.user,
-                            items: customer.items.map(i => ({ item_code: i.item, qty: i.qty }))
-                        };
-                        frappe.new_doc('Quotation', frappe.route_options);
-                    } else {
-                        window.open(`/app/quotation/new-quotation-1?quotation_to=Customer&party_name=${encodeURIComponent(customer.customer_code)}`, '_blank');
-                    }
-                    setTimeout(() => { btn.disabled = false; btn.textContent = 'Create Quotation'; }, 1000);
-                });
+    html += `</div>`;
+
+    crm._widget_utils._show_modal(`Follow-ups: ${bucket.label}`, html, (overlay) => {
+        overlay.querySelectorAll('.crm-create-quotation-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(btn.dataset.idx, 10);
+                const customer = bucket.customers[idx];
+                btn.disabled = true;
+                btn.textContent = '...';
+                if (frappe.route_options !== undefined) {
+                    frappe.route_options = {
+                        quotation_to: 'Customer',
+                        party_name: customer.customer_code,
+                        currency: customer.default_currency,
+                        custom_branch: customer.custom_branch,
+                        custom_sale_by: frappe.session.user,
+                        items: customer.items.map(i => ({ item_code: i.item, qty: i.qty }))
+                    };
+                    frappe.new_doc('Quotation', frappe.route_options);
+                } else {
+                    window.open(`/app/quotation/new-quotation-1?quotation_to=Customer&party_name=${encodeURIComponent(customer.customer_code)}`, '_blank');
+                }
+                setTimeout(() => { btn.disabled = false; btn.textContent = 'Create Quotation'; }, 1000);
             });
         });
-    }
+    });
+}
 };
 
 /* ========================================================================================
@@ -435,7 +439,7 @@ frappe.provide('crm.frequency_bucket_widget');
 
 crm.frequency_bucket_widget = {
 
-    render(wrapper) {
+    try {
         const container = $(wrapper);
         container.empty();
 
@@ -497,51 +501,55 @@ crm.frequency_bucket_widget = {
         container.on('click', '.freq-refresh-btn', () => this.load_data(container));
 
         this.load_data(container);
-    },
+    } catch(err) {
+        console.error("Error in frequency_bucket_widget.render:", err);
+        $(wrapper).html('<div style="padding:15px;color:red;">Failed to render Frequency widget.</div>');
+    }
+},
 
     load_data(container) {
-        const loading = container.find('.freq-loading');
-        const content = container.find('.freq-content');
-        const list = container.find('.freq-bucket-list');
-        const empty = container.find('.freq-empty');
+    const loading = container.find('.freq-loading');
+    const content = container.find('.freq-content');
+    const list = container.find('.freq-bucket-list');
+    const empty = container.find('.freq-empty');
 
-        loading.show();
-        content.hide();
+    loading.show();
+    content.hide();
 
-        frappe.call({
-            method: 'crm.fcrm.doctype.frequency_log_list.frequency_log_list.get_frequency_buckets',
-            callback: (r) => {
-                loading.hide();
-                content.show();
-                if (r.message?.buckets?.length) {
-                    this.render_buckets(list, r.message.buckets);
-                    empty.hide();
-                    list.show();
-                } else {
-                    list.hide();
-                    empty.show();
-                }
+    frappe.call({
+        method: 'crm.fcrm.doctype.frequency_log_list.frequency_log_list.get_frequency_buckets',
+        callback: (r) => {
+            loading.hide();
+            content.show();
+            if (r.message?.buckets?.length) {
+                this.render_buckets(list, r.message.buckets);
+                empty.hide();
+                list.show();
+            } else {
+                list.hide();
+                empty.show();
             }
-        });
-    },
+        }
+    });
+},
 
-    _bucket_colors: [
-        { bg: '#10b981', bar: '#ecfdf5' },
-        { bg: '#3b82f6', bar: '#eff6ff' },
-        { bg: '#f59e0b', bar: '#fffbeb' },
-        { bg: '#6b7280', bar: '#f9fafb' },
-    ],
+_bucket_colors: [
+    { bg: '#10b981', bar: '#ecfdf5' },
+    { bg: '#3b82f6', bar: '#eff6ff' },
+    { bg: '#f59e0b', bar: '#fffbeb' },
+    { bg: '#6b7280', bar: '#f9fafb' },
+],
 
     render_buckets(container, buckets) {
-        container.empty();
+    container.empty();
 
-        const chartWrapper = $('<div class="freq-pie-chart" style="margin: 20px auto; max-width: 100%; padding: 10px;"></div>');
-        container.append(chartWrapper);
+    const chartWrapper = $('<div class="freq-pie-chart" style="margin: 20px auto; max-width: 100%; padding: 10px;"></div>');
+    container.append(chartWrapper);
 
-        const listWrapper = $('<div class="freq-summary-list" style="padding: 0 16px 16px 16px;"></div>');
-        buckets.forEach((bucket, bIdx) => {
-            const palette = this._bucket_colors[bIdx % this._bucket_colors.length];
-            const item = $(`
+    const listWrapper = $('<div class="freq-summary-list" style="padding: 0 16px 16px 16px;"></div>');
+    buckets.forEach((bucket, bIdx) => {
+        const palette = this._bucket_colors[bIdx % this._bucket_colors.length];
+        const item = $(`
 				<div class="freq-summary-item" style="background:${palette.bar};">
 					<span class="freq-summary-label">
 						<div style="width:12px;height:12px;border-radius:50%;background:${palette.bg}"></div>
@@ -550,39 +558,39 @@ crm.frequency_bucket_widget = {
 					<span class="freq-summary-count" style="background:${palette.bg};">${bucket.count}</span>
 				</div>
 			`);
-            item.on('click', () => this.open_bucket_drawer(bucket));
-            listWrapper.append(item);
-        });
-        container.append(listWrapper);
+        item.on('click', () => this.open_bucket_drawer(bucket));
+        listWrapper.append(item);
+    });
+    container.append(listWrapper);
 
-        crm._widget_utils.render_pie_chart(
-            chartWrapper, buckets, this._bucket_colors,
-            'Breakdown by Days',
-            (bucket) => this.open_bucket_drawer(bucket)
-        );
-    },
+    crm._widget_utils.render_pie_chart(
+        chartWrapper, buckets, this._bucket_colors,
+        'Breakdown by Days',
+        (bucket) => this.open_bucket_drawer(bucket)
+    );
+},
 
-    open_bucket_drawer(bucket) {
-        if (!bucket || !bucket.customers || bucket.customers.length === 0) {
-            frappe.show_alert
-                ? frappe.show_alert({ message: 'No data in ' + bucket.label, indicator: 'orange' })
-                : alert('No data in ' + bucket.label);
-            return;
-        }
+open_bucket_drawer(bucket) {
+    if (!bucket || !bucket.customers || bucket.customers.length === 0) {
+        frappe.show_alert
+            ? frappe.show_alert({ message: 'No data in ' + bucket.label, indicator: 'orange' })
+            : alert('No data in ' + bucket.label);
+        return;
+    }
 
-        const today = frappe.datetime && frappe.datetime.get_today
-            ? frappe.datetime.get_today()
-            : new Date().toISOString().slice(0, 10);
+    const today = frappe.datetime && frappe.datetime.get_today
+        ? frappe.datetime.get_today()
+        : new Date().toISOString().slice(0, 10);
 
-        const fmtDate = (d) => frappe.datetime && frappe.datetime.str_to_user ? frappe.datetime.str_to_user(d) : d;
-        const fmtCur = (val, cur) => typeof format_currency === 'function'
-            ? format_currency(val, cur, 0).replace(/\.00$/, '')
-            : '₹' + parseFloat(val || 0).toLocaleString('en-IN');
+    const fmtDate = (d) => frappe.datetime && frappe.datetime.str_to_user ? frappe.datetime.str_to_user(d) : d;
+    const fmtCur = (val, cur) => typeof format_currency === 'function'
+        ? format_currency(val, cur, 0).replace(/\.00$/, '')
+        : '₹' + parseFloat(val || 0).toLocaleString('en-IN');
 
-        let html = `<div>`;
+    let html = `<div>`;
 
-        bucket.customers.forEach(customer => {
-            html += `
+    bucket.customers.forEach(customer => {
+        html += `
                 <div style="margin-bottom:16px;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;background:#fff;">
                     <div style="background:#f8fafc;padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
                         <span style="font-weight:600;font-size:14px;color:#1e293b;">
@@ -605,16 +613,16 @@ crm.frequency_bucket_widget = {
                             </thead>
                             <tbody>`;
 
-            customer.items.forEach(item => {
-                let dateColor = '#16a34a', dateLabel = 'N/A';
-                if (item.next_order_date) {
-                    dateLabel = fmtDate(item.next_order_date);
-                    dateColor = item.next_order_date < today ? '#dc2626'
-                        : item.next_order_date === today ? '#d97706' : '#16a34a';
-                } else {
-                    dateColor = '#94a3b8';
-                }
-                html += `
+        customer.items.forEach(item => {
+            let dateColor = '#16a34a', dateLabel = 'N/A';
+            if (item.next_order_date) {
+                dateLabel = fmtDate(item.next_order_date);
+                dateColor = item.next_order_date < today ? '#dc2626'
+                    : item.next_order_date === today ? '#d97706' : '#16a34a';
+            } else {
+                dateColor = '#94a3b8';
+            }
+            html += `
                                 <tr style="border-bottom:1px solid #f1f5f9;">
                                     <td style="padding:10px 16px;color:#334155;">${item.item}</td>
                                     <td style="padding:10px 16px;color:#334155;">${item.quantity || 0}</td>
@@ -622,15 +630,15 @@ crm.frequency_bucket_widget = {
                                     <td style="padding:10px 16px;font-weight:600;color:#1d4ed8;">${item.frequency_day}</td>
                                     <td style="padding:10px 16px;color:${dateColor};font-weight:600;">${dateLabel}</td>
                                 </tr>`;
-            });
-
-            html += `</tbody></table></div></div>`;
         });
 
-        html += `</div>`;
+        html += `</tbody></table></div></div>`;
+    });
 
-        crm._widget_utils._show_modal(`Frequency Data: ${bucket.label}`, html);
-    }
+    html += `</div>`;
+
+    crm._widget_utils._show_modal(`Frequency Data: ${bucket.label}`, html);
+}
 };
 
 /* ========================================================================================
@@ -642,11 +650,12 @@ frappe.provide('crm.combined_dashboard_widget');
 crm.combined_dashboard_widget = {
 
     render(wrapper) {
-        const container = $(wrapper);
-        container.empty();
+        try {
+            const container = $(wrapper);
+            container.empty();
 
-        // Outer flex row – two equal columns
-        container.html(`
+            // Outer flex row – two equal columns
+            container.html(`
 			<style>
 				.combined-widget-row {
 					display: flex;
@@ -675,8 +684,16 @@ crm.combined_dashboard_widget = {
 			</div>
 		`);
 
-        // Render each widget into its respective column
-        crm.followup_widget.render(container.find('#combined-followup-col')[0]);
-        crm.frequency_bucket_widget.render(container.find('#combined-frequency-col')[0]);
+            // Render each widget into its respective column
+            if (window.crm && crm.followup_widget) {
+                crm.followup_widget.render(container.find('#combined-followup-col')[0]);
+            }
+            if (window.crm && crm.frequency_bucket_widget) {
+                crm.frequency_bucket_widget.render(container.find('#combined-frequency-col')[0]);
+            }
+        } catch (err) {
+            console.error("Error in combined_dashboard_widget.render:", err);
+            $(wrapper).html('<div style="padding:15px;color:red;">Failed to render Combined Dashboard widget.</div>');
+        }
     }
 };

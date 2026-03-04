@@ -54,30 +54,48 @@ const initializeDashboard = () => {
   initialized.value = false
 
   // Poll for window.crm to be ready (loaded async via index.html script chain)
-  // Retries every 250ms up to 10 seconds before giving up
+  // Retries every 250ms up to 12 seconds before giving up
   const waitForCRM = (attempts = 0) => {
-    if (window.crm) {
+    // Check for crm_ready flag from index.html loader and existence of widgets
+    const isReady = window.crm_ready && 
+                    window.crm && 
+                    window.crm.am_dashboard_widget && 
+                    window.crm.combined_dashboard_widget && 
+                    window.crm.pending_tasks_widget &&
+                    window.frappe && 
+                    window.frappe.call;
+
+    if (isReady) {
       try {
-        if (window.crm.am_dashboard_widget && amDashboardRef.value) {
-          window.crm.am_dashboard_widget.render(amDashboardRef.value)
-        }
-        if (window.crm.combined_dashboard_widget && combinedDashboardRef.value) {
-          window.crm.combined_dashboard_widget.render(combinedDashboardRef.value)
-        }
-        if (window.crm.pending_tasks_widget && pendingTasksRef.value) {
-          window.crm.pending_tasks_widget.render(pendingTasksRef.value)
-        }
-        initialized.value = true
+        console.log('CRM and dependencies are ready, preparing to render widgets...');
+        
+        // Ensure container is visible BEFORE rendering
+        // Widgets like Frappe Charts need the container to be visible to calculate dimensions
+        initialized.value = true;
+        
+        // Small delay to let Vue update the DOM (v-show)
+        setTimeout(() => {
+          if (amDashboardRef.value) {
+            window.crm.am_dashboard_widget.render(amDashboardRef.value)
+          }
+          if (combinedDashboardRef.value) {
+            window.crm.combined_dashboard_widget.render(combinedDashboardRef.value)
+          }
+          if (pendingTasksRef.value) {
+            window.crm.pending_tasks_widget.render(pendingTasksRef.value)
+          }
+        }, 50);
+
       } catch (err) {
         console.error('Failed to render widgets:', err)
         error.value = 'Failed to render dashboard widgets.'
       }
-    } else if (attempts < 40) {
-      // Not ready yet — try again in 250ms (max 40 × 250ms = 10s)
+    } else if (attempts < 48) {
+      // Not ready yet — try again in 250ms (max 48 × 250ms = 12s)
       setTimeout(() => waitForCRM(attempts + 1), 250)
     } else {
-      console.warn('CRM library not found after waiting 10s')
-      error.value = 'CRM library not found. Please refresh the page.'
+      console.warn('CRM library or dependencies not found after waiting 12s')
+      error.value = 'Dashboard dependencies failed to load. Please refresh the page.'
     }
   }
 

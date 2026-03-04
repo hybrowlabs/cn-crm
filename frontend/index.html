@@ -6,6 +6,10 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover maximum-scale=1.0, user-scalable=no" />
   <title>Frappe CRM</title>
+
+  <!-- Frappe Desk CSS for widgets -->
+  <link rel="stylesheet" href="/assets/frappe/css/desk.min.css">
+
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Frappe CRM" />
   <meta name="apple-mobile-web-app-status-bar-style" content="white" />
@@ -84,51 +88,86 @@
   <!-- Initialize Frappe Globals and Boot Data -->
   <script>
     window.frappe = window.frappe || {};
+    frappe.provide = function (s) {
+      let obj = window;
+      s.split('.').forEach(p => {
+        if (!obj[p]) obj[p] = {};
+        obj = obj[p];
+      });
+    };
+
+    // Essential sub-namespaces
+    frappe.provide("frappe.boot");
+    frappe.provide("frappe.assets");
+    frappe.provide("frappe.utils");
+    frappe.provide("frappe.datetime");
+    frappe.provide("crm");
+
+    // Polyfills/Placeholders for common utilities used by widgets
+    window.__ = window.__ || ((s) => s);
+    frappe.utils.escape_html = frappe.utils.escape_html || ((s) => {
+      if (!s) return "";
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    });
+    frappe.datetime.str_to_user = frappe.datetime.str_to_user || ((d) => d);
+    frappe.datetime.get_today = frappe.datetime.get_today || (() => new Date().toISOString().slice(0, 10));
+    window.format_currency = window.format_currency || ((v, c) => (c === 'INR' ? '₹' : (c || '$')) + parseFloat(v || 0).toLocaleString());
+    frappe.show_alert = frappe.show_alert || ((msg) => console.log("Frappe Alert:", msg));
+
     // Suppress "Invalid Request" modal as requested by user
     window.msgprint = window.frappe.msgprint = function (msg) {
       if (msg === "Invalid Request" || (msg && msg.message === "Invalid Request")) {
         console.log("Suppressed 'Invalid Request' modal.");
         return;
       }
-      // Fallback to original if needed, but for now just console it
       console.log("frappe.msgprint:", msg);
     };
+  </script>
 
-    {% if boot is defined %}
-    window.frappe.boot = {{ boot | tojson }};
-    window.frappe.csrf_token = "{{ boot.csrf_token }}";
-    {% else %}
+  <!-- Boot Data Defaults -->
+  <script>
+    window.frappe = window.frappe || {};
     window.frappe.boot = {
       developer_mode: 0,
       sysdefaults: { currency: 'INR' },
       docs: []
     };
-    {% endif %}
+    window.frappe.csrf_token = "";
+
+    (function () {
+      try {
+        // Safe string wrapper for Jinja2 tags to avoid syntax errors in dev
+        const serverBootStr = '{{ boot | tojson if boot is defined else "{}" }}';
+        if (serverBootStr && !serverBootStr.startsWith("{ " + "{")) {
+          const serverBoot = JSON.parse(serverBootStr);
+          if (serverBoot && typeof serverBoot === 'object') {
+            Object.assign(window.frappe.boot, serverBoot);
+          }
+        }
+      } catch (e) { }
+
+      try {
+        const csrf = "{{ boot.csrf_token if boot is defined else "" }}";
+        if (csrf && !csrf.startsWith("{ " + "{")) {
+          window.frappe.csrf_token = csrf;
+        }
+      } catch (e) { }
+    })();
   </script>
 
   <!-- CRM Widgets Dependencies (Loaded dynamically to avoid Vite bundling issues) -->
   <script>
     (function () {
-      // 1. Initialize frappe namespace
-      window.frappe = window.frappe || {};
-      frappe.provide = function (s) {
-        let obj = window;
-        s.split('.').forEach(p => {
-          if (!obj[p]) obj[p] = {};
-          obj = obj[p];
-        });
-      };
-
-      // 2. Initialize essential sub-namespaces
-      frappe.provide("frappe.boot");
-      frappe.provide("frappe.assets");
-
-      // 3. Script loader with promise support
+      // Script loader with promise support
       const loadScript = (src) => {
         return new Promise((resolve, reject) => {
           const s = document.createElement('script');
           s.src = src;
-          s.onload = resolve;
+          s.async = false; // Ensure sequential execution if needed
+          s.onload = () => {
+            console.log(`Loaded script: ${src}`);
+            resolve();
+          };
           s.onerror = (e) => {
             console.error(`Failed to load script: ${src}`, e);
             reject(e);
@@ -137,28 +176,32 @@
         });
       };
 
-      // 4. Fetch assets and load dependencies
+      // Fetch assets and load dependencies
       fetch("/assets/assets.json")
         .then(r => r.json())
         .then(assets => {
-          // Populate assets_json for the AssetManager
           frappe.boot.assets_json = assets;
 
+          // Sequential loading of core dependencies
           return loadScript("/assets/frappe/js/lib/jquery/jquery.min.js")
             .then(() => loadScript(assets["libs.bundle.js"]))
             .then(() => loadScript(assets["desk.bundle.js"]))
             .then(() => {
-              // Ensure widgets are loaded after core frappe is ready
+              // Now load widgets in parallel (they depend on core frappe libraries)
               const widgets = [
                 "/assets/crm/js/am_dashboard_widget.js",
                 "/assets/crm/js/combined_dashboard_widget.js",
                 "/assets/crm/js/pending_tasks_widget.js",
                 "/assets/crm/js/sm_pipeline_dashboard_widget.js"
               ];
-              return Promise.all(widgets.map(loadScript));
+              // Use sequential for widgets too just in case there are cross-dependencies
+              return widgets.reduce((p, src) => p.then(() => loadScript(src)), Promise.resolve());
             });
         })
-        .then(() => console.log("CRM Dashboard dependencies loaded successfully."))
+        .then(() => {
+          console.log("CRM Dashboard dependencies loaded successfully.");
+          window.crm_ready = true;
+        })
         .catch(err => console.error("Error initializing CRM Dashboard dependencies:", err));
     })();
   </script>
