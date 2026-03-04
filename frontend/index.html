@@ -141,8 +141,7 @@
 
     {% if boot %}
     try {
-      window.frappe.boot = {{ boot | tojson }
-    }
+      window.frappe.boot = {{ boot | tojson }};
     window.frappe.csrf_token = "{{ boot.csrf_token }}";
     } catch (e) {
       console.warn("Error parsing server boot data:", e);
