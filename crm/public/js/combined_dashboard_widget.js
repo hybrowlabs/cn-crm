@@ -82,6 +82,76 @@ crm._widget_utils = {
                 console.error('Error drawing pie chart:', err);
             }
         }, 100);
+    },
+
+    /**
+     * Show a lightweight modal overlay (no frappe.ui.Dialog dependency).
+     * @param {string} title - Modal title text.
+     * @param {string} bodyHtml - Inner HTML for the scrollable modal body.
+     * @param {Function} [onReady] - Optional callback once modal is appended (to wire sub-events).
+     */
+    _show_modal(title, bodyHtml, onReady) {
+        // Remove any existing crm-overlay
+        document.querySelectorAll('.crm-widget-overlay').forEach(el => el.remove());
+
+        const overlay = document.createElement('div');
+        overlay.className = 'crm-widget-overlay';
+        overlay.style.cssText = [
+            'position:fixed', 'inset:0', 'z-index:9999',
+            'background:rgba(0,0,0,0.45)',
+            'display:flex', 'align-items:center', 'justify-content:center',
+            'padding:16px'
+        ].join(';');
+
+        overlay.innerHTML = `
+            <div class="crm-widget-modal" style="
+                background:#fff;
+                border-radius:10px;
+                box-shadow:0 8px 32px rgba(0,0,0,0.22);
+                width:100%;
+                max-width:880px;
+                max-height:88vh;
+                display:flex;
+                flex-direction:column;
+                overflow:hidden;
+            ">
+                <div style="
+                    display:flex;justify-content:space-between;align-items:center;
+                    padding:14px 20px;
+                    background:linear-gradient(135deg,#1e293b 0%,#334155 100%);
+                    color:#fff;
+                    border-radius:10px 10px 0 0;
+                ">
+                    <span style="font-size:15px;font-weight:700;">${title}</span>
+                    <button class="crm-modal-close" style="
+                        background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);
+                        color:#fff;border-radius:6px;cursor:pointer;font-size:16px;
+                        padding:2px 10px;line-height:1.6;
+                    ">&times;</button>
+                </div>
+                <div style="overflow-y:auto;padding:20px;background:#f8fafc;flex:1;">
+                    ${bodyHtml}
+                </div>
+            </div>
+        `;
+
+        // Close on ✕ button
+        overlay.querySelector('.crm-modal-close').addEventListener('click', () => overlay.remove());
+
+        // Close on click outside the modal box
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) overlay.remove();
+        });
+
+        // Close on ESC
+        const onKeyDown = (e) => {
+            if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onKeyDown); }
+        };
+        document.addEventListener('keydown', onKeyDown);
+
+        document.body.appendChild(overlay);
+
+        if (typeof onReady === 'function') onReady(overlay);
     }
 };
 
@@ -262,62 +332,66 @@ crm.followup_widget = {
 
     open_bucket_drawer(bucket) {
         if (!bucket || !bucket.customers || bucket.customers.length === 0) {
-            frappe.show_alert({ message: __('No data in ' + bucket.label), indicator: 'orange' });
+            frappe.show_alert
+                ? frappe.show_alert({ message: 'No data in ' + bucket.label, indicator: 'orange' })
+                : alert('No data in ' + bucket.label);
             return;
         }
 
-        const today = frappe.datetime.get_today();
-        let html = `<div style="padding: 5px 0 20px 0;" class="followup-drawer-content">`;
+        const today = frappe.datetime && frappe.datetime.get_today
+            ? frappe.datetime.get_today()
+            : new Date().toISOString().slice(0, 10);
+
+        const fmtDate = (d) => frappe.datetime && frappe.datetime.str_to_user ? frappe.datetime.str_to_user(d) : d;
+        const fmtCur = (val, cur) => typeof format_currency === 'function'
+            ? format_currency(val, cur, 0).replace(/\.00$/, '')
+            : '₹' + parseFloat(val || 0).toLocaleString('en-IN');
+
+        let html = `<div class="followup-drawer-content">`;
 
         bucket.customers.forEach((customer, idx) => {
             html += `
-				<div style="margin-bottom:20px;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;background:#fff;">
-					<div style="background:#f8fafc;padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
-						<span style="font-weight:600;font-size:14px;color:#1e293b;">
-							<a href="/app/customer/${encodeURIComponent(customer.customer_code)}" style="color:inherit;text-decoration:none;" target="_blank">
-								${customer.customer_name}
-							</a>
-						</span>
-						<div style="display:flex;gap:10px;align-items:center;">
-							<span style="font-size:13px;font-weight:600;color:#1e293b;">
-								Total: ${format_currency(customer.total_value || 0, customer.default_currency, 0).replace(/\.00$/, '')}
-							</span>
-							<span style="font-size:12px;font-weight:600;color:#64748b;background:#e2e8f0;padding:2px 8px;border-radius:10px;">
-								${customer.items.length} item${customer.items.length !== 1 ? 's' : ''}
-							</span>
-							<button class="btn btn-xs btn-primary create-quotation-btn" data-idx="${idx}" style="margin-left:10px;">
-								Create Quotation
-							</button>
-						</div>
-					</div>
-					<div style="overflow-x:auto;">
-						<table style="width:100%;font-size:13px;border-collapse:collapse;min-width:500px;">
-							<thead>
-								<tr style="background:#fff;text-align:left;color:#64748b;font-size:12px;text-transform:uppercase;">
-									<th style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-weight:600;">Item Name</th>
-									<th style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-weight:600;width:80px;">Qty</th>
-									<th style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-weight:600;width:180px;">Rate</th>
-									<th style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-weight:600;width:120px;">Next Order</th>
-								</tr>
-							</thead>
-							<tbody>`;
+                <div style="margin-bottom:16px;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;background:#fff;">
+                    <div style="background:#f8fafc;padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                        <span style="font-weight:600;font-size:14px;color:#1e293b;">
+                            <a href="/app/customer/${encodeURIComponent(customer.customer_code)}" style="color:inherit;text-decoration:none;" target="_blank">
+                                ${customer.customer_name}
+                            </a>
+                        </span>
+                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                            <span style="font-size:13px;font-weight:600;color:#1e293b;">Total: ${fmtCur(customer.total_value || 0, customer.default_currency)}</span>
+                            <span style="font-size:12px;font-weight:600;color:#64748b;background:#e2e8f0;padding:2px 8px;border-radius:10px;">${customer.items.length} item${customer.items.length !== 1 ? 's' : ''}</span>
+                            <button class="crm-create-quotation-btn" data-idx="${idx}" style="font-size:12px;font-weight:600;padding:4px 12px;border-radius:6px;border:1.5px solid #3b82f6;background:#eff6ff;color:#1d4ed8;cursor:pointer;">Create Quotation</button>
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%;font-size:13px;border-collapse:collapse;min-width:460px;">
+                            <thead>
+                                <tr style="text-align:left;color:#64748b;font-size:12px;text-transform:uppercase;">
+                                    <th style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-weight:600;">Item Name</th>
+                                    <th style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-weight:600;width:70px;">Qty</th>
+                                    <th style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-weight:600;width:160px;">Rate</th>
+                                    <th style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-weight:600;width:120px;">Next Order</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
 
             customer.items.forEach(item => {
                 let dateColor = '#16a34a', dateLabel = 'N/A';
                 if (item.next_order_date) {
-                    dateLabel = frappe.datetime.str_to_user(item.next_order_date);
+                    dateLabel = fmtDate(item.next_order_date);
                     dateColor = item.next_order_date < today ? '#dc2626'
                         : item.next_order_date === today ? '#d97706' : '#16a34a';
                 } else {
                     dateColor = '#94a3b8';
                 }
                 html += `
-						<tr style="border-bottom:1px solid #f1f5f9;">
-							<td style="padding:10px 16px;color:#334155;">${item.item}</td>
-							<td style="padding:10px 16px;color:#334155;">${item.qty}</td>
-							<td style="padding:10px 16px;font-weight:600;color:#1d4ed8;">${format_currency(item.rate, customer.default_currency, 0).replace(/\.00$/, '')}</td>
-							<td style="padding:10px 16px;color:${dateColor};font-weight:600;">${dateLabel}</td>
-						</tr>`;
+                                <tr style="border-bottom:1px solid #f1f5f9;">
+                                    <td style="padding:10px 16px;color:#334155;">${item.item}</td>
+                                    <td style="padding:10px 16px;color:#334155;">${item.qty}</td>
+                                    <td style="padding:10px 16px;font-weight:600;color:#1d4ed8;">${fmtCur(item.rate, customer.default_currency)}</td>
+                                    <td style="padding:10px 16px;color:${dateColor};font-weight:600;">${dateLabel}</td>
+                                </tr>`;
             });
 
             html += `</tbody></table></div></div>`;
@@ -325,36 +399,31 @@ crm.followup_widget = {
 
         html += `</div>`;
 
-        let d = new frappe.ui.Dialog({
-            title: __(`Follow-ups: ${bucket.label}`),
-            size: 'extra-large',
-            fields: [{ fieldname: 'html_content', fieldtype: 'HTML', options: html }]
-        });
-
-        if (d.$body) {
-            d.$body.css({ 'background-color': '#f8fafc', 'padding': '20px' });
-            setTimeout(() => {
-                d.$wrapper.find('.create-quotation-btn').on('click', function (e) {
+        crm._widget_utils._show_modal(`Follow-ups: ${bucket.label}`, html, (overlay) => {
+            overlay.querySelectorAll('.crm-create-quotation-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const btn = $(this);
-                    const idx = btn.data('idx');
+                    const idx = parseInt(btn.dataset.idx, 10);
                     const customer = bucket.customers[idx];
-                    btn.prop('disabled', true).text('...');
-                    frappe.route_options = {
-                        quotation_to: 'Customer',
-                        party_name: customer.customer_code,
-                        currency: customer.default_currency,
-                        custom_branch: customer.custom_branch,
-                        custom_sale_by: frappe.session.user,
-                        items: customer.items.map(i => ({ item_code: i.item, qty: i.qty }))
-                    };
-                    frappe.new_doc('Quotation', frappe.route_options);
-                    setTimeout(() => btn.prop('disabled', false).text('Create Quotation'), 1000);
+                    btn.disabled = true;
+                    btn.textContent = '...';
+                    if (frappe.route_options !== undefined) {
+                        frappe.route_options = {
+                            quotation_to: 'Customer',
+                            party_name: customer.customer_code,
+                            currency: customer.default_currency,
+                            custom_branch: customer.custom_branch,
+                            custom_sale_by: frappe.session.user,
+                            items: customer.items.map(i => ({ item_code: i.item, qty: i.qty }))
+                        };
+                        frappe.new_doc('Quotation', frappe.route_options);
+                    } else {
+                        window.open(`/app/quotation/new-quotation-1?quotation_to=Customer&party_name=${encodeURIComponent(customer.customer_code)}`, '_blank');
+                    }
+                    setTimeout(() => { btn.disabled = false; btn.textContent = 'Create Quotation'; }, 1000);
                 });
-            }, 100);
-        }
-
-        d.show();
+            });
+        });
     }
 };
 
@@ -495,56 +564,64 @@ crm.frequency_bucket_widget = {
 
     open_bucket_drawer(bucket) {
         if (!bucket || !bucket.customers || bucket.customers.length === 0) {
-            frappe.show_alert({ message: __('No data in ' + bucket.label), indicator: 'orange' });
+            frappe.show_alert
+                ? frappe.show_alert({ message: 'No data in ' + bucket.label, indicator: 'orange' })
+                : alert('No data in ' + bucket.label);
             return;
         }
 
-        const today = frappe.datetime.get_today();
-        let html = `<div style="padding:5px 0 20px 0;">`;
+        const today = frappe.datetime && frappe.datetime.get_today
+            ? frappe.datetime.get_today()
+            : new Date().toISOString().slice(0, 10);
+
+        const fmtDate = (d) => frappe.datetime && frappe.datetime.str_to_user ? frappe.datetime.str_to_user(d) : d;
+        const fmtCur = (val, cur) => typeof format_currency === 'function'
+            ? format_currency(val, cur, 0).replace(/\.00$/, '')
+            : '₹' + parseFloat(val || 0).toLocaleString('en-IN');
+
+        let html = `<div>`;
 
         bucket.customers.forEach(customer => {
             html += `
-				<div style="margin-bottom:20px;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;background:#fff;">
-					<div style="background:#f8fafc;padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
-						<span style="font-weight:600;font-size:14px;color:#1e293b;">
-							<a href="/app/customer/${encodeURIComponent(customer.customer_code)}" style="color:inherit;text-decoration:none;" target="_blank">
-								${customer.customer_name}
-							</a>
-						</span>
-						<span style="font-size:12px;font-weight:600;color:#64748b;background:#e2e8f0;padding:2px 8px;border-radius:10px;">
-							${customer.items.length} item${customer.items.length !== 1 ? 's' : ''}
-						</span>
-					</div>
-					<div style="overflow-x:auto;">
-						<table style="width:100%;font-size:13px;border-collapse:collapse;min-width:500px;">
-							<thead>
-								<tr style="text-align:left;color:#64748b;font-size:12px;text-transform:uppercase;">
-									<th style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-weight:600;">Item Name</th>
-									<th style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-weight:600;width:80px;">Qty</th>
-									<th style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-weight:600;width:180px;">Rate</th>
-									<th style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-weight:600;width:100px;">Freq Day</th>
-									<th style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-weight:600;width:120px;">Next Order</th>
-								</tr>
-							</thead>
-							<tbody>`;
+                <div style="margin-bottom:16px;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;background:#fff;">
+                    <div style="background:#f8fafc;padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                        <span style="font-weight:600;font-size:14px;color:#1e293b;">
+                            <a href="/app/customer/${encodeURIComponent(customer.customer_code)}" style="color:inherit;text-decoration:none;" target="_blank">
+                                ${customer.customer_name}
+                            </a>
+                        </span>
+                        <span style="font-size:12px;font-weight:600;color:#64748b;background:#e2e8f0;padding:2px 8px;border-radius:10px;">${customer.items.length} item${customer.items.length !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%;font-size:13px;border-collapse:collapse;min-width:460px;">
+                            <thead>
+                                <tr style="text-align:left;color:#64748b;font-size:12px;text-transform:uppercase;">
+                                    <th style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-weight:600;">Item Name</th>
+                                    <th style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-weight:600;width:70px;">Qty</th>
+                                    <th style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-weight:600;width:160px;">Rate</th>
+                                    <th style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-weight:600;width:90px;">Freq Day</th>
+                                    <th style="padding:10px 16px;border-bottom:1px solid #e2e8f0;font-weight:600;width:120px;">Next Order</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
 
             customer.items.forEach(item => {
                 let dateColor = '#16a34a', dateLabel = 'N/A';
                 if (item.next_order_date) {
-                    dateLabel = frappe.datetime.str_to_user(item.next_order_date);
+                    dateLabel = fmtDate(item.next_order_date);
                     dateColor = item.next_order_date < today ? '#dc2626'
                         : item.next_order_date === today ? '#d97706' : '#16a34a';
                 } else {
                     dateColor = '#94a3b8';
                 }
                 html += `
-							<tr style="border-bottom:1px solid #f1f5f9;">
-								<td style="padding:10px 16px;color:#334155;">${item.item}</td>
-								<td style="padding:10px 16px;color:#334155;">${item.quantity || 0}</td>
-								<td style="padding:10px 16px;font-weight:600;color:#1d4ed8;">${format_currency(item.rate || 0, customer.default_currency, 0).replace(/\.00$/, '')}</td>
-								<td style="padding:10px 16px;font-weight:600;color:#1d4ed8;">${item.frequency_day}</td>
-								<td style="padding:10px 16px;color:${dateColor};font-weight:600;">${dateLabel}</td>
-							</tr>`;
+                                <tr style="border-bottom:1px solid #f1f5f9;">
+                                    <td style="padding:10px 16px;color:#334155;">${item.item}</td>
+                                    <td style="padding:10px 16px;color:#334155;">${item.quantity || 0}</td>
+                                    <td style="padding:10px 16px;font-weight:600;color:#1d4ed8;">${fmtCur(item.rate || 0, customer.default_currency)}</td>
+                                    <td style="padding:10px 16px;font-weight:600;color:#1d4ed8;">${item.frequency_day}</td>
+                                    <td style="padding:10px 16px;color:${dateColor};font-weight:600;">${dateLabel}</td>
+                                </tr>`;
             });
 
             html += `</tbody></table></div></div>`;
@@ -552,17 +629,7 @@ crm.frequency_bucket_widget = {
 
         html += `</div>`;
 
-        let d = new frappe.ui.Dialog({
-            title: __(`Frequency Data: ${bucket.label}`),
-            size: 'extra-large',
-            fields: [{ fieldname: 'html_content', fieldtype: 'HTML', options: html }]
-        });
-
-        if (d.$body) {
-            d.$body.css({ 'background-color': '#f8fafc', 'padding': '20px' });
-        }
-
-        d.show();
+        crm._widget_utils._show_modal(`Frequency Data: ${bucket.label}`, html);
     }
 };
 

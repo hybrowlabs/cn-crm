@@ -52,9 +52,10 @@ const reloadPage = () => window.location.reload()
 const initializeDashboard = () => {
   error.value = ''
   initialized.value = false
-  
-  // Wait for a tick to ensure refs are bound
-  setTimeout(() => {
+
+  // Poll for window.crm to be ready (loaded async via index.html script chain)
+  // Retries every 250ms up to 10 seconds before giving up
+  const waitForCRM = (attempts = 0) => {
     if (window.crm) {
       try {
         if (window.crm.am_dashboard_widget && amDashboardRef.value) {
@@ -71,11 +72,16 @@ const initializeDashboard = () => {
         console.error('Failed to render widgets:', err)
         error.value = 'Failed to render dashboard widgets.'
       }
+    } else if (attempts < 40) {
+      // Not ready yet — try again in 250ms (max 40 × 250ms = 10s)
+      setTimeout(() => waitForCRM(attempts + 1), 250)
     } else {
-      console.warn('CRM library not found in window object')
-      error.value = 'CRM library not found. Please check if scripts are loaded.'
+      console.warn('CRM library not found after waiting 10s')
+      error.value = 'CRM library not found. Please refresh the page.'
     }
-  }, 300)
+  }
+
+  waitForCRM()
 }
 
 onMounted(() => {

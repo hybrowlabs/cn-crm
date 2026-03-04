@@ -3,7 +3,6 @@ frappe.provide('crm.am_dashboard_widget');
 crm.am_dashboard_widget = {
 
     render(wrapper) {
-        console.log("AM Dashboard: Starting execution on wrapper", wrapper);
 
         let $wrapper = $(wrapper);
         $wrapper.empty();
@@ -53,12 +52,10 @@ crm.am_dashboard_widget = {
         `;
 
         $wrapper.append(widget_html);
-        console.log("AM Dashboard: HTML appended successfully to wrapper.");
 
         // Attach refresh
         $wrapper.off('click', '.refresh-btn');
         $wrapper.on('click', '.refresh-btn', () => {
-            console.log("AM Dashboard: Refresh clicked");
             this.load_data($wrapper);
         });
 
@@ -67,7 +64,6 @@ crm.am_dashboard_widget = {
     },
 
     load_data($wrapper) {
-        console.log("AM Dashboard: load_data started");
         const loading = $wrapper.find('.am-dashboard-loading');
         const content = $wrapper.find('.am-dashboard-content');
 
@@ -77,7 +73,6 @@ crm.am_dashboard_widget = {
         frappe.call({
             method: 'crm.api.am_dashboard.get_am_dashboard_data',
             callback: (r) => {
-                console.log("AM Dashboard: API Response received", r);
                 loading.hide();
                 content.show();
                 content.css('display', 'block'); // Force display block
@@ -85,7 +80,6 @@ crm.am_dashboard_widget = {
                 if (r && r.message) {
                     this.render_data($wrapper, r.message);
                 } else {
-                    console.log("AM Dashboard: No message in API response");
                 }
             }
         });
