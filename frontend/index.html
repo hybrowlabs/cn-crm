@@ -78,15 +78,94 @@
     media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
   <link rel="apple-touch-startup-image" href="/assets/crm/manifest/apple-splash-1334-750.jpg"
     media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" />
-  <link rel="apple-touch-startup-image" href="/assets/crm/manifest/apple-splash-640-1136.jpg"
-    media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
   <link rel="apple-touch-startup-image" href="/assets/crm/manifest/apple-splash-1136-640.jpg"
     media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" />
+
+  <!-- Initialize Frappe Globals and Boot Data -->
+  <script>
+    window.frappe = window.frappe || {};
+    // Suppress "Invalid Request" modal as requested by user
+    window.msgprint = window.frappe.msgprint = function (msg) {
+      if (msg === "Invalid Request" || (msg && msg.message === "Invalid Request")) {
+        console.log("Suppressed 'Invalid Request' modal.");
+        return;
+      }
+      // Fallback to original if needed, but for now just console it
+      console.log("frappe.msgprint:", msg);
+    };
+
+    {% if boot is defined %}
+    window.frappe.boot = {{ boot | tojson }};
+    {% else %}
+    window.frappe.boot = {
+      developer_mode: 0,
+      sysdefaults: { currency: 'INR' }
+    };
+    {% endif %}
+  </script>
+
+  <!-- CRM Widgets Dependencies (Loaded dynamically to avoid Vite bundling issues) -->
+  <script>
+    (function () {
+      // 1. Initialize frappe namespace
+      window.frappe = window.frappe || {};
+      frappe.provide = function (s) {
+        let obj = window;
+        s.split('.').forEach(p => {
+          if (!obj[p]) obj[p] = {};
+          obj = obj[p];
+        });
+      };
+
+      // 2. Initialize essential sub-namespaces
+      frappe.provide("frappe.boot");
+      frappe.provide("frappe.assets");
+
+      // 3. Script loader with promise support
+      const loadScript = (src) => {
+        return new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = src;
+          s.onload = resolve;
+          s.onerror = (e) => {
+            console.error(`Failed to load script: ${src}`, e);
+            reject(e);
+          };
+          document.head.appendChild(s);
+        });
+      };
+
+      // 4. Fetch assets and load dependencies
+      fetch("/assets/assets.json")
+        .then(r => r.json())
+        .then(assets => {
+          // Populate assets_json for the AssetManager
+          frappe.boot.assets_json = assets;
+
+          return loadScript("/assets/frappe/js/lib/jquery/jquery.min.js")
+            .then(() => loadScript(assets["libs.bundle.js"]))
+            .then(() => loadScript(assets["desk.bundle.js"]))
+            .then(() => {
+              // Ensure widgets are loaded after core frappe is ready
+              const widgets = [
+                "/assets/crm/js/am_dashboard_widget.js",
+                "/assets/crm/js/combined_dashboard_widget.js",
+                "/assets/crm/js/pending_tasks_widget.js",
+                "/assets/crm/js/sm_pipeline_dashboard_widget.js"
+              ];
+              return Promise.all(widgets.map(loadScript));
+            });
+        })
+        .then(() => console.log("CRM Dashboard dependencies loaded successfully."))
+        .catch(err => console.error("Error initializing CRM Dashboard dependencies:", err));
+    })();
+  </script>
 </head>
 
 <body class="sm:overscroll-y-none no-scrollbar">
   <div id="app" class="h-full"></div>
   <script type="module" src="/src/main.js"></script>
+
   <script type="module">
     fetch("/assets/assets.json")
       .then((response) => response.json())

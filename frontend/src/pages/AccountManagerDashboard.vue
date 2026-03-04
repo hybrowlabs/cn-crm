@@ -47,12 +47,12 @@ const amDashboardRef = ref(null)
 const combinedDashboardRef = ref(null)
 const pendingTasksRef = ref(null)
 const initialized = ref(false)
-const error = ref(null)
+const error = ref('')
 
 const reloadPage = () => window.location.reload()
 
 const initializeDashboard = () => {
-  error.value = null
+  error.value = ''
   initialized.value = false
   
   // Wait for a tick to ensure refs are bound
