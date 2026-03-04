@@ -377,9 +377,7 @@ crm.followup_widget = {
             return;
         }
 
-        const today = frappe.datetime && frappe.datetime.get_today
-            ? frappe.datetime.get_today()
-            : new Date().toISOString().slice(0, 10);
+        const today = (function () { try { return (frappe.datetime && frappe.datetime.get_today) ? frappe.datetime.get_today() : new Date().toISOString().slice(0, 10); } catch (e) { return new Date().toISOString().slice(0, 10); } })();
 
         const fmtDate = (d) => frappe.datetime && frappe.datetime.str_to_user ? frappe.datetime.str_to_user(d) : d;
         const fmtCur = (val, cur) => typeof format_currency === 'function'
@@ -618,9 +616,7 @@ crm.frequency_bucket_widget = {
             return;
         }
 
-        const today = frappe.datetime && frappe.datetime.get_today
-            ? frappe.datetime.get_today()
-            : new Date().toISOString().slice(0, 10);
+        const today = (function () { try { return (frappe.datetime && frappe.datetime.get_today) ? frappe.datetime.get_today() : new Date().toISOString().slice(0, 10); } catch (e) { return new Date().toISOString().slice(0, 10); } })();
 
         const fmtDate = (d) => frappe.datetime && frappe.datetime.str_to_user ? frappe.datetime.str_to_user(d) : d;
         const fmtCur = (val, cur) => typeof format_currency === 'function'
