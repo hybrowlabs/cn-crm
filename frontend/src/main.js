@@ -65,6 +65,9 @@ if (import.meta.env.DEV) {
       for (let key in values) {
         window[key] = values[key]
       }
+      if (window.boot && window.boot.csrf_token) {
+        window.frappe.csrf_token = window.boot.csrf_token
+      }
       socket = initSocket()
       app.config.globalProperties.$socket = socket
       app.mount('#app')

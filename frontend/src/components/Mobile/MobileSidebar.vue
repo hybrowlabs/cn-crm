@@ -11,7 +11,7 @@
           leave-to="-translate-x-full"
       >
         <div
-            class="relative z-10 flex h-full w-[260px] flex-col justify-between border-r bg-surface-menu-bar transition-all duration-300 ease-in-out"
+            class="relative z-10 flex h-full w-[280px] flex-col justify-between border-r bg-surface-menu-bar transition-all duration-300 ease-in-out shadow-xl"
         >
           <div>
             <UserDropdown class="p-2" :isCollapsed="!sidebarOpened"/>
@@ -43,7 +43,7 @@
                 <template #header="{ opened, hide, toggle }">
                   <div
                       v-if="!hide"
-                      class="ml-2 mt-4 flex h-7 w-auto cursor-pointer gap-1.5 px-1 text-base font-medium text-ink-gray-5 opacity-100 transition-all duration-300 ease-in-out"
+                      class="ml-2 mt-6 mb-2 flex h-7 w-auto cursor-pointer gap-1.5 px-1 text-xs font-bold uppercase tracking-wider text-ink-gray-4 opacity-100 transition-all duration-300 ease-in-out"
                       @click="toggle()"
                   >
                     <FeatherIcon
@@ -210,6 +210,7 @@ const allViews = computed(() => {
   if (getPublicViews().length) {
     _views.push({
       name: 'Public views',
+      hideLabel: false,
       opened: true,
       views: parseView(getPublicViews()),
     })
@@ -218,6 +219,7 @@ const allViews = computed(() => {
   if (getPinnedViews().length) {
     _views.push({
       name: 'Pinned views',
+      hideLabel: false,
       opened: true,
       views: parseView(getPinnedViews()),
     })

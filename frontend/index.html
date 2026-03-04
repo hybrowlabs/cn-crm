@@ -96,10 +96,12 @@
 
     {% if boot is defined %}
     window.frappe.boot = {{ boot | tojson }};
+    window.frappe.csrf_token = "{{ boot.csrf_token }}";
     {% else %}
     window.frappe.boot = {
       developer_mode: 0,
-      sysdefaults: { currency: 'INR' }
+      sysdefaults: { currency: 'INR' },
+      docs: []
     };
     {% endif %}
   </script>

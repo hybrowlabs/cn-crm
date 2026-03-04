@@ -1,7 +1,7 @@
 <template>
-  <Dialog v-model="show" :options="{ size: '3xl' }">
+  <Dialog v-model="show" :options="{ size: isMobileView ? 'full' : '3xl' }">
     <template #body>
-      <div class="bg-surface-modal px-4 pb-6 pt-5 sm:px-6">
+      <div class="bg-surface-modal flex flex-col h-full px-4 pb-6 pt-5 sm:px-6">
         <div class="mb-5 flex items-center justify-between">
           <div>
             <h3 class="text-2xl font-semibold leading-6 text-ink-gray-9">
@@ -255,7 +255,7 @@
                       <Badge
                         :label="__('Customer')"
                         variant="subtle"
-                        theme="purple"
+                        theme="blue"
                       />
                       <Button
                         variant="outline"
@@ -445,7 +445,7 @@ const tabs = createResource({
   params: { doctype: 'CRM Lead', type: 'Quick Entry' },
   auto: true,
   transform: (_tabs) => {
-    return _tabs.forEach((tab) => {
+    _tabs.forEach((tab) => {
       tab.sections.forEach((section) => {
         section.columns.forEach((column) => {
           column.fields.forEach((field) => {
@@ -462,6 +462,7 @@ const tabs = createResource({
         })
       })
     })
+    return _tabs
   },
 })
 

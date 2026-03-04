@@ -15,21 +15,19 @@
       <Button label="Refresh Page" @click="reloadPage" />
     </div>
     
-    <div v-else class="max-w-7xl mx-auto space-y-8">
+    <div v-if="!initialized && !error" class="max-w-7xl mx-auto p-12 text-center">
+      <div class="p-8 text-center text-gray-400 animate-pulse">Loading Account Manager Dashboard...</div>
+    </div>
+
+    <div v-show="initialized && !error" class="max-w-7xl mx-auto space-y-8">
       <!-- AM Dashboard Widget -->
-      <div ref="amDashboardRef" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-h-[100px]">
-        <div v-if="!initialized" class="p-8 text-center text-gray-400 animate-pulse">Loading Account Manager Dashboard...</div>
-      </div>
+      <div ref="amDashboardRef" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-h-[100px]"></div>
 
       <!-- Combined Dashboard Widget -->
-      <div ref="combinedDashboardRef" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-h-[100px]">
-        <div v-if="!initialized" class="p-8 text-center text-gray-400 animate-pulse">Loading Combined Dashboard...</div>
-      </div>
+      <div ref="combinedDashboardRef" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-h-[100px]"></div>
 
       <!-- Pending Tasks Widget -->
-      <div ref="pendingTasksRef" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-h-[100px]">
-        <div v-if="!initialized" class="p-8 text-center text-gray-400 animate-pulse">Loading Pending Tasks...</div>
-      </div>
+      <div ref="pendingTasksRef" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-h-[100px]"></div>
     </div>
   </div>
 </template>
