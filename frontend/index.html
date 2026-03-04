@@ -125,15 +125,6 @@
   </script>
 
   <!-- Boot Data (Jinja2) -->
-  <script type="text/template" id="frappe-boot-data">
-    {% if boot is defined %}
-    {{ {
-      "boot": boot,
-      "csrf_token": csrf_token if csrf_token else boot.csrf_token
-    } | tojson }}
-    {% endif %}
-  </script>
-
   <script>
     window.frappe = window.frappe || {};
     window.frappe.boot = {
@@ -143,22 +134,15 @@
     };
     window.frappe.csrf_token = "";
 
-    (function () {
-      try {
-        const el = document.getElementById('frappe-boot-data');
-        const text = el ? el.textContent.trim() : "";
-        // Only parse if it contains actual data and not raw Jinja tags
-        if (text && !text.startsWith("{ " + "{") && !text.startsWith("{%")) {
-          const data = JSON.parse(text);
-          if (data && data.boot) {
-            Object.assign(window.frappe.boot, data.boot);
-            window.frappe.csrf_token = data.csrf_token || "";
-          }
-        }
-      } catch (e) {
-        console.warn("Server boot data not available or invalid (this is normal in dev mode):", e);
-      }
-    })();
+    {% if boot %}
+    try {
+      window.frappe.boot = {{ boot | tojson }
+    };
+    window.frappe.csrf_token = "{{ boot.csrf_token }}";
+    } catch (e) {
+      console.warn("Error parsing server boot data:", e);
+    }
+    {% endif %}
   </script>
 
   <!-- CRM Widgets Dependencies (Loaded dynamically to avoid Vite bundling issues) -->
