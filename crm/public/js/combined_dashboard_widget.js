@@ -444,7 +444,12 @@ crm.followup_widget = {
                     const customer = bucket.customers[idx];
                     btn.disabled = true;
                     btn.textContent = '...';
-                    if (frappe.route_options !== undefined) {
+
+                    const hasQuickEntry = typeof frappe.ui !== 'undefined' &&
+                        typeof frappe.ui.form !== 'undefined' &&
+                        typeof frappe.ui.form.make_quick_entry === 'function';
+
+                    if (frappe.route_options !== undefined && hasQuickEntry) {
                         frappe.route_options = {
                             quotation_to: 'Customer',
                             party_name: customer.customer_code,
@@ -455,7 +460,8 @@ crm.followup_widget = {
                         };
                         frappe.new_doc('Quotation', frappe.route_options);
                     } else {
-                        window.open(`/app/quotation/new-quotation-1?quotation_to=Customer&party_name=${encodeURIComponent(customer.customer_code)}`, '_blank');
+                        const url = `/app/quotation/new-quotation-1?quotation_to=Customer&party_name=${encodeURIComponent(customer.customer_code)}`;
+                        window.open(url, '_blank');
                     }
                     setTimeout(() => { btn.disabled = false; btn.textContent = 'Create Quotation'; }, 1000);
                 });
