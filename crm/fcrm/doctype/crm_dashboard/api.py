@@ -132,45 +132,32 @@ def get_dashboard(name=None):
 
 @frappe.whitelist()
 def get_dashboards():
-	"""Get all dashboards accessible to user"""
+	"""Get all dashboards accessible to the current user.
+	   Returns dashboards the user owns (private or public) + all other public dashboards.
+	"""
 	try:
 		user = frappe.session.user
-		roles = frappe.get_roles()
-		
-		# Get user's own dashboards and public dashboards
-		try:
-			dashboards = frappe.get_all(
-				"CRM Dashboard",
-				filters={
-					"owner": ["in", [user, "Administrator"]],
-					"is_public": 0
-				},
-				fields=["name", "dashboard_name", "description", "is_default", "modified"],
-				order_by="modified desc"
-			)
-		except Exception as e:
-			frappe.log_error(f"Error getting user dashboards: {str(e)}", "Dashboard Error")
-			dashboards = []
-		
-		# Add public dashboards
-		try:
-			public_dashboards = frappe.get_all(
-				"CRM Dashboard",
-				filters={"is_public": 1},
-				fields=["name", "dashboard_name", "description", "is_default", "modified"],
-				order_by="modified desc"
-			)
-		except Exception as e:
-			frappe.log_error(f"Error getting public dashboards: {str(e)}", "Dashboard Error")
-			public_dashboards = []
-		
-		# Merge and deduplicate
-		all_dashboards = {d.name: d for d in dashboards}
-		for d in public_dashboards:
-			if d.name not in all_dashboards:
-				all_dashboards[d.name] = d
-		
-		return list(all_dashboards.values())
+
+		# Single query: dashboards owned by this user  OR  public dashboards
+		dashboards = frappe.db.sql("""
+			SELECT name, dashboard_name, description, is_default, modified, owner, is_public
+			FROM `tabCRM Dashboard`
+			WHERE owner = %(user)s
+			   OR is_public = 1
+			ORDER BY
+				CASE WHEN owner = %(user)s THEN 0 ELSE 1 END ASC,
+				modified DESC
+		""", {"user": user}, as_dict=True)
+
+		# Deduplicate (a user's own public dashboard would otherwise appear twice)
+		seen = set()
+		unique = []
+		for d in dashboards:
+			if d.name not in seen:
+				seen.add(d.name)
+				unique.append(d)
+
+		return unique
 	except Exception as e:
 		import traceback
 		error_trace = traceback.format_exc()
@@ -179,6 +166,7 @@ def get_dashboards():
 			title="Dashboard Error"
 		)
 		frappe.throw(_("Failed to load dashboards: {0}").format(str(e)))
+
 
 
 @frappe.whitelist()
@@ -195,8 +183,19 @@ def save_dashboard(dashboard_data):
 			if not dashboard_name:
 				frappe.throw(_("Dashboard name is required"))
 
+			# Ensure name is unique – append suffix if a dashboard with this name already exists
+			base_name = dashboard_name
+			counter = 1
+			while frappe.db.exists("CRM Dashboard", dashboard_name):
+				dashboard_name = f"{base_name} {counter}"
+				counter += 1
+
 			dashboard = frappe.new_doc("CRM Dashboard")
+			# For autoname="prompt" doctypes, set name explicitly before insert
 			dashboard.name = dashboard_name
+			# Ensure the creating user is recorded as the owner so the
+			# dashboard shows up in get_dashboards for that user.
+			dashboard.owner = frappe.session.user
 			dashboard.check_permission("create")
 		else:
 			dashboard_name = dashboard_data["name"]
@@ -217,12 +216,11 @@ def save_dashboard(dashboard_data):
 			"to_date": dashboard_data.get("to_date"),
 			"user_filter": dashboard_data.get("user_filter"),
 		})
-
-		# Clear existing widgets completely - we'll insert via SQL
 		dashboard.widgets = []
-
-		# Save dashboard first (without widgets)
-		dashboard.save(ignore_permissions=True)
+		if is_new:
+			dashboard.insert(ignore_permissions=True)
+		else:
+			dashboard.save(ignore_permissions=True)
 
 		# System fields that should not be included in SQL insert
 		skip_fields = {'name', 'parent', 'parenttype', 'parentfield', 'idx', 'doctype', 'docstatus', 'owner', 'creation', 'modified', 'modified_by'}

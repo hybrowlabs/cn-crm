@@ -276,6 +276,12 @@ async function saveDashboard() {
 }
 
 function createNewDashboard() {
+  // Ask user for a name to avoid duplicate "New Dashboard" conflicts
+  const name = window.prompt(__('Enter a name for your new dashboard:'), 'My Dashboard')
+  if (name === null) return  // user cancelled
+
+  const dashboardName = name.trim() || 'My Dashboard'
+
   // Default LMOTPO widget for new dashboards
   const defaultLmotpoWidget = {
     widget_type: 'LMOTPO',
@@ -289,7 +295,7 @@ function createNewDashboard() {
   }
 
   dashboardStore.currentDashboard = {
-    dashboard_name: 'New Dashboard',
+    dashboard_name: dashboardName,
     description: '',
     is_default: false,
     is_public: false,
