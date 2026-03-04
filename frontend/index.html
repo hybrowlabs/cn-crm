@@ -124,7 +124,16 @@
     };
   </script>
 
-  <!-- Boot Data Defaults -->
+  <!-- Boot Data (Jinja2) -->
+  <script type="text/template" id="frappe-boot-data">
+    {% if boot is defined %}
+    {{ {
+      "boot": boot,
+      "csrf_token": csrf_token if csrf_token else boot.csrf_token
+    } | tojson }}
+    {% endif %}
+  </script>
+
   <script>
     window.frappe = window.frappe || {};
     window.frappe.boot = {
@@ -136,22 +145,19 @@
 
     (function () {
       try {
-        // Safe string wrapper for Jinja2 tags to avoid syntax errors in dev
-        const serverBootStr = '{{ boot | tojson if boot is defined else "{}" }}';
-        if (serverBootStr && !serverBootStr.startsWith("{ " + "{")) {
-          const serverBoot = JSON.parse(serverBootStr);
-          if (serverBoot && typeof serverBoot === 'object') {
-            Object.assign(window.frappe.boot, serverBoot);
+        const el = document.getElementById('frappe-boot-data');
+        const text = el ? el.textContent.trim() : "";
+        // Only parse if it contains actual data and not raw Jinja tags
+        if (text && !text.startsWith("{ " + "{") && !text.startsWith("{%")) {
+          const data = JSON.parse(text);
+          if (data && data.boot) {
+            Object.assign(window.frappe.boot, data.boot);
+            window.frappe.csrf_token = data.csrf_token || "";
           }
         }
-      } catch (e) { }
-
-      try {
-        const csrf = "{{ boot.csrf_token if boot is defined else "" }}";
-        if (csrf && !csrf.startsWith("{ " + "{")) {
-          window.frappe.csrf_token = csrf;
-        }
-      } catch (e) { }
+      } catch (e) {
+        console.warn("Server boot data not available or invalid (this is normal in dev mode):", e);
+      }
     })();
   </script>
 
