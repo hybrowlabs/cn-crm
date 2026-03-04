@@ -104,7 +104,7 @@
     frappe.provide("crm");
 
     // Polyfills/Placeholders for common utilities used by widgets
-    window.__ = window.__ || ((s) => s);
+    window["__"] = window["__"] || ((s) => s);
     frappe.utils.escape_html = frappe.utils.escape_html || ((s) => {
       if (!s) return "";
       return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -136,8 +136,7 @@
 
     {% if boot %}
     try {
-      window.frappe.boot = {{ boot | tojson }
-    };
+      window.frappe.boot = {{ boot | tojson }}
     window.frappe.csrf_token = "{{ boot.csrf_token }}";
     } catch (e) {
       console.warn("Error parsing server boot data:", e);
