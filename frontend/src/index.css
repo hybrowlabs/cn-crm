@@ -22,3 +22,18 @@
 			prose-th:relative;
 	}
 }
+
+/* Make tabs scrollable on mobile */
+[role="tablist"] {
+	@apply overflow-x-auto overflow-y-hidden whitespace-nowrap flex-nowrap shrink-0;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none; /* Firefox */
+}
+
+[role="tablist"]::-webkit-scrollbar {
+	display: none; /* Safari and Chrome */
+}
+
+[role="tab"] {
+	@apply shrink-0;
+}

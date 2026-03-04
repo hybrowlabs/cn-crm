@@ -54,6 +54,7 @@ crm._widget_utils = {
 
                 // data-select event (Frappe Charts v1+)
                 chartWrapper[0].addEventListener('data-select', (e) => {
+                    console.log('Pie chart data-select event:', e);
                     let bucket = null;
                     if (e && e.detail) {
                         if (e.detail.label) {
@@ -64,18 +65,42 @@ crm._widget_utils = {
                     } else if (e && typeof e.detail === 'number') {
                         bucket = buckets[e.detail];
                     }
-                    if (bucket) onSliceClick(bucket);
+
+                    if (bucket) {
+                        console.log('Selected bucket:', bucket);
+                        onSliceClick(bucket);
+                    } else {
+                        console.warn('Could not identify bucket from event detail:', e.detail);
+                    }
                 });
 
-                // Fallback: direct DOM click on SVG paths
+                // Fallback: direct DOM click on SVG paths (broader selector for robustness)
                 setTimeout(() => {
-                    chartWrapper[0].querySelectorAll('.pie-path').forEach((path, idx) => {
+                    // Try .pie-path, .frappe-chart-path, and generic path inside chart areas
+                    const paths = chartWrapper[0].querySelectorAll('.pie-path, path[data-bucket-index], .graph-svg-tip-content + svg path');
+                    console.log(`Found ${paths.length} potential pie paths for fallback`);
+
+                    paths.forEach((path, idx) => {
                         path.style.cursor = 'pointer';
                         path.addEventListener('click', (e) => {
+                            console.log(`Fallback click on slice index ${idx}`);
                             e.stopPropagation();
-                            if (idx < buckets.length) onSliceClick(buckets[idx]);
+                            if (idx < buckets.length) {
+                                onSliceClick(buckets[idx]);
+                            }
                         });
                     });
+
+                    // Even broader fallback: any path inside the SVG
+                    if (paths.length === 0) {
+                        chartWrapper.find('svg path').css('cursor', 'pointer').on('click', function (e) {
+                            const index = $(this).index(); // rough estimate
+                            console.log(`Broad fallback click index ${index}`);
+                            if (index >= 0 && index < buckets.length) {
+                                onSliceClick(buckets[index]);
+                            }
+                        });
+                    }
                 }, 500);
 
             } catch (err) {
@@ -91,16 +116,20 @@ crm._widget_utils = {
      * @param {Function} [onReady] - Optional callback once modal is appended (to wire sub-events).
      */
     _show_modal(title, bodyHtml, onReady) {
+        console.log('_show_modal called with title:', title);
         // Remove any existing crm-overlay
-        document.querySelectorAll('.crm-widget-overlay').forEach(el => el.remove());
+        document.querySelectorAll('.crm-widget-overlay').forEach(el => {
+            console.log('Removing existing overlay');
+            el.remove();
+        });
 
         const overlay = document.createElement('div');
         overlay.className = 'crm-widget-overlay';
         overlay.style.cssText = [
-            'position:fixed', 'inset:0', 'z-index:9999',
-            'background:rgba(0,0,0,0.45)',
+            'position:fixed', 'top:0', 'left:0', 'right:0', 'bottom:0', 'z-index:99999',
+            'background:rgba(0,0,0,0.5)',
             'display:flex', 'align-items:center', 'justify-content:center',
-            'padding:16px'
+            'padding:16px', 'opacity:1', 'visibility:visible'
         ].join(';');
 
         overlay.innerHTML = `
@@ -150,6 +179,7 @@ crm._widget_utils = {
         document.addEventListener('keydown', onKeyDown);
 
         document.body.appendChild(overlay);
+        console.log('Overlay appended to document.body');
 
         if (typeof onReady === 'function') onReady(overlay);
     }
@@ -336,10 +366,14 @@ crm.followup_widget = {
     },
 
     open_bucket_drawer(bucket) {
+        console.log('Opening drawer for bucket:', bucket);
         if (!bucket || !bucket.customers || bucket.customers.length === 0) {
+            console.warn('No customers found in bucket');
+            /*
             frappe.show_alert
                 ? frappe.show_alert({ message: 'No data in ' + bucket.label, indicator: 'orange' })
                 : alert('No data in ' + bucket.label);
+            */
             return;
         }
 
@@ -573,10 +607,14 @@ crm.frequency_bucket_widget = {
     },
 
     open_bucket_drawer(bucket) {
+        console.log('Opening drawer for frequency bucket:', bucket);
         if (!bucket || !bucket.customers || bucket.customers.length === 0) {
+            console.warn('No customers found in frequency bucket');
+            /*
             frappe.show_alert
                 ? frappe.show_alert({ message: 'No data in ' + bucket.label, indicator: 'orange' })
                 : alert('No data in ' + bucket.label);
+            */
             return;
         }
 

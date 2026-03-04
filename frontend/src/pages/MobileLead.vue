@@ -37,38 +37,19 @@
       </div>
     </div>
     <div v-if="lead?.data" class="flex h-full overflow-hidden">
-      <Tabs as="div" v-model="tabIndex" :tabs="tabs" class="overflow-auto">
+      <Tabs as="div" v-model="tabIndex" :tabs="tabs" class="overflow-auto flex-1">
         <template #tab-panel="{ tab }">
-          <div v-if="tab.name == 'Details'">
-            <SLASection
-              v-if="lead.data.sla_status"
-              v-model="lead.data"
-              @updateField="updateField"
-            />
-            <div class="flex flex-col gap-3 p-3">
-              <FieldLayout
-                v-for="section in sections"
-                :key="section.label"
-                :label="section.label"
-                :fields="section.fields"
-              />
-            </div>
-          </div>
-          <div v-else-if="tab.name == 'Activities'" class="h-full flex-1 overflow-auto">
-            <Activities
-              class="p-3"
-              doctype="CRM Lead"
-              :docname="document.doc.name"
-            />
-          </div>
-          <div v-else-if="tab.name == 'Attachments'" class="h-full flex-1 overflow-auto">
-            <FilesUploader
-              class="p-3"
-              doctype="CRM Lead"
-              :docname="document.doc.name"
-              @upload-complete="() => document.reload()"
-            />
-          </div>
+          <Activities
+            ref="activities"
+            doctype="CRM Lead"
+            :tabs="tabs"
+            v-model:reload="reload"
+            v-model:tabIndex="tabIndex"
+            v-model="lead"
+            :linkedVisits="linkedVisits"
+            @afterSave="handleAfterSave"
+            @reloadVisits="reloadVisits"
+          />
         </template>
       </Tabs>
     </div>
@@ -165,6 +146,8 @@ import { globalStore } from '@/stores/global'
 import { statusesStore } from '@/stores/statuses'
 import { getMeta } from '@/stores/meta'
 import { useDocument } from '@/data/document'
+import { whatsappEnabled, callEnabled } from '@/composables/settings'
+import { useActiveTabManager } from '@/composables/useActiveTabManager'
 
 const props = defineProps({
   leadId: {
@@ -243,27 +226,100 @@ const lead = createResource({
   },
 })
 
-const tabIndex = ref(0)
+const visits = createResource({
+  url: 'crm.fcrm.doctype.crm_lead.api.get_lead_visits',
+  params: { name: props.leadId },
+  cache: ['lead', 'visits', props.leadId],
+  auto: true,
+  onSuccess: (data) => {
+    linkedVisits.value = data
+  },
+})
+
+const reload = ref(false)
+const linkedVisits = ref([])
+const activities = ref(null)
+
 const tabs = computed(() => {
   let list = [
     {
-      name: 'Details',
-      label: __('Details'),
-      icon: DetailsIcon,
+      name: 'Activity',
+      label: __('Activity'),
+      icon: ActivityIcon,
     },
     {
-      name: 'Activities',
-      label: __('Activities'),
-      icon: ActivityIcon,
+      name: 'Emails',
+      label: __('Emails'),
+      icon: EmailIcon,
+    },
+    {
+      name: 'Comments',
+      label: __('Comments'),
+      icon: CommentIcon,
+    },
+    {
+      name: 'Data',
+      label: __('Lead Data'),
+      icon: DetailsIcon,
+      condition: () =>
+        !['Contacted', 'Nurture', 'Qualified'].includes(document.doc?.status),
+    },
+    {
+      name: 'Meeting Data',
+      label: __('Meeting Data'),
+      icon: DetailsIcon,
+      condition: () =>
+        ['Contacted', 'Nurture', 'Qualified'].includes(document.doc?.status),
+    },
+    {
+      name: 'Meetings',
+      label: __('Meetings'),
+      icon: VisitsIcon,
+    },
+    {
+      name: 'Calls',
+      label: __('Calls'),
+      icon: PhoneIcon,
+    },
+    {
+      name: 'Tasks',
+      label: __('Tasks'),
+      icon: TaskIcon,
+    },
+    {
+      name: 'Notes',
+      label: __('Notes'),
+      icon: NoteIcon,
     },
     {
       name: 'Attachments',
       label: __('Attachments'),
       icon: AttachmentIcon,
     },
+    {
+      name: 'WhatsApp',
+      label: __('WhatsApp'),
+      icon: WhatsAppIcon,
+      condition: () => whatsappEnabled.value,
+    },
   ]
-  return list
+  return list.filter((tab) => (tab.condition ? tab.condition() : true))
 })
+
+const { tabIndex, changeTabTo } = useActiveTabManager(tabs, 'lastLeadTab')
+
+function reloadVisits() {
+  visits.reload()
+}
+
+function handleAfterSave(data) {
+  if (data) {
+    Object.assign(document.doc, data)
+    if (lead.data) {
+      Object.assign(lead.data, data)
+    }
+  }
+}
 
 const sections = computed(() => {
   if (!lead.data) return []

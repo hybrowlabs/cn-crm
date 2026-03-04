@@ -483,15 +483,15 @@ crm.pending_tasks_widget = {
 			callback: (r) => {
 				if (r.message && r.message.success) {
 					this._animate_card_away(taskName, container);
-					if (frappe.show_alert) frappe.show_alert({ message: 'Task marked as Done', indicator: 'green' });
+					// if (frappe.show_alert) frappe.show_alert({ message: 'Task marked as Done', indicator: 'green' });
 				} else {
 					btn.removeClass('marking').prop('disabled', false).text('✓ Done');
-					if (frappe.show_alert) frappe.show_alert({ message: 'Failed to update task', indicator: 'red' });
+					// if (frappe.show_alert) frappe.show_alert({ message: 'Failed to update task', indicator: 'red' });
 				}
 			},
 			error: () => {
 				btn.removeClass('marking').prop('disabled', false).text('✓ Done');
-				if (frappe.show_alert) frappe.show_alert({ message: 'Error updating task', indicator: 'red' });
+				// if (frappe.show_alert) frappe.show_alert({ message: 'Error updating task', indicator: 'red' });
 			}
 		});
 	},
@@ -514,15 +514,15 @@ crm.pending_tasks_widget = {
 			callback: (r) => {
 				if (r.message && r.message.success) {
 					this._animate_card_away(taskName, container);
-					if (frappe.show_alert) frappe.show_alert({ message: 'Task marked as Canceled', indicator: 'orange' });
+					// if (frappe.show_alert) frappe.show_alert({ message: 'Task marked as Canceled', indicator: 'orange' });
 				} else {
 					btn.removeClass('canceling').prop('disabled', false).text('✗ Cancel');
-					if (frappe.show_alert) frappe.show_alert({ message: 'Failed to cancel task', indicator: 'red' });
+					// if (frappe.show_alert) frappe.show_alert({ message: 'Failed to cancel task', indicator: 'red' });
 				}
 			},
 			error: () => {
 				btn.removeClass('canceling').prop('disabled', false).text('✗ Cancel');
-				if (frappe.show_alert) frappe.show_alert({ message: 'Error canceling task', indicator: 'red' });
+				// if (frappe.show_alert) frappe.show_alert({ message: 'Error canceling task', indicator: 'red' });
 			}
 		});
 	},
