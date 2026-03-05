@@ -95,7 +95,7 @@
     </Dropdown>
   </div>
   <div v-if="deal.data" class="flex h-full overflow-hidden">
-    <Tabs as="div" v-model="tabIndex" :tabs="tabs" class="overflow-auto flex-1">
+    <Tabs as="div" v-model="tabIndex" :tabs="tabs" class="flex flex-col flex-1 overflow-hidden">
       <template #tab-panel="{ tab }">
         <div v-if="tab.name == 'Details'">
           <SLASection

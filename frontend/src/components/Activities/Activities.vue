@@ -435,6 +435,7 @@
         @click="showFilesUploader = true"
       />
     </div>
+    <div class="h-24 sm:h-0 shrink-0"></div>
   </FadedScrollableDiv>
   <div>
     <CommunicationArea

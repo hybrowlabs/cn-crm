@@ -11,7 +11,7 @@
           leave-to="-translate-x-full"
       >
         <div
-            class="relative z-10 flex h-full w-[280px] flex-col justify-between border-r bg-surface-menu-bar transition-all duration-300 ease-in-out shadow-xl"
+            class="relative z-10 flex h-full w-[280px] flex-col justify-between border-r bg-surface-menu-bar transition-all duration-300 ease-in-out shadow-xl overflow-x-hidden"
         >
           <div>
             <UserDropdown class="p-2" :isCollapsed="!sidebarOpened"/>
@@ -43,15 +43,15 @@
                 <template #header="{ opened, hide, toggle }">
                   <div
                       v-if="!hide"
-                      class="ml-2 mt-6 mb-2 flex h-7 w-auto cursor-pointer gap-1.5 px-1 text-xs font-bold uppercase tracking-wider text-ink-gray-4 opacity-100 transition-all duration-300 ease-in-out"
+                      class="ml-2 mt-6 mb-2 flex h-7 w-auto cursor-pointer items-center min-w-0 gap-1.5 px-1 text-xs font-bold uppercase tracking-wider text-ink-gray-4 opacity-100 transition-all duration-300 ease-in-out"
                       @click="toggle()"
                   >
                     <FeatherIcon
                         name="chevron-right"
-                        class="h-4 text-ink-gray-9 transition-all duration-300 ease-in-out"
+                        class="h-4 flex-shrink-0 text-ink-gray-9 transition-all duration-300 ease-in-out"
                         :class="{ 'rotate-90': opened }"
                     />
-                    <span>{{ __(view.name) }}</span>
+                    <span class="truncate">{{ __(view.name) }}</span>
                   </div>
                 </template>
                 <nav class="flex flex-col">
