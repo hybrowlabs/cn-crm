@@ -398,7 +398,7 @@
         :rows="doc.linked_quotations"
       />
     </div>
-    <div v-else-if="title == 'Meetings'" class="px-3 pb-3 sm:px-10 sm:pb-5">
+    <div v-else-if="title == 'Meetings'" class="h-full overflow-y-auto px-3 pb-3 sm:px-10 sm:pb-5">
       <VisitArea :visits="props.linkedVisits?.length ? props.linkedVisits : (doc.data?.linked_visits || doc.linked_visits || [])" />
     </div>
     

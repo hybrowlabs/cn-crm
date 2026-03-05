@@ -85,17 +85,19 @@
   <div v-if="deal.data" class="flex h-full overflow-hidden">
     <Tabs as="div" v-model="tabIndex" :tabs="tabs">
       <template #tab-panel>
-        <Activities
-          ref="activities"
-          doctype="CRM Deal"
-          :tabs="tabs"
-          v-model:reload="reload"
-          v-model:tabIndex="tabIndex"
-          v-model="deal"
-          @beforeSave="beforeStatusChange"
-          @afterSave="reloadAssignees"
-          @reloadVisits="reloadVisits"
-        />
+        <div class="flex flex-col flex-1 overflow-y-auto">
+          <Activities
+            ref="activities"
+            doctype="CRM Deal"
+            :tabs="tabs"
+            v-model:reload="reload"
+            v-model:tabIndex="tabIndex"
+            v-model="deal"
+            @beforeSave="beforeStatusChange"
+            @afterSave="reloadAssignees"
+            @reloadVisits="reloadVisits"
+          />
+        </div>
       </template>
     </Tabs>
     <Resizer side="right" class="flex flex-col justify-between border-l">
