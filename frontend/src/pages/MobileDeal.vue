@@ -1,11 +1,13 @@
 <template>
   <LayoutHeader v-if="deal.data">
     <template #left-header>
-      <Breadcrumbs :items="breadcrumbs">
-        <template #prefix="{ item }">
-          <Icon v-if="item.icon" :icon="item.icon" class="mr-2 h-4" />
-        </template>
-      </Breadcrumbs>
+      <div class="flex-shrink min-w-0 overflow-hidden">
+        <Breadcrumbs :items="breadcrumbs" class="truncate">
+          <template #prefix="{ item }">
+            <Icon v-if="item.icon" :icon="item.icon" class="mr-2 h-4" />
+          </template>
+        </Breadcrumbs>
+      </div>
     </template>
     <template #right-header>
       <Dropdown

@@ -8,9 +8,12 @@ export function initSocket() {
   let siteName = window.site_name
   let port = window.location.port ? `:${socketio_port}` : ''
   let protocol = port ? 'http' : 'https'
-  let url = `${protocol}://${host}${port}/${siteName}`
+  let url = `${protocol}://${host}${port}`
 
+  // siteName should be the namespace, not part of the base URL
   let socket = io(url, {
+    path: '/socket.io',
+    namespace: siteName ? `/${siteName}` : '/',
     withCredentials: true,
     reconnectionAttempts: 5,
   })

@@ -2,7 +2,7 @@
   <Teleport to="#app-header" v-if="showHeader">
     <slot>
       <header class="flex h-10.5 items-center justify-between py-[7px] sm:pl-5 pl-2">
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 min-w-0 flex-shrink">
           <slot name="left-header" />
         </div>
         <div class="flex items-center gap-2">

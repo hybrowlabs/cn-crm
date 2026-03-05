@@ -244,6 +244,8 @@ export function setupGlobalErrorHandler() {
       message.includes('NetworkError') ||
       message.includes('Failed to fetch') ||
       message.includes('ValidationError') ||   // Frappe server-side validation (handled by API layer)
+      message.includes('OperationalError') ||    // Database/Backend operational errors (often non-actionable)
+      message.includes('Invalid namespace') ||  // Socket.io namespace errors
       message.includes('No dashboard found') || // Dashboard missing — handled by empty state UI
       message.includes('Dashboard not found')
     ) {
