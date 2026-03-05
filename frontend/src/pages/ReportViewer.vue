@@ -111,7 +111,7 @@
           <div class="rounded-lg border border-gray-200 bg-white p-3 sm:p-6 shadow-sm">
             <h3 class="mb-3 text-base font-medium text-gray-900 sm:mb-4 sm:text-lg">{{ __('Chart') }}</h3>
             <div class="overflow-x-auto pb-4 custom-scrollbar">
-              <div :style="{ minWidth: chartMinWidth }" class="h-56 sm:h-80 relative">
+              <div :style="{ minWidth: chartMinWidth, height: (chartData.height || 300) + 'px' }" class="relative">
                 <Chart
                   v-if="chartData.data"
                   :type="chartData.type || 'bar'"
