@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="min-h-screen bg-gray-50">
     <LayoutHeader>
       <template #left-header>
         <Breadcrumbs :items="[
@@ -9,8 +9,7 @@
       </template>
     </LayoutHeader>
 
-    <div class="flex h-full flex-col overflow-auto">
-      <div class="px-4 pb-6 pt-3 sm:px-6">
+    <div class="mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 lg:px-8">
 
         <!-- Header row -->
         <div class="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-start sm:justify-between">
@@ -132,15 +131,14 @@
           <div v-else-if="reportData.length === 0" class="py-8 text-center text-sm text-gray-500">
             {{ __('No data available') }}
           </div>
-          <!-- Scrollable table wrapper for mobile -->
-          <div v-else class="overflow-x-auto -webkit-overflow-scrolling-touch">
+          <div v-else class="overflow-x-auto ring-1 ring-gray-200 rounded-lg">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
                   <th
                     v-for="column in columns"
                     :key="column.fieldname"
-                    class="whitespace-nowrap px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 sm:px-6 sm:py-3"
+                    class="sticky top-0 z-10 bg-gray-50 whitespace-nowrap px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 sm:px-6 sm:py-3"
                   >
                     {{ __(column.label) }}
                   </th>
