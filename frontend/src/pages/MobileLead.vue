@@ -11,14 +11,6 @@
         </div>
       </template>
       <template #right-header>
-        <CustomActions
-          v-if="lead.data?._customActions?.length"
-          :actions="lead.data._customActions"
-        />
-        <CustomActions
-          v-if="document.actions?.length"
-          :actions="document.actions"
-        />
         <Dropdown
           v-if="document.doc"
           :options="
@@ -49,14 +41,34 @@
             </Button>
           </template>
         </Dropdown>
+      </template>
+    </LayoutHeader>
+    <div
+      v-if="document.doc"
+      class="flex h-12 items-center justify-between gap-2 border-b px-3 py-2.5"
+    >
+      <AssignTo
+        v-model="assignees.data"
+        :data="document.doc"
+        doctype="CRM Lead"
+      />
+      <div class="flex items-center gap-2">
         <Button
           v-if="['Contacted', 'Nurture'].includes(document.doc?.status) && document.doc?.meeting_outcomes === 'Qualified'"
           :label="__('Convert')"
           variant="solid"
           @click="showConvertToDealModal = true"
         />
-      </template>
-    </LayoutHeader>
+        <CustomActions
+          v-if="lead.data?._customActions?.length"
+          :actions="lead.data._customActions"
+        />
+        <CustomActions
+          v-if="document.actions?.length"
+          :actions="document.actions"
+        />
+      </div>
+    </div>
     <div
       v-if="document.doc && ['Contacted', 'Nurture'].includes(document.doc.status)"
       class="flex items-center justify-between gap-2 border-b px-3 py-2 bg-gray-50"

@@ -9,7 +9,7 @@
         <MenuIcon class="h-4 text-ink-gray-9" />
       </Button>
     </div>
-    <div id="app-header" class="flex-1 flex items-center font-semibold text-ink-gray-9 truncate ml-2 text-lg" />
+    <div id="app-header" class="flex-1 min-w-0" />
   </div>
   <CallUI class="mr-3 mt-2" />
 </template>

@@ -1,11 +1,11 @@
 <template>
   <Teleport to="#app-header" v-if="showHeader">
     <slot>
-      <header class="flex h-10.5 items-center justify-between py-[7px] sm:pl-5 pl-2">
+      <header class="flex h-10.5 items-center justify-between py-[7px] sm:pl-5 pl-2 w-full min-w-0">
         <div class="flex items-center gap-2 min-w-0 flex-shrink">
           <slot name="left-header" />
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-shrink-0">
           <slot name="right-header" class="flex items-center gap-2" />
         </div>
       </header>
