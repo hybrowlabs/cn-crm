@@ -1,47 +1,45 @@
 <template>
   <LayoutHeader v-if="deal.data">
-    <header
-      class="relative flex h-10.5 items-center justify-between gap-2 py-2.5 pl-2"
-    >
+    <template #left-header>
       <Breadcrumbs :items="breadcrumbs">
         <template #prefix="{ item }">
           <Icon v-if="item.icon" :icon="item.icon" class="mr-2 h-4" />
         </template>
       </Breadcrumbs>
-      <div class="absolute right-0">
-        <Dropdown
-          v-if="document.doc"
-          :options="
-            statusOptions(
-              'deal',
-              document.statuses?.length
-                ? document.statuses
-                : deal.data._customStatuses,
-              triggerStatusChange,
-              document.doc.status,
-              null,
-              document.doc,
-            )
-          "
-        >
-          <template #default="{ open }">
-            <Button :label="document.doc.status">
-              <template #prefix>
-                <IndicatorIcon
-                  :class="getDealStatus(document.doc.status).color"
-                />
-              </template>
-              <template #suffix>
-                <FeatherIcon
-                  :name="open ? 'chevron-up' : 'chevron-down'"
-                  class="h-4"
-                />
-              </template>
-            </Button>
-          </template>
-        </Dropdown>
-      </div>
-    </header>
+    </template>
+    <template #right-header>
+      <Dropdown
+        v-if="document.doc"
+        :options="
+          statusOptions(
+            'deal',
+            document.statuses?.length
+              ? document.statuses
+              : deal.data._customStatuses,
+            triggerStatusChange,
+            document.doc.status,
+            null,
+            document.doc,
+          )
+        "
+      >
+        <template #default="{ open }">
+          <Button :label="document.doc.status">
+            <template #prefix>
+              <IndicatorIcon
+                :class="getDealStatus(document.doc.status).color"
+              />
+            </template>
+            <template #suffix>
+              <FeatherIcon
+                :name="open ? 'chevron-up' : 'chevron-down'"
+                class="h-4"
+              />
+            </template>
+          </Button>
+        </template>
+      </Dropdown>
+    </template>
   </LayoutHeader>
   <div
     v-if="deal.data"
@@ -76,12 +74,17 @@
   </div>
   <div
     v-if="deal.data && document.doc?.status === 'Demo/Making'"
-    class="flex items-center justify-between gap-2 border-b px-3 py-2.5 bg-gray-50"
+    class="flex items-center justify-between gap-2 border-b px-3 py-2 bg-gray-50"
   >
-    <span class="text-sm font-medium text-ink-gray-7">{{ __('Trial Outcome') }}:</span>
+    <span class="text-xs font-medium text-ink-gray-5">{{ __('Trial Outcome') }}:</span>
     <Dropdown :options="trialOutcomeOptions">
       <template #default="{ open }">
         <Button :label="document.doc.trial_outcome || __('Select Outcome')">
+          <template #prefix v-if="document.doc.trial_outcome">
+            <IndicatorIcon
+              :class="getOutcomeColor(document.doc.trial_outcome)"
+            />
+          </template>
           <template #suffix>
             <FeatherIcon :name="open ? 'chevron-up' : 'chevron-down'" class="h-4" />
           </template>
@@ -339,7 +342,9 @@ import {
   Dropdown,
   Avatar,
   Tabs,
+  Button,
   Breadcrumbs,
+  FeatherIcon,
   call,
   usePageMeta,
   toast,
@@ -429,7 +434,6 @@ const quotations = createResource({
   onSuccess: (data) => {
     console.log({data, deal})
     deal.linked_quotations = data
-
   },
   onError: (err) => {
     console.error({err})
@@ -438,7 +442,18 @@ const quotations = createResource({
       router.push({ name: 'Deals' })
     }
   }
-});
+})
+
+function getOutcomeColor(outcome) {
+  const trialOutcomeColorMap = {
+    Qualified: 'text-green-500',
+    'Follow-up Required': 'text-blue-500',
+    Nurture: 'text-orange-500',
+    Disqualified: 'text-red-500',
+    Closed: 'text-gray-500',
+  }
+  return trialOutcomeColorMap[outcome] || 'text-gray-500'
+}
 
 const visits = createResource({
   url: 'crm.fcrm.doctype.crm_deal.api.get_deal_visits',

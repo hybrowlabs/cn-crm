@@ -143,13 +143,24 @@ crm.am_dashboard_widget = {
                             datasets: [{ values: values }]
                         };
 
-                        new frappe.Chart($wrapper.find('.pain-mix-chart')[0], {
-                            title: "Deals by Pain Category",
-                            data: chartData,
-                            type: 'pie',
-                            height: 250,
-                            colors: ['#2490ef', '#ff5858', '#ffa00a', '#1379b4', '#15cb86', '#eebb00']
-                        });
+                        const chartContainer = $wrapper.find('.pain-mix-chart')[0];
+                        if (chartContainer) {
+                            if (chartContainer._frappe_chart) {
+                                try {
+                                    chartContainer._frappe_chart.destroy();
+                                } catch (e) {
+                                    console.warn("AM Dashboard: Error destroying old chart", e);
+                                }
+                            }
+
+                            chartContainer._frappe_chart = new frappe.Chart(chartContainer, {
+                                title: "Deals by Pain Category",
+                                data: chartData,
+                                type: 'pie',
+                                height: 250,
+                                colors: ['#2490ef', '#ff5858', '#ffa00a', '#1379b4', '#15cb86', '#eebb00']
+                            });
+                        }
                         console.log("AM Dashboard: Pie chart rendered safely");
                     } catch (err) {
                         console.error("AM Dashboard: Chart rendering failed", err);

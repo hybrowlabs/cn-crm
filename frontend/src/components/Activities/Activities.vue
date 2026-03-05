@@ -303,61 +303,61 @@
             class="flex flex-col gap-0.5"
           >
             <div
-              v-for="activity in [activity, ...activity.other_versions]"
-              :key="activity.name"
+              v-for="version in [activity, ...activity.other_versions]"
+              :key="version.name"
               class="flex items-start justify-stretch gap-2 py-1.5 text-base"
             >
               <div class="inline-flex flex-wrap gap-1 text-ink-gray-5">
                 <span
-                  v-if="activity.data?.field_label"
+                  v-if="version.data?.field_label"
                   class="max-w-xs truncate text-ink-gray-5"
                 >
-                  {{ __(activity.data.field_label) }}
+                  {{ __(version.data.field_label) }}
                 </span>
                 <FeatherIcon
                   name="arrow-right"
                   class="mx-1 h-4 w-4 text-ink-gray-5"
                 />
-                <span v-if="activity.type">
-                  {{ startCase(__(activity.type)) }}
+                <span v-if="version.type">
+                  {{ startCase(__(version.type)) }}
                 </span>
                 <span
-                  v-if="activity.data?.old_value"
+                  v-if="version.data?.old_value"
                   class="max-w-xs font-medium text-ink-gray-8"
                 >
                   <div
                     class="flex items-center gap-1"
-                    v-if="activity.options == 'User'"
+                    v-if="version.options == 'User'"
                   >
-                    <UserAvatar :user="activity.data.old_value" size="xs" />
-                    {{ getUser(activity.data.old_value).full_name }}
+                    <UserAvatar :user="version.data.old_value" size="xs" />
+                    {{ getUser(version.data.old_value).full_name }}
                   </div>
                   <div class="truncate" v-else>
-                    {{ activity.data.old_value }}
+                    {{ version.data.old_value }}
                   </div>
                 </span>
-                <span v-if="activity.to">{{ __('to') }}</span>
+                <span v-if="version.to">{{ __('to') }}</span>
                 <span
-                  v-if="activity.data?.value"
+                  v-if="version.data?.value"
                   class="max-w-xs font-medium text-ink-gray-8"
                 >
                   <div
                     class="flex items-center gap-1"
-                    v-if="activity.options == 'User'"
+                    v-if="version.options == 'User'"
                   >
-                    <UserAvatar :user="activity.data.value" size="xs" />
-                    {{ getUser(activity.data.value).full_name }}
+                    <UserAvatar :user="version.data.value" size="xs" />
+                    {{ getUser(version.data.value).full_name }}
                   </div>
                   <div class="truncate" v-else>
-                    {{ activity.data.value }}
+                    {{ version.data.value }}
                   </div>
                 </span>
               </div>
 
               <div class="ml-auto whitespace-nowrap">
-                <Tooltip :text="formatDate(activity.creation)">
+                <Tooltip :text="formatDate(version.creation)">
                   <div class="text-sm text-ink-gray-5">
-                    {{ __(timeAgo(activity.creation)) }}
+                    {{ __(timeAgo(version.creation)) }}
                   </div>
                 </Tooltip>
               </div>
@@ -506,6 +506,7 @@ import LoadingIndicator from '@/components/Icons/LoadingIndicator.vue'
 import MultiActionButton from '@/components/MultiActionButton.vue'
 import LeadsIcon from '@/components/Icons/LeadsIcon.vue'
 import DealsIcon from '@/components/Icons/DealsIcon.vue'
+import VisitsIcon from '@/components/Icons/VisitsIcon.vue'
 import DotIcon from '@/components/Icons/DotIcon.vue'
 import CommentIcon from '@/components/Icons/CommentIcon.vue'
 import SelectIcon from '@/components/Icons/SelectIcon.vue'
@@ -599,6 +600,13 @@ const whatsappMessages = createResource({
   auto: true,
   transform: (data) => sortByCreation(data),
   onSuccess: () => nextTick(() => scroll()),
+  onError: (err) => {
+    // Suppress toasts for OperationalError as requested
+    if (err && (err.message?.includes('OperationalError') || err.exc_type === 'OperationalError')) {
+      console.warn('WhatsApp get_whatsapp_messages OperationalError suppressed');
+      return;
+    }
+  },
 })
 
 onBeforeUnmount(() => {

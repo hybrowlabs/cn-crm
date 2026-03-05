@@ -36,11 +36,29 @@ crm._widget_utils = {
             try {
                 const hasData = buckets.some(b => b.count > 0);
                 if (!hasData) {
+                    // Destroy any existing chart if we're now showing "No Data"
+                    if (chartWrapper[0]._frappe_chart) {
+                        try {
+                            chartWrapper[0]._frappe_chart.destroy();
+                        } catch (e) {
+                            console.warn('Error destroying chart:', e);
+                        }
+                        delete chartWrapper[0]._frappe_chart;
+                    }
                     chartWrapper.html('<div style="text-align:center;color:#94a3b8;padding:20px;">No Data</div>');
                     return;
                 }
 
-                new frappe.Chart(chartWrapper[0], {
+                // Cleanup existing chart instance safely
+                if (chartWrapper[0]._frappe_chart) {
+                    try {
+                        chartWrapper[0]._frappe_chart.destroy();
+                    } catch (e) {
+                        console.warn('Error destroying existing chart instance:', e);
+                    }
+                }
+
+                chartWrapper[0]._frappe_chart = new frappe.Chart(chartWrapper[0], {
                     data: {
                         labels: buckets.map(b => b.label),
                         datasets: [{ values: buckets.map(b => b.count) }]

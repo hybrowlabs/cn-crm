@@ -33,7 +33,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import { Breadcrumbs, Button } from 'frappe-ui'
 
@@ -47,11 +47,17 @@ const pendingTasksRef = ref(null)
 const initialized = ref(false)
 const error = ref('')
 
+let initializationTimeout = null
+let pollInterval = null
+
 const reloadPage = () => window.location.reload()
 
 const initializeDashboard = () => {
   error.value = ''
   initialized.value = false
+  
+  if (initializationTimeout) clearTimeout(initializationTimeout)
+  if (pollInterval) clearTimeout(pollInterval)
 
   // Poll for window.crm to be ready (loaded async via index.html script chain)
   // Retries every 250ms up to 12 seconds before giving up
@@ -74,7 +80,7 @@ const initializeDashboard = () => {
         initialized.value = true;
         
         // Small delay to let Vue update the DOM (v-show)
-        setTimeout(() => {
+        initializationTimeout = setTimeout(() => {
           if (amDashboardRef.value) {
             window.crm.am_dashboard_widget.render(amDashboardRef.value)
           }
@@ -92,7 +98,7 @@ const initializeDashboard = () => {
       }
     } else if (attempts < 48) {
       // Not ready yet — try again in 250ms (max 48 × 250ms = 12s)
-      setTimeout(() => waitForCRM(attempts + 1), 250)
+      pollInterval = setTimeout(() => waitForCRM(attempts + 1), 250)
     } else {
       console.warn('CRM library or dependencies not found after waiting 12s')
       error.value = 'Dashboard dependencies failed to load. Please refresh the page.'
@@ -104,6 +110,11 @@ const initializeDashboard = () => {
 
 onMounted(() => {
   initializeDashboard()
+})
+
+onUnmounted(() => {
+  if (initializationTimeout) clearTimeout(initializationTimeout)
+  if (pollInterval) clearTimeout(pollInterval)
 })
 </script>
 

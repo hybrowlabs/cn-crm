@@ -1,7 +1,14 @@
 <template>
   <div v-if="document.doc" class="flex flex-col h-full bg-white">
-    <div class="flex items-center justify-between h-12 border-b px-3 py-2.5">
-      <div class="flex items-center gap-2">
+    <LayoutHeader>
+      <template #left-header>
+        <Breadcrumbs :items="breadcrumbs">
+          <template #prefix="{ item }">
+            <Icon v-if="item.icon" :icon="item.icon" class="mr-2 h-4" />
+          </template>
+        </Breadcrumbs>
+      </template>
+      <template #right-header>
         <CustomActions
           v-if="lead.data?._customActions?.length"
           :actions="lead.data._customActions"
@@ -10,31 +17,63 @@
           v-if="document.actions?.length"
           :actions="document.actions"
         />
-      </div>
-      <div class="flex items-center gap-2">
-        <div v-if="document.doc && ['Contacted', 'Nurture'].includes(document.doc.status)" class="flex items-center gap-2">
-          <span class="text-sm text-ink-gray-5">{{ __('Meeting Outcome') }}:</span>
-          <Dropdown
-            :options="meetingOutcomeOptions"
-          >
-            <template #default>
-              <Button icon="more-horizontal">
-                <template #prefix v-if="document.doc.meeting_outcomes">
-                  <IndicatorIcon
-                    :class="getOutcomeColor(document.doc.meeting_outcomes)"
-                  />
-                </template>
-              </Button>
-            </template>
-          </Dropdown>
-        </div>
+        <Dropdown
+          v-if="document.doc"
+          :options="
+            statusOptions(
+              'lead',
+              document.statuses?.length
+                ? document.statuses
+                : lead.data._customStatuses,
+              triggerStatusChange,
+              document.doc.status,
+              { [document.doc.status]: statusVisibility }
+            )
+          "
+        >
+          <template #default>
+            <Button :label="document.doc.status">
+              <template #prefix>
+                <IndicatorIcon
+                  :class="getLeadStatus(document.doc.status).color"
+                />
+              </template>
+              <template #suffix="{ open }">
+                <FeatherIcon
+                  :name="open ? 'chevron-up' : 'chevron-down'"
+                  class="h-4"
+                />
+              </template>
+            </Button>
+          </template>
+        </Dropdown>
         <Button
           v-if="['Contacted', 'Nurture'].includes(document.doc?.status) && document.doc?.meeting_outcomes === 'Qualified'"
           :label="__('Convert')"
           variant="solid"
           @click="showConvertToDealModal = true"
         />
-      </div>
+      </template>
+    </LayoutHeader>
+    <div
+      v-if="document.doc && ['Contacted', 'Nurture'].includes(document.doc.status)"
+      class="flex items-center justify-between gap-2 border-b px-3 py-2 bg-gray-50"
+    >
+      <span class="text-xs font-medium text-ink-gray-5">{{ __('Meeting Outcome') }}:</span>
+      <Dropdown :options="meetingOutcomeOptions">
+        <template #default="{ open }">
+          <Button :label="document.doc.meeting_outcomes || __('Select Outcome')">
+            <template #prefix v-if="document.doc.meeting_outcomes">
+              <IndicatorIcon
+                :class="getOutcomeColor(document.doc.meeting_outcomes)"
+              />
+            </template>
+            <template #suffix>
+              <FeatherIcon :name="open ? 'chevron-up' : 'chevron-down'" class="h-4" />
+            </template>
+          </Button>
+        </template>
+      </Dropdown>
     </div>
     <div v-if="lead?.data" class="flex h-full overflow-hidden">
       <Tabs as="div" v-model="tabIndex" :tabs="tabs" class="overflow-auto flex-1">
@@ -57,7 +96,7 @@
   <div v-else-if="lead.error" class="flex h-full items-center justify-center p-4">
     <div class="text-center">
       <div class="mb-4 flex justify-center text-ink-gray-4">
-        <Icon name="alert-circle" class="h-10 w-10" />
+        <Icon icon="alert-circle" class="h-10 w-10" />
       </div>
       <h3 class="mb-2 text-lg font-bold text-ink-gray-9">
         {{ __("Couldn't find Lead") }}
@@ -129,12 +168,15 @@ import StatusValidationModal from '@/components/Modals/StatusValidationModal.vue
 import DealDetailModal from '@/components/Modals/DealDetailModal.vue'
 import { getFieldsForValidation } from '@/utils/validation'
 import { setupCustomizations } from '@/utils'
+import { getView } from '@/utils/view'
 import { capture } from '@/telemetry'
 import {
   Button,
   Dropdown,
   Tabs,
   Dialog,
+  Breadcrumbs,
+  FeatherIcon,
   call,
   toast,
   createResource,
@@ -320,6 +362,48 @@ function handleAfterSave(data) {
     }
   }
 }
+
+const breadcrumbs = computed(() => {
+  let items = [{ label: __('Leads'), route: { name: 'Leads' } }]
+
+  if (route.query.view || route.query.viewType) {
+    let view = getView(route.query.view, route.query.viewType, 'CRM Lead')
+    if (view) {
+      items.push({
+        label: __(view.label),
+        icon: view.icon,
+        route: {
+          name: 'Leads',
+          params: { viewType: route.query.viewType },
+          query: { view: route.query.view },
+        },
+      })
+    }
+  }
+
+  items.push({
+    label: title.value,
+    route: { name: 'Lead', params: { leadId: lead.data.name } },
+  })
+  return items
+})
+
+const title = computed(() => {
+  let t = doctypeMeta['CRM Lead']?.title_field || 'name'
+  return lead.data?.[t] || props.leadId
+})
+
+const statusVisibility = computed(() => {
+  const status = document.doc?.status
+  if (status === 'New') {
+    return ['New', 'Contacted', 'Nurture', 'Disqualified', 'Junk']
+  } else if (['Contacted', 'Nurture', 'Qualified'].includes(status)) {
+    return ['Contacted', 'Nurture', 'Qualified', 'Disqualified', 'Junk']
+  } else {
+    // Junk, Disqualified, etc.
+    return ['Contacted', 'Nurture', 'Disqualified', 'Junk']
+  }
+})
 
 const sections = computed(() => {
   if (!lead.data) return []
