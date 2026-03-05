@@ -97,7 +97,7 @@
   <div v-if="deal.data" class="flex h-full overflow-hidden">
     <Tabs as="div" v-model="tabIndex" :tabs="tabs" class="flex flex-col flex-1 overflow-hidden">
       <template #tab-panel="{ tab }">
-        <div v-if="tab.name == 'Details'">
+        <div v-if="tab.name == 'Details'" class="flex flex-col flex-1 overflow-hidden h-full">
           <SLASection
             v-if="deal.data.sla_status"
             v-model="deal.data"
@@ -105,7 +105,7 @@
           />
           <div
             v-if="sections.data"
-            class="flex flex-1 flex-col justify-between overflow-hidden"
+            class="flex flex-1 flex-col justify-between overflow-y-auto"
           >
             <SidePanelLayout
               :sections="sections.data"

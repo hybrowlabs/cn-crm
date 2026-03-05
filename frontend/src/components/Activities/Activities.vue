@@ -388,7 +388,7 @@
         @afterSave="(data) => emit('afterSave', data)" 
       />
     </div>
-    <div v-else-if="title == 'Quotations'" class="flex flex-col px-3 pb-3 sm:px-10 sm:pb-5">
+    <div v-else-if="title == 'Quotations'" class="h-full flex flex-col overflow-y-auto px-3 pb-3 sm:px-10 sm:pb-5">
       <QuotationsListView
         :columns="[
           { label: __('Quotation'), key: 'name', type: 'Data' },
