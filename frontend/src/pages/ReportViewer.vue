@@ -10,9 +10,9 @@
     </LayoutHeader>
 
     <div class="mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 lg:px-8">
-
+      <div class="flex flex-col space-y-4 sm:space-y-6">
         <!-- Header row -->
-        <div class="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-start sm:justify-between">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div class="flex-1">
             <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl">{{ reportTitle }}</h1>
             <p v-if="reportDescription" class="mt-1 text-sm text-gray-500 sm:mt-2">{{ reportDescription }}</p>
@@ -44,8 +44,8 @@
         </div>
 
         <!-- Filters -->
-        <div v-if="availableFilters.length" class="mb-4 sm:mb-6">
-          <div class="rounded-lg border border-gray-200 p-3 sm:p-4">
+        <div v-if="availableFilters.length" class="relative">
+          <div class="rounded-lg border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
             <h3 class="mb-3 text-sm font-medium text-gray-900">{{ __('Filters') }}</h3>
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div v-for="filter in availableFilters" :key="filter.fieldname">
@@ -81,34 +81,36 @@
         </div>
 
         <!-- Summary Cards -->
-        <div v-if="summaryData.length" class="mb-4 grid grid-cols-2 gap-3 sm:mb-6 sm:grid-cols-2 lg:grid-cols-4">
-          <div
-            v-for="summary in summaryData"
-            :key="summary.label"
-            class="rounded-lg border border-gray-200 p-3 sm:p-4"
-          >
-            <div class="flex items-start justify-between">
-              <div class="flex-1 min-w-0">
-                <p class="truncate text-xs font-medium text-gray-500 sm:text-sm">{{ __(summary.label) }}</p>
-                <p class="mt-1 text-lg font-semibold text-gray-900 sm:text-2xl">
-                  {{ formatSummaryValue(summary) }}
-                </p>
-              </div>
-              <div
-                class="ml-2 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full sm:h-8 sm:w-8"
-                :class="getIndicatorClass(summary.indicator)"
-              >
-                <div class="h-1.5 w-1.5 rounded-full bg-current sm:h-2 sm:w-2"></div>
+        <div v-if="summaryData.length" class="relative">
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div
+              v-for="summary in summaryData"
+              :key="summary.label"
+              class="rounded-lg border border-gray-200 bg-white p-3 sm:p-4 shadow-sm"
+            >
+              <div class="flex items-start justify-between">
+                <div class="flex-1 min-w-0">
+                  <p class="truncate text-xs font-medium text-gray-500 sm:text-sm">{{ __(summary.label) }}</p>
+                  <p class="mt-1 text-lg font-semibold text-gray-900 sm:text-2xl">
+                    {{ formatSummaryValue(summary) }}
+                  </p>
+                </div>
+                <div
+                  class="ml-2 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full sm:h-8 sm:w-8"
+                  :class="getIndicatorClass(summary.indicator)"
+                >
+                  <div class="h-1.5 w-1.5 rounded-full bg-current sm:h-2 sm:w-2"></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Chart -->
-        <div v-if="chartData" class="mb-4 sm:mb-6">
-          <div class="rounded-lg border border-gray-200 p-3 sm:p-6">
+        <div v-if="chartData" class="relative">
+          <div class="rounded-lg border border-gray-200 bg-white p-3 sm:p-6 shadow-sm overflow-hidden">
             <h3 class="mb-3 text-base font-medium text-gray-900 sm:mb-4 sm:text-lg">{{ __('Chart') }}</h3>
-            <div class="h-56 sm:h-80">
+            <div class="h-56 sm:h-80 relative">
               <Chart
                 v-if="chartData.data"
                 :type="chartData.type || 'bar'"
@@ -121,75 +123,78 @@
         </div>
 
         <!-- Data Table -->
-        <div class="rounded-lg border border-gray-200">
-          <div class="border-b border-gray-200 px-4 py-3 sm:px-6 sm:py-4">
-            <h3 class="text-base font-medium text-gray-900 sm:text-lg">{{ __('Data') }}</h3>
-          </div>
-          <div v-if="loading" class="flex justify-center py-8">
-            <LoadingIndicator class="w-6" />
-          </div>
-          <div v-else-if="reportData.length === 0" class="py-8 text-center text-sm text-gray-500">
-            {{ __('No data available') }}
-          </div>
-          <div v-else class="overflow-x-auto ring-1 ring-gray-200 rounded-lg">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th
-                    v-for="column in columns"
-                    :key="column.fieldname"
-                    class="sticky top-0 z-10 bg-gray-50 whitespace-nowrap px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 sm:px-6 sm:py-3"
-                  >
-                    {{ __(column.label) }}
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200 bg-white">
-                <tr v-for="row in paginatedData" :key="row.name || Math.random()">
-                  <td
-                    v-for="column in columns"
-                    :key="column.fieldname"
-                    class="whitespace-nowrap px-4 py-3 text-xs sm:px-6 sm:py-4 sm:text-sm"
-                  >
-                    {{ formatCellValue(row[column.fieldname], column.fieldtype) }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="relative">
+          <div class="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+            <div class="border-b border-gray-200 px-4 py-3 sm:px-6 sm:py-4">
+              <h3 class="text-base font-medium text-gray-900 sm:text-lg">{{ __('Data') }}</h3>
+            </div>
+            <div v-if="loading" class="flex justify-center py-8">
+              <LoadingIndicator class="w-6" />
+            </div>
+            <div v-else-if="reportData.length === 0" class="py-8 text-center text-sm text-gray-500">
+              {{ __('No data available') }}
+            </div>
+            <div v-else class="overflow-x-auto ring-1 ring-gray-200 rounded-lg">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      v-for="column in columns"
+                      :key="column.fieldname"
+                      class="sticky top-0 z-10 bg-gray-50 whitespace-nowrap px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 sm:px-6 sm:py-3"
+                    >
+                      {{ __(column.label) }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 bg-white">
+                  <tr v-for="row in paginatedData" :key="row.name || Math.random()">
+                    <td
+                      v-for="column in columns"
+                      :key="column.fieldname"
+                      class="whitespace-nowrap px-4 py-3 text-xs sm:px-6 sm:py-4 sm:text-sm"
+                    >
+                      {{ formatCellValue(row[column.fieldname], column.fieldtype) }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-          <!-- Pagination -->
-          <div v-if="reportData.length > pageSize" class="border-t border-gray-200 px-4 py-3 sm:px-6">
-            <div class="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <p class="text-xs text-gray-500 sm:text-sm">
-                {{ __('Showing {0} to {1} of {2} results', [
-                  (currentPage - 1) * pageSize + 1,
-                  Math.min(currentPage * pageSize, reportData.length),
-                  reportData.length
-                ]) }}
-              </p>
-              <div class="flex items-center gap-2">
-                <Button
-                  variant="subtle"
-                  size="sm"
-                  :disabled="currentPage === 1"
-                  @click="currentPage--"
-                >
-                  {{ __('Prev') }}
-                </Button>
-                <span class="text-xs text-gray-500">{{ currentPage }} / {{ totalPages }}</span>
-                <Button
-                  variant="subtle"
-                  size="sm"
-                  :disabled="currentPage === totalPages"
-                  @click="currentPage++"
-                >
-                  {{ __('Next') }}
-                </Button>
+            <!-- Pagination -->
+            <div v-if="reportData.length > pageSize" class="border-t border-gray-200 px-4 py-3 sm:px-6">
+              <div class="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-xs text-gray-500 sm:text-sm">
+                  {{ __('Showing {0} to {1} of {2} results', [
+                    (currentPage - 1) * pageSize + 1,
+                    Math.min(currentPage * pageSize, reportData.length),
+                    reportData.length
+                  ]) }}
+                </p>
+                <div class="flex items-center gap-2">
+                  <Button
+                    variant="subtle"
+                    size="sm"
+                    :disabled="currentPage === 1"
+                    @click="currentPage--"
+                  >
+                    {{ __('Prev') }}
+                  </Button>
+                  <span class="text-xs text-gray-500">{{ currentPage }} / {{ totalPages }}</span>
+                  <Button
+                    variant="subtle"
+                    size="sm"
+                    :disabled="currentPage === totalPages"
+                    @click="currentPage++"
+                  >
+                    {{ __('Next') }}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
     </div>
   </div>
 </template>
