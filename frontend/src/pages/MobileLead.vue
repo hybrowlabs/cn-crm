@@ -54,8 +54,8 @@
       />
       <div class="flex items-center gap-2">
         <Button
-          v-if="['Contacted', 'Nurture'].includes(document.doc?.status) && document.doc?.meeting_outcomes === 'Qualified'"
-          :label="__('Convert')"
+          v-if="isQualified"
+          :label="__('Convert to Deal')"
           variant="solid"
           @click="showConvertToDealModal = true"
         />
@@ -70,7 +70,7 @@
       </div>
     </div>
     <div
-      v-if="document.doc && ['Contacted', 'Nurture'].includes(document.doc.status)"
+      v-if="document.doc && ['Contacted', 'Nurture', 'Qualified'].includes(document.doc.status)"
       class="flex items-center justify-between gap-2 border-b px-3 py-2 bg-gray-50"
     >
       <span class="text-xs font-medium text-ink-gray-5">{{ __('Meeting Outcome') }}:</span>
@@ -417,6 +417,13 @@ const statusVisibility = computed(() => {
     // Junk, Disqualified, etc.
     return ['Contacted', 'Nurture', 'Disqualified', 'Junk']
   }
+})
+
+const isQualified = computed(() => {
+  return (
+    document.doc?.status === 'Qualified' ||
+    lead.data?.status === 'Qualified'
+  )
 })
 
 const sections = computed(() => {
