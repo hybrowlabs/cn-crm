@@ -9,7 +9,7 @@
           <div class="font-medium text-ink-gray-9 truncate">
             {{ task.title }}
           </div>
-          <div class="flex gap-1.5 text-ink-gray-8">
+          <div class="flex flex-wrap gap-1.5 text-ink-gray-8">
             <div class="flex items-center gap-1.5">
               <UserAvatar :user="task.assigned_to" size="xs" />
               {{ getUser(task.assigned_to).full_name }}
