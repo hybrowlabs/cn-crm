@@ -108,16 +108,18 @@
 
         <!-- Chart -->
         <div v-if="chartData" class="relative">
-          <div class="rounded-lg border border-gray-200 bg-white p-3 sm:p-6 shadow-sm overflow-hidden">
+          <div class="rounded-lg border border-gray-200 bg-white p-3 sm:p-6 shadow-sm">
             <h3 class="mb-3 text-base font-medium text-gray-900 sm:mb-4 sm:text-lg">{{ __('Chart') }}</h3>
-            <div class="h-56 sm:h-80 relative">
-              <Chart
-                v-if="chartData.data"
-                :type="chartData.type || 'bar'"
-                :data="chartData.data"
-                :colors="chartData.colors"
-                :height="chartData.height || 300"
-              />
+            <div class="overflow-x-auto pb-4 custom-scrollbar">
+              <div :style="{ minWidth: chartMinWidth }" class="h-56 sm:h-80 relative">
+                <Chart
+                  v-if="chartData.data"
+                  :type="chartData.type || 'bar'"
+                  :data="chartData.data"
+                  :colors="chartData.colors"
+                  :height="chartData.height || 300"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -222,6 +224,14 @@ const availableFilters = ref([])
 
 const reportTitle = computed(() => {
   return reportName.value || 'Report'
+})
+
+const chartMinWidth = computed(() => {
+  if (!chartData.value || !chartData.value.data || !chartData.value.data.labels) return '100%'
+  const labelCount = chartData.value.data.labels.length
+  if (labelCount <= 10) return '100%'
+  // Approximately 60px per label for readability
+  return `${labelCount * 60}px`
 })
 
 const reportDescription = computed(() => {
