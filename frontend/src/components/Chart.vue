@@ -1,13 +1,57 @@
 <template>
-  <div ref="chartContainer" :style="{ height: height + 'px' }" class="flex items-center justify-center">
-    <div v-if="!chartLoaded" class="text-gray-500">
-      {{ __('Chart visualization will be available when frappe-charts is loaded') }}
+  <div :style="{ height: height + 'px' }" class="flex items-center justify-center w-full">
+    <!-- Frappe Chart Container -->
+    <div 
+      v-if="useFrappeCharts" 
+      ref="chartContainer" 
+      class="w-full h-full"
+    ></div>
+
+    <!-- Fallback Data Table (Built with Vue template, no manual DOM manipulation) -->
+    <div 
+      v-else-if="data && data.labels && data.labels.length > 0" 
+      class="w-full h-full overflow-auto custom-scrollbar border border-gray-100 rounded-lg p-2 sm:p-4 bg-white shadow-inner"
+    >
+      <table class="w-full border-collapse text-xs sm:text-sm">
+        <thead>
+          <tr class="bg-gray-50">
+            <th class="border border-gray-200 p-2 text-left font-semibold text-gray-700">{{ __('Category') }}</th>
+            <th 
+              v-for="dataset in data.datasets" 
+              :key="dataset.name" 
+              class="border border-gray-200 p-2 text-right font-semibold text-gray-700"
+            >
+              {{ dataset.name }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(label, index) in data.labels" :key="index" class="hover:bg-gray-50 transition-colors">
+            <td class="border border-gray-200 p-2 text-gray-600 font-medium">{{ label }}</td>
+            <td 
+              v-for="dataset in data.datasets" 
+              :key="dataset.name" 
+              class="border border-gray-200 p-2 text-right text-gray-600"
+            >
+              {{ dataset.values[index] || 0 }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Loading / Empty State -->
+    <div v-else class="text-gray-400 italic text-sm flex flex-col items-center gap-2">
+      <svg class="w-8 h-8 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+      <span>{{ __('Chart visualization data not available') }}</span>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 
 const props = defineProps({
   type: {
@@ -29,7 +73,7 @@ const props = defineProps({
 })
 
 const chartContainer = ref(null)
-const chartLoaded = ref(false)
+const useFrappeCharts = ref(false)
 let chart = null
 
 onMounted(() => {
@@ -38,12 +82,17 @@ onMounted(() => {
   })
 })
 
+onUnmounted(() => {
+  destroyChart()
+})
+
 watch(() => props.data, () => {
   if (chart) {
     try {
       chart.update(props.data)
     } catch (error) {
-      console.warn('Chart update failed:', error)
+      console.warn('Chart update failed, re-initializing:', error)
+      initChart()
     }
   } else {
     nextTick(() => {
@@ -52,91 +101,58 @@ watch(() => props.data, () => {
   }
 }, { deep: true })
 
-function initChart() {
-  if (!chartContainer.value || !props.data) return
-
-  try {
-    // Try to load frappe-charts from global scope or import
-    if (typeof window !== 'undefined' && window.Chart) {
-      chart = new window.Chart(chartContainer.value, {
-        type: props.type,
-        height: props.height,
-        data: props.data,
-        colors: props.colors,
-        animate: true,
-        truncateLegends: true,
-        barOptions: {
-          spaceRatio: 0.5
-        },
-        lineOptions: {
-          regionFill: 1,
-          hideLine: 0,
-          hideDots: 0
-        }
-      })
-      chartLoaded.value = true
-    } else {
-      // Fallback: create a simple data table instead of chart
-      createFallbackVisualization()
+function destroyChart() {
+  if (chart) {
+    try {
+      if (typeof chart.destroy === 'function') {
+        chart.destroy()
+      }
+    } catch (e) {
+      console.warn('Error destroying chart:', e)
     }
-  } catch (error) {
-    console.warn('Chart initialization failed, using fallback:', error)
-    createFallbackVisualization()
+    chart = null
   }
 }
 
-function createFallbackVisualization() {
-  if (!chartContainer.value || !props.data) return
+function initChart() {
+  const hasFrappeCharts = typeof window !== 'undefined' && window.Chart
+  
+  if (hasFrappeCharts && props.data && props.data.labels && props.data.labels.length > 0) {
+    useFrappeCharts.value = true
+    destroyChart()
+    
+    nextTick(() => {
+      if (!chartContainer.value) {
+        console.warn('Chart container not found after nextTick')
+        return
+      }
 
-  const { labels, datasets } = props.data
-  if (!labels || !datasets || !datasets.length) return
-
-  const table = document.createElement('table')
-  table.className = 'w-full border-collapse'
-
-  // Create header
-  const thead = document.createElement('thead')
-  const headerRow = document.createElement('tr')
-
-  const labelHeader = document.createElement('th')
-  labelHeader.textContent = 'Category'
-  labelHeader.className = 'border p-2 text-left'
-  headerRow.appendChild(labelHeader)
-
-  datasets.forEach(dataset => {
-    const th = document.createElement('th')
-    th.textContent = dataset.name
-    th.className = 'border p-2 text-left'
-    headerRow.appendChild(th)
-  })
-
-  thead.appendChild(headerRow)
-  table.appendChild(thead)
-
-  // Create body
-  const tbody = document.createElement('tbody')
-
-  labels.forEach((label, index) => {
-    const row = document.createElement('tr')
-
-    const labelCell = document.createElement('td')
-    labelCell.textContent = label
-    labelCell.className = 'border p-2'
-    row.appendChild(labelCell)
-
-    datasets.forEach(dataset => {
-      const valueCell = document.createElement('td')
-      valueCell.textContent = dataset.values[index] || 0
-      valueCell.className = 'border p-2 text-right'
-      row.appendChild(valueCell)
+      try {
+        chart = new window.Chart(chartContainer.value, {
+          type: props.type,
+          height: props.height,
+          data: props.data,
+          colors: props.colors,
+          animate: true,
+          truncateLegends: true,
+          barOptions: {
+            spaceRatio: 0.5
+          },
+          lineOptions: {
+            regionFill: 1,
+            hideLine: 0,
+            hideDots: 0
+          }
+        })
+      } catch (error) {
+        console.warn('Frappe Chart initialization failed, falling back:', error)
+        useFrappeCharts.value = false
+        destroyChart()
+      }
     })
-
-    tbody.appendChild(row)
-  })
-
-  table.appendChild(tbody)
-  chartContainer.value.innerHTML = ''
-  chartContainer.value.appendChild(table)
-  chartLoaded.value = true
+  } else {
+    useFrappeCharts.value = false
+    destroyChart()
+  }
 }
 </script>
