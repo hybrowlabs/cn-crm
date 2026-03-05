@@ -9,7 +9,7 @@
       <FeatherIcon :name="action.icon" class="h-4 w-4" />
     </template>
   </Button>
-  <Dropdown v-if="groupedActions.length" :options="groupedActions">
+  <Dropdown v-if="groupedActions.length && !isMobileView" :options="groupedActions">
     <Button icon="more-horizontal" />
   </Dropdown>
   <div

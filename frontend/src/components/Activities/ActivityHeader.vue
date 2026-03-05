@@ -9,6 +9,7 @@
     <Button
       v-if="title == 'Emails'"
       variant="solid"
+      class="shrink-0"
       @click="emailBox.show = true"
     >
       <template #prefix>
@@ -19,6 +20,7 @@
     <Button
       v-else-if="title == 'Comments'"
       variant="solid"
+      class="shrink-0"
       @click="emailBox.showComment = true"
     >
       <template #prefix>
@@ -29,11 +31,13 @@
     <MultiActionButton
       v-else-if="title == 'Calls'"
       variant="solid"
+      class="shrink-0"
       :options="callActions"
     />
     <Button
       v-else-if="title == 'Notes'"
       variant="solid"
+      class="shrink-0"
       @click="modalRef.showNote()"
     >
       <template #prefix>
@@ -44,6 +48,7 @@
     <Button
       v-else-if="title == 'Tasks'"
       variant="solid"
+      class="shrink-0"
       @click="modalRef.showTask()"
     >
       <template #prefix>
@@ -54,6 +59,7 @@
     <Button
       v-else-if="title == 'Attachments'"
       variant="solid"
+      class="shrink-0"
       @click="showFilesUploader = true"
     >
       <template #prefix>
