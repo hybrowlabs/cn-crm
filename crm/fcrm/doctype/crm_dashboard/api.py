@@ -98,9 +98,11 @@ def get_dashboard(name=None):
 				try:
 					dashboard = frappe.get_doc("CRM Dashboard", dashboard_name)
 				except frappe.DoesNotExistError:
-					frappe.throw(_("Dashboard not found"))
+					# Dashboard record was deleted — treat as no dashboard
+					return None
 			else:
-				frappe.throw(_("No dashboard found"))
+				# No dashboard exists yet for this user — return None so frontend shows empty state
+				return None
 		
 		dashboard.check_permission("read")
 

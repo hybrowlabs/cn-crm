@@ -3,7 +3,7 @@ import './index.css'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { createDialog } from './utils/dialogs'
-import { setupGlobalErrorHandler, handleVueError } from './utils/errorHandler'
+import { setupGlobalErrorHandler, handleVueError, patchFrappeDesk } from './utils/errorHandler'
 import { initSocket } from './socket'
 import router from './router'
 import translationPlugin from './translation'
@@ -71,12 +71,16 @@ if (import.meta.env.DEV) {
       socket = initSocket()
       app.config.globalProperties.$socket = socket
       app.mount('#app')
+      // Patch frappe desk globals after mount to prevent DOM injection
+      patchFrappeDesk()
     },
   )
 } else {
   socket = initSocket()
   app.config.globalProperties.$socket = socket
   app.mount('#app')
+  // Patch frappe desk globals after mount to prevent DOM injection
+  patchFrappeDesk()
 }
 
 if (import.meta.env.DEV) {

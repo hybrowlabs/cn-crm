@@ -9,42 +9,48 @@
       </template>
     </LayoutHeader>
 
-    <div class="flex h-full flex-col">
-      <div class="mx-5 mb-4 sm:mx-6">
-        <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div class="flex h-full flex-col overflow-auto">
+      <div class="px-4 pb-6 pt-3 sm:px-6">
+
+        <!-- Header row -->
+        <div class="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-start sm:justify-between">
           <div class="flex-1">
-            <h1 class="text-2xl font-semibold text-gray-900">{{ reportTitle }}</h1>
-            <p v-if="reportDescription" class="mt-2 text-gray-600">{{ reportDescription }}</p>
+            <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl">{{ reportTitle }}</h1>
+            <p v-if="reportDescription" class="mt-1 text-sm text-gray-500 sm:mt-2">{{ reportDescription }}</p>
           </div>
-          <div class="flex shrink-0 items-center space-x-2">
+          <div class="flex shrink-0 items-center gap-2">
             <Button
               variant="subtle"
               @click="refreshReport"
               :loading="loading"
-              class="flex items-center gap-2"
+              class="items-center px-3"
             >
-              <RefreshIcon class="h-4 w-4" />
-              <span>{{ __('Refresh') }}</span>
+              <template #prefix>
+                <RefreshIcon class="h-4 w-4" />
+              </template>
+              {{ __('Refresh') }}
             </Button>
             <Button
               v-if="reportData.length"
               variant="subtle"
               @click="exportReport"
-              class="flex items-center gap-2"
+              class="items-center px-3"
             >
-              <DownloadIcon class="h-4 w-4" />
-              <span>{{ __('Export') }}</span>
+              <template #prefix>
+                <DownloadIcon class="h-4 w-4" />
+              </template>
+              {{ __('Export') }}
             </Button>
           </div>
         </div>
 
         <!-- Filters -->
-        <div v-if="availableFilters.length" class="mb-6">
-          <div class="rounded-lg border border-gray-200 p-4">
-            <h3 class="mb-4 text-sm font-medium text-gray-900">{{ __('Filters') }}</h3>
-            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div v-if="availableFilters.length" class="mb-4 sm:mb-6">
+          <div class="rounded-lg border border-gray-200 p-3 sm:p-4">
+            <h3 class="mb-3 text-sm font-medium text-gray-900">{{ __('Filters') }}</h3>
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div v-for="filter in availableFilters" :key="filter.fieldname">
-                <label class="block text-sm font-medium text-gray-700 mb-1">
+                <label class="mb-1 block text-xs font-medium text-gray-700 sm:text-sm">
                   {{ __(filter.label) }}
                 </label>
                 <FormControl
@@ -67,13 +73,8 @@
                 />
               </div>
             </div>
-            <div class="mt-4 flex items-center space-x-2">
-              <Button
-                variant="subtle"
-                size="sm"
-                @click="clearFilters"
-                class="flex items-center"
-              >
+            <div class="mt-3 flex items-center gap-2">
+              <Button variant="subtle" size="sm" @click="clearFilters">
                 {{ __('Clear All') }}
               </Button>
             </div>
@@ -81,34 +82,34 @@
         </div>
 
         <!-- Summary Cards -->
-        <div v-if="summaryData.length" class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div v-if="summaryData.length" class="mb-4 grid grid-cols-2 gap-3 sm:mb-6 sm:grid-cols-2 lg:grid-cols-4">
           <div
             v-for="summary in summaryData"
             :key="summary.label"
-            class="rounded-lg border border-gray-200 p-4"
+            class="rounded-lg border border-gray-200 p-3 sm:p-4"
           >
-            <div class="flex items-center">
-              <div class="flex-1">
-                <p class="text-sm font-medium text-gray-600">{{ __(summary.label) }}</p>
-                <p class="mt-1 text-2xl font-semibold text-gray-900">
+            <div class="flex items-start justify-between">
+              <div class="flex-1 min-w-0">
+                <p class="truncate text-xs font-medium text-gray-500 sm:text-sm">{{ __(summary.label) }}</p>
+                <p class="mt-1 text-lg font-semibold text-gray-900 sm:text-2xl">
                   {{ formatSummaryValue(summary) }}
                 </p>
               </div>
               <div
-                class="ml-4 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full"
+                class="ml-2 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full sm:h-8 sm:w-8"
                 :class="getIndicatorClass(summary.indicator)"
               >
-                <div class="h-2 w-2 rounded-full bg-current"></div>
+                <div class="h-1.5 w-1.5 rounded-full bg-current sm:h-2 sm:w-2"></div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Chart -->
-        <div v-if="chartData" class="mb-6">
-          <div class="rounded-lg border border-gray-200 p-6">
-            <h3 class="mb-4 text-lg font-medium text-gray-900">{{ __('Chart') }}</h3>
-            <div class="h-80">
+        <div v-if="chartData" class="mb-4 sm:mb-6">
+          <div class="rounded-lg border border-gray-200 p-3 sm:p-6">
+            <h3 class="mb-3 text-base font-medium text-gray-900 sm:mb-4 sm:text-lg">{{ __('Chart') }}</h3>
+            <div class="h-56 sm:h-80">
               <Chart
                 v-if="chartData.data"
                 :type="chartData.type || 'bar'"
@@ -122,23 +123,24 @@
 
         <!-- Data Table -->
         <div class="rounded-lg border border-gray-200">
-          <div class="border-b border-gray-200 px-6 py-4">
-            <h3 class="text-lg font-medium text-gray-900">{{ __('Data') }}</h3>
+          <div class="border-b border-gray-200 px-4 py-3 sm:px-6 sm:py-4">
+            <h3 class="text-base font-medium text-gray-900 sm:text-lg">{{ __('Data') }}</h3>
           </div>
           <div v-if="loading" class="flex justify-center py-8">
             <LoadingIndicator class="w-6" />
           </div>
-          <div v-else-if="reportData.length === 0" class="py-8 text-center text-gray-500">
+          <div v-else-if="reportData.length === 0" class="py-8 text-center text-sm text-gray-500">
             {{ __('No data available') }}
           </div>
-          <div v-else class="overflow-x-auto">
+          <!-- Scrollable table wrapper for mobile -->
+          <div v-else class="overflow-x-auto -webkit-overflow-scrolling-touch">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
                   <th
                     v-for="column in columns"
                     :key="column.fieldname"
-                    class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                    class="whitespace-nowrap px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500 sm:px-6 sm:py-3"
                   >
                     {{ __(column.label) }}
                   </th>
@@ -149,7 +151,7 @@
                   <td
                     v-for="column in columns"
                     :key="column.fieldname"
-                    class="whitespace-nowrap px-6 py-4 text-sm"
+                    class="whitespace-nowrap px-4 py-3 text-xs sm:px-6 sm:py-4 sm:text-sm"
                   >
                     {{ formatCellValue(row[column.fieldname], column.fieldtype) }}
                   </td>
@@ -159,31 +161,30 @@
           </div>
 
           <!-- Pagination -->
-          <div v-if="reportData.length > pageSize" class="border-t border-gray-200 px-6 py-3">
-            <div class="flex items-center justify-between">
-              <p class="text-sm text-gray-700">
+          <div v-if="reportData.length > pageSize" class="border-t border-gray-200 px-4 py-3 sm:px-6">
+            <div class="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p class="text-xs text-gray-500 sm:text-sm">
                 {{ __('Showing {0} to {1} of {2} results', [
                   (currentPage - 1) * pageSize + 1,
                   Math.min(currentPage * pageSize, reportData.length),
                   reportData.length
                 ]) }}
               </p>
-              <div class="flex items-center space-x-2">
+              <div class="flex items-center gap-2">
                 <Button
                   variant="subtle"
                   size="sm"
                   :disabled="currentPage === 1"
                   @click="currentPage--"
-                  class="flex items-center"
                 >
-                  {{ __('Previous') }}
+                  {{ __('Prev') }}
                 </Button>
+                <span class="text-xs text-gray-500">{{ currentPage }} / {{ totalPages }}</span>
                 <Button
                   variant="subtle"
                   size="sm"
                   :disabled="currentPage === totalPages"
                   @click="currentPage++"
-                  class="flex items-center"
                 >
                   {{ __('Next') }}
                 </Button>
@@ -191,10 +192,12 @@
             </div>
           </div>
         </div>
+
       </div>
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'

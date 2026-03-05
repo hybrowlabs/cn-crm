@@ -4,22 +4,27 @@
       <Breadcrumbs :items="breadcrumbs" />
     </template>
     <template #right-header>
-      <div class="flex items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2">
         <Dropdown :options="dashboardOptions">
-          <Button :label="selectedDashboard?.dashboard_name || __('Select Dashboard')" variant="outline">
+          <Button
+            :label="selectedDashboard?.dashboard_name || __('Select Dashboard')"
+            variant="outline"
+            class="max-w-[130px] truncate sm:max-w-none"
+          >
             <template #suffix>
               <FeatherIcon name="chevron-down" class="h-4 w-4" />
             </template>
           </Button>
         </Dropdown>
         <Button
-          :label="isEditMode ? __('View Mode') : __('Edit Mode')"
           :variant="isEditMode ? 'outline' : 'solid'"
           @click="toggleEditMode"
+          class="p-2 sm:px-3"
         >
           <template #prefix>
             <FeatherIcon :name="isEditMode ? 'eye' : 'edit'" class="h-4 w-4" />
           </template>
+          <span class="hidden sm:inline">{{ isEditMode ? __('View Mode') : __('Edit Mode') }}</span>
         </Button>
         <Button
           v-if="isEditMode"
@@ -27,26 +32,32 @@
           variant="solid"
           @click="saveDashboard"
           :loading="saving"
+          class="hidden sm:flex"
         />
+        <!-- Icon save on mobile -->
+        <Button v-if="isEditMode" variant="solid" @click="saveDashboard" :loading="saving" class="flex sm:hidden p-2">
+          <FeatherIcon name="save" class="h-4 w-4" />
+        </Button>
         <Button
-          :label="__('New Dashboard')"
           variant="solid"
           @click="createNewDashboard"
+          class="p-2 sm:px-3"
         >
           <template #prefix>
             <FeatherIcon name="plus" class="h-4 w-4" />
           </template>
+          <span class="hidden sm:inline">{{ __('New Dashboard') }}</span>
         </Button>
       </div>
     </template>
   </LayoutHeader>
   
   <div class="flex h-[calc(100vh-4rem)] flex-col overflow-hidden">
-    <!-- Global Filters -->
-    <div class="border-b bg-white px-6 py-4">
-      <div class="flex flex-wrap items-center gap-4">
-        <div class="flex items-center gap-2">
-          <label class="text-sm font-medium text-gray-700">{{ __('Date Range') }}:</label>
+    <!-- Global Filters — scrollable on mobile -->
+    <div class="border-b bg-white px-4 py-3 sm:px-6 sm:py-4">
+      <div class="flex flex-wrap items-end gap-3">
+        <div class="flex min-w-0 items-center gap-2">
+          <label class="shrink-0 text-sm font-medium text-gray-700">{{ __('Date Range') }}:</label>
           <Dropdown :options="dateRangeOptions">
             <Button :label="selectedDateRange?.label || __('Select Range')" variant="outline" size="sm">
               <template #suffix>
@@ -56,7 +67,7 @@
           </Dropdown>
         </div>
         
-        <div v-if="filters.date_range_type === 'Custom'" class="flex items-center gap-2">
+        <div v-if="filters.date_range_type === 'Custom'" class="flex flex-wrap items-center gap-2">
           <FormControl
             v-model="filters.from_date"
             type="date"
@@ -71,9 +82,9 @@
           />
         </div>
         
-        <div class="flex items-center gap-2">
-          <label class="text-sm font-medium text-gray-700">{{ __('User') }}:</label>
-          <div class="w-full min-w-[180px] sm:w-52 md:w-60">
+        <div class="flex min-w-0 items-center gap-2">
+          <label class="shrink-0 text-sm font-medium text-gray-700">{{ __('User') }}:</label>
+          <div class="w-36 sm:w-52 md:w-60">
             <Link
               v-model="filters.user_filter"
               doctype="User"
@@ -83,28 +94,25 @@
           </div>
         </div>
         
-        <Button
-          variant="ghost"
-          size="sm"
-          @click="applyFilters"
-        >
+        <Button variant="ghost" size="sm" @click="applyFilters" class="shrink-0">
           <template #prefix>
             <FeatherIcon name="filter" class="h-4 w-4" />
           </template>
-          {{ __('Apply Filters') }}
+          <span class="hidden sm:inline">{{ __('Apply Filters') }}</span>
         </Button>
       </div>
     </div>
     
-    <!-- Widget Palette (Edit Mode) -->
-    <div v-if="isEditMode" class="border-b bg-gray-50 px-6 py-3">
-      <div class="flex items-center gap-2">
-        <span class="text-sm font-medium text-gray-700">{{ __('Add Widget') }}:</span>
+    <!-- Widget Palette (Edit Mode) — scrollable row on mobile -->
+    <div v-if="isEditMode" class="border-b bg-gray-50 px-4 py-2 sm:px-6 sm:py-3">
+      <div class="flex items-center gap-2 overflow-x-auto pb-1">
+        <span class="shrink-0 text-sm font-medium text-gray-700">{{ __('Add') }}:</span>
         <Button
           v-for="widgetType in WIDGET_TYPES"
           :key="widgetType.value"
           variant="outline"
           size="sm"
+          class="shrink-0"
           @click="addWidget(widgetType.value)"
         >
           <template #prefix>
@@ -115,12 +123,12 @@
       </div>
     </div>
     
-    <!-- Dashboard Grid -->
-    <div class="flex-1 overflow-auto bg-gray-100 p-6">
+    <!-- Dashboard Grid — horizontally scrollable on mobile -->
+    <div class="flex-1 overflow-auto bg-gray-100 p-3 sm:p-6">
       <div v-if="widgets.length === 0" class="flex h-full items-center justify-center">
         <div class="text-center">
-          <FeatherIcon name="layout" class="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <p class="text-gray-500">{{ __('No widgets yet. Add widgets to get started.') }}</p>
+          <FeatherIcon name="layout" class="mx-auto mb-4 h-10 w-10 text-gray-400 sm:h-12 sm:w-12" />
+          <p class="text-sm text-gray-500 sm:text-base">{{ __('No widgets yet. Add widgets to get started.') }}</p>
         </div>
       </div>
       
@@ -167,6 +175,7 @@
     @save="handleWidgetSave"
   />
 </template>
+
 
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'

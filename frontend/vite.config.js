@@ -69,6 +69,11 @@ console.log('Generated app aliases:', alias)
 // https://vitejs.dev/config/
 export default defineConfig({
   define: defineFlags,
+  server: {
+    hmr: {
+      overlay: false, // Disable the error overlay — errors are shown via toast notifications
+    },
+  },
   plugins: [
     frappeui({
       frappeProxy: true,

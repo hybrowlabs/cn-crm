@@ -8,7 +8,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const isEditMode = ref(false)
   const filters = ref<DashboardFilters>({})
   const widgets = ref<WidgetConfig[]>([])
-  
+
   const dashboardsResource = createResource({
     url: 'crm.fcrm.doctype.crm_dashboard.api.get_dashboards',
     auto: true,
@@ -18,7 +18,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
       dashboardsResource.data = []
     },
   })
-  
+
   const availableDataSources = createResource({
     url: 'crm.fcrm.doctype.crm_dashboard.api.get_available_data_sources',
     auto: true,
@@ -32,15 +32,23 @@ export const useDashboardStore = defineStore('dashboard', () => {
       }
     },
   })
-  
+
   async function loadDashboard(name?: string) {
     try {
       const dashboardData = await call('crm.fcrm.doctype.crm_dashboard.api.get_dashboard', {
         name: name || null
       })
-      
+
+      // Backend returns null when no dashboard exists — treat as empty state
+      if (!dashboardData) {
+        currentDashboard.value = null
+        widgets.value = []
+        filters.value = {}
+        return null
+      }
+
       currentDashboard.value = dashboardData
-      
+
       // Ensure widgets array is properly populated
       const widgetsList = dashboardData.widgets || []
       widgets.value = widgetsList.map((w: any) => ({
@@ -49,14 +57,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
         table_filters: typeof w.table_filters === 'string' ? JSON.parse(w.table_filters || '{}') : w.table_filters,
         drilldown_filters: typeof w.drilldown_filters === 'string' ? JSON.parse(w.drilldown_filters || '{}') : w.drilldown_filters,
       }))
-      
-      // Log for debugging
-      if (widgets.value.length === 0) {
-        console.warn('Dashboard loaded but no widgets found:', dashboardData)
-      } else {
-        console.log('Dashboard widgets loaded:', widgets.value.length, widgets.value)
-      }
-      
+
       filters.value = {
         from_date: dashboardData.from_date,
         to_date: dashboardData.to_date,
@@ -64,14 +65,16 @@ export const useDashboardStore = defineStore('dashboard', () => {
         user_filter: dashboardData.user_filter,
         team_filter: dashboardData.team_filter,
       }
-      
+
       return dashboardData
     } catch (error) {
+      // Log silently — don't re-throw so it doesn't trigger the global error overlay
       console.error('Failed to load dashboard:', error)
-      throw error
+      currentDashboard.value = null
+      widgets.value = []
     }
   }
-  
+
   async function saveDashboard(dashboard: DashboardConfig) {
     try {
       // Serialize JSON fields
@@ -84,11 +87,11 @@ export const useDashboardStore = defineStore('dashboard', () => {
           drilldown_filters: w.drilldown_filters ? JSON.stringify(w.drilldown_filters) : null,
         }))
       }
-      
+
       const saved = await call('crm.fcrm.doctype.crm_dashboard.api.save_dashboard', {
         dashboard_data: serializedDashboard
       })
-      
+
       currentDashboard.value = saved
       widgets.value = (saved.widgets || []).map((w: any) => ({
         ...w,
@@ -96,22 +99,22 @@ export const useDashboardStore = defineStore('dashboard', () => {
         table_filters: typeof w.table_filters === 'string' ? JSON.parse(w.table_filters || '{}') : w.table_filters,
         drilldown_filters: typeof w.drilldown_filters === 'string' ? JSON.parse(w.drilldown_filters || '{}') : w.drilldown_filters,
       }))
-      
+
       // Reload dashboards list
       dashboardsResource.reload()
-      
+
       return saved
     } catch (error) {
       console.error('Failed to save dashboard:', error)
       throw error
     }
   }
-  
+
   async function deleteDashboard(name: string) {
     try {
       await call('crm.fcrm.doctype.crm_dashboard.api.delete_dashboard', { name })
       dashboardsResource.reload()
-      
+
       if (currentDashboard.value?.name === name) {
         currentDashboard.value = null
         widgets.value = []
@@ -121,45 +124,45 @@ export const useDashboardStore = defineStore('dashboard', () => {
       throw error
     }
   }
-  
+
   function addWidget(widget: WidgetConfig) {
     widgets.value.push(widget)
   }
-  
+
   function removeWidget(index: number) {
     widgets.value.splice(index, 1)
   }
-  
+
   function updateWidget(index: number, updates: Partial<WidgetConfig>) {
     if (widgets.value[index]) {
       widgets.value[index] = { ...widgets.value[index], ...updates }
     }
   }
-  
+
   function updateWidgetPosition(index: number, x: number, y: number) {
     if (widgets.value[index]) {
       widgets.value[index].x_position = x
       widgets.value[index].y_position = y
     }
   }
-  
+
   function updateWidgetSize(index: number, width: number, height: number) {
     if (widgets.value[index]) {
       widgets.value[index].width = width
       widgets.value[index].height = height
     }
   }
-  
+
   function setFilters(newFilters: DashboardFilters) {
     filters.value = { ...filters.value, ...newFilters }
   }
-  
+
   function setEditMode(edit: boolean) {
     isEditMode.value = edit
   }
-  
+
   const dashboards = computed(() => dashboardsResource.data || [])
-  
+
   return {
     currentDashboard,
     isEditMode,

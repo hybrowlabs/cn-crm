@@ -7,33 +7,33 @@
     </LayoutHeader>
 
     <div v-if="isMounted && reports && reports.length > 0" class="flex h-full flex-col">
-      <div class="mx-5 mb-4 sm:mx-6">
-        <div class="mb-6">
-          <h1 class="text-2xl font-semibold text-gray-900">{{ __('Reports') }}</h1>
-          <p class="mt-2 text-gray-600">
+      <div class="px-4 pb-4 pt-2 sm:px-6">
+        <div class="mb-4 sm:mb-6">
+          <h1 class="text-xl font-semibold text-gray-900 sm:text-2xl">{{ __('Reports') }}</h1>
+          <p class="mt-1 text-sm text-gray-500 sm:mt-2 sm:text-base">
             {{ __('View comprehensive analytics and performance reports for your CRM data') }}
           </p>
         </div>
 
-        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
           <div
             v-for="report in reports"
             :key="report.name"
-            class="cursor-pointer rounded-lg border border-gray-200 p-6 transition-colors hover:border-gray-300 hover:bg-gray-50"
+            class="cursor-pointer rounded-lg border border-gray-200 p-4 transition-colors hover:border-gray-300 hover:bg-gray-50 active:bg-gray-100 sm:p-6"
             @click="openReport(report.name)"
           >
             <div class="flex items-start">
-              <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100">
-                <ReportsIcon class="h-6 w-6 text-blue-600" />
+              <div class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 sm:h-10 sm:w-10">
+                <ReportsIcon class="h-5 w-5 text-blue-600 sm:h-6 sm:w-6" />
               </div>
-              <div class="ml-4 flex-1">
-                <h3 class="text-base font-semibold text-gray-900">{{ __(report.label) }}</h3>
-                <p class="mt-1 text-sm text-gray-600">{{ __(report.description) }}</p>
-                <div v-if="report.tags && report.tags.length > 0" class="mt-3">
+              <div class="ml-3 flex-1 sm:ml-4">
+                <h3 class="text-sm font-semibold text-gray-900 sm:text-base">{{ __(report.label) }}</h3>
+                <p class="mt-1 text-xs text-gray-500 sm:text-sm">{{ __(report.description) }}</p>
+                <div v-if="report.tags && report.tags.length > 0" class="mt-2 flex flex-wrap gap-1 sm:mt-3">
                   <span
                     v-for="tag in report.tags"
                     :key="tag"
-                    class="mr-2 inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800"
+                    class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700"
                   >
                     {{ __(tag) }}
                   </span>
@@ -49,6 +49,7 @@
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
