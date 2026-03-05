@@ -114,6 +114,7 @@
               <div :style="{ minWidth: chartMinWidth, height: (chartData.height || 300) + 'px' }" class="relative">
                 <Chart
                   v-if="chartData.data"
+                  :key="reportName"
                   :type="chartData.type || 'bar'"
                   :data="chartData.data"
                   :colors="chartData.colors"
@@ -212,7 +213,7 @@ import DownloadIcon from '@/components/Icons/DownloadIcon.vue'
 import Chart from '@/components/Chart.vue'
 
 const route = useRoute()
-const reportName = computed(() => route.params.reportName)
+const reportName = computed(() => String(route.params.reportName || ''))
 
 const loading = ref(false)
 const reportData = ref([])
