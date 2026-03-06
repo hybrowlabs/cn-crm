@@ -317,7 +317,7 @@ async function updateTask() {
       },
     )
     if (d.name) {
-      updateOnboardingStep('create_first_task')
+      try { updateOnboardingStep('create_first_task') } catch (_) {}
       capture('task_created')
       tasks.value?.reload()
       emit('after', d, true)
