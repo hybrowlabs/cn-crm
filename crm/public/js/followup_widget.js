@@ -236,11 +236,26 @@ crm.followup_widget = {
 				try {
 					let hasData = buckets.some(b => b.count > 0);
 					if (!hasData) {
+						if (chartWrapper[0]._frappe_chart) {
+							try { let c = chartWrapper[0]._frappe_chart; if (c.destroy) c.destroy(); } catch (e) { }
+							delete chartWrapper[0]._frappe_chart;
+						}
+						chartWrapper.empty();
 						chartWrapper.html('<div style="text-align:center;color:#94a3b8;padding:20px;">No Data</div>');
 						return;
 					}
 
-					const chart = new frappe.Chart(chartWrapper[0], {
+					if (chartWrapper[0]._frappe_chart) {
+						try {
+							let c = chartWrapper[0]._frappe_chart;
+							if (c.destroy) c.destroy();
+						} catch (e) { }
+						delete chartWrapper[0]._frappe_chart;
+					}
+
+					chartWrapper.empty();
+
+					chartWrapper[0]._frappe_chart = new frappe.Chart(chartWrapper[0], {
 						data: {
 							labels: buckets.map(b => b.label),
 							datasets: [{ values: buckets.map(b => b.count) }]

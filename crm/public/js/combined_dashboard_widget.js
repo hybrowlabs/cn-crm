@@ -52,11 +52,15 @@ crm._widget_utils = {
                 // Cleanup existing chart instance safely
                 if (chartWrapper[0]._frappe_chart) {
                     try {
-                        chartWrapper[0]._frappe_chart.destroy();
+                        let chartObj = chartWrapper[0]._frappe_chart;
+                        if (chartObj.destroy) chartObj.destroy();
                     } catch (e) {
                         console.warn('Error destroying existing chart instance:', e);
                     }
+                    delete chartWrapper[0]._frappe_chart;
                 }
+
+                chartWrapper.empty();
 
                 chartWrapper[0]._frappe_chart = new frappe.Chart(chartWrapper[0], {
                     data: {

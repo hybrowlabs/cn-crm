@@ -147,11 +147,15 @@ crm.am_dashboard_widget = {
                         if (chartContainer) {
                             if (chartContainer._frappe_chart) {
                                 try {
-                                    chartContainer._frappe_chart.destroy();
+                                    let oldChart = chartContainer._frappe_chart;
+                                    if (oldChart.destroy) oldChart.destroy();
                                 } catch (e) {
                                     console.warn("AM Dashboard: Error destroying old chart", e);
                                 }
+                                delete chartContainer._frappe_chart;
                             }
+
+                            $(chartContainer).empty();
 
                             chartContainer._frappe_chart = new frappe.Chart(chartContainer, {
                                 title: "Deals by Pain Category",
