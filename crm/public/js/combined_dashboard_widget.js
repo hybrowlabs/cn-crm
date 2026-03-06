@@ -413,7 +413,7 @@ crm.followup_widget = {
                 <div style="margin-bottom:16px;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;background:#fff;">
                     <div style="background:#f8fafc;padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
                         <span style="font-weight:600;font-size:14px;color:#1e293b;">
-                            <a href="/app/customer/${encodeURIComponent(customer.customer_code)}" style="color:inherit;text-decoration:none;" target="_blank">
+                            <a href="/app/customer/${encodeURIComponent(customer.customer_code)}" style="color:inherit;text-decoration:none;">
                                 ${customer.customer_name}
                             </a>
                         </span>
@@ -649,7 +649,7 @@ crm.frequency_bucket_widget = {
                 <div style="margin-bottom:16px;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;background:#fff;">
                     <div style="background:#f8fafc;padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
                         <span style="font-weight:600;font-size:14px;color:#1e293b;">
-                            <a href="/app/customer/${encodeURIComponent(customer.customer_code)}" style="color:inherit;text-decoration:none;" target="_blank">
+                            <a href="/app/customer/${encodeURIComponent(customer.customer_code)}" style="color:inherit;text-decoration:none;">
                                 ${customer.customer_name}
                             </a>
                         </span>
