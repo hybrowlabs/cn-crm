@@ -881,11 +881,19 @@ async function deleteDeal(name) {
   router.push({ name: 'Deals' })
 }
 
-function createQuotation() {
-  window.open(
-    `/app/quotation/new?crm_deal=${props.dealId}`,
-    '_blank'
+async function createQuotation() {
+  const quotation_url = await call(
+    'crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings.get_quotation_url',
+    {
+      crm_deal: props.dealId,
+      organization: deal.data.organization,
+    }
   )
+  if (quotation_url) {
+    window.open(quotation_url, '_blank')
+  } else {
+    window.open(`/app/quotation/new?crm_deal=${props.dealId}`, '_blank')
+  }
 }
 
 const activities = ref(null)

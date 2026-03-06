@@ -420,16 +420,18 @@ crm.followup_widget = {
 
 					btn.prop('disabled', true).text('...');
 
-					const hasQuickEntry = typeof frappe.ui !== 'undefined' &&
-						typeof frappe.ui.form !== 'undefined' &&
-						typeof frappe.ui.form.make_quick_entry === 'function';
+					let route_options = {
+						quotation_to: 'Customer',
+						party_name: customer.customer_code,
+						currency: customer.default_currency,
+						custom_branch: customer.custom_branch,
+						custom_sale_by: (frappe.session && frappe.session.user) ? frappe.session.user : '',
+						items: customer.items.map(i => ({ item_code: i.item, qty: i.qty }))
+					};
 
-					if (frappe.route_options !== undefined && hasQuickEntry) {
-						frappe.new_doc('Quotation', frappe.route_options);
-					} else {
-						const url = `/app/quotation/new-quotation-1?quotation_to=Customer&party_name=${encodeURIComponent(customer.customer_code)}`;
-						window.open(url, '_blank');
-					}
+					localStorage.setItem("route_options", JSON.stringify(route_options));
+					const url = `/app/quotation/new-quotation-1?quotation_to=Customer&party_name=${encodeURIComponent(customer.customer_code)}`;
+					window.open(url, '_blank');
 
 					setTimeout(() => {
 						btn.prop('disabled', false).text('Create Quotation');
