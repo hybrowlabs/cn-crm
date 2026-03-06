@@ -445,7 +445,7 @@ crm.followup_widget = {
 					};
 
 					localStorage.setItem("route_options", JSON.stringify(route_options));
-					const url = `/app/quotation/new-quotation-1?quotation_to=Customer&party_name=${encodeURIComponent(customer.customer_code)}`;
+					const url = `${window.location.origin}/app/quotation/new-quotation-1?quotation_to=Customer&party_name=${encodeURIComponent(customer.customer_code)}`;
 					window.open(url, '_blank');
 
 					setTimeout(() => {
