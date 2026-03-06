@@ -478,7 +478,7 @@ def add_default_spanco_views():
 		"meetings": {
 			"label": "Meetings Stage",
 			"dt": "CRM Lead",
-			"filters": '{"status": ["in", ["Contacted", "Nurture"]]}',
+			"filters": '{"status": ["in", ["Contacted", "Nurture", "Qualified"]]}',
 			"route_name": "Leads",
 		},
 		"opportunities": {
