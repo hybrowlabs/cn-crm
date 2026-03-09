@@ -26,13 +26,13 @@ crm.am_dashboard_widget = {
                         <!-- Booked Volume -->
                         <div style="flex: 1; min-width: 200px; padding: 15px; background: var(--bg-color, #f8f9fa); border-radius: 6px; border: 1px solid var(--border-color, #d1d8dd);">
                             <div style="font-size: 13px; color: var(--text-muted, #8d99a6); margin-bottom: 5px;">My Booked Volume (Current Month)</div>
-                            <div class="booked-volume-val" style="font-size: 24px; font-weight: 700; color: var(--text-color, #1f272e);">₹0</div>
+                            <div class="booked-volume-val" style="font-size: 24px; font-weight: 700; color: var(--text-color, #1f272e);">0</div>
                         </div>
 
                         <!-- Pipeline Volume -->
                         <div style="flex: 1; min-width: 200px; padding: 15px; background: var(--bg-color, #f8f9fa); border-radius: 6px; border: 1px solid var(--border-color, #d1d8dd);">
                             <div style="font-size: 13px; color: var(--text-muted, #8d99a6); margin-bottom: 5px;">My Pipeline Volume (Opp + Trial + Prop)</div>
-                            <div class="pipeline-volume-val" style="font-size: 24px; font-weight: 700; color: var(--primary-color, #2490ef);">₹0</div>
+                            <div class="pipeline-volume-val" style="font-size: 24px; font-weight: 700; color: var(--primary-color, #2490ef);">0</div>
                         </div>
 
                     </div>
@@ -102,22 +102,12 @@ crm.am_dashboard_widget = {
         console.log("AM Dashboard: rendering data onto DOM");
         try {
             // Render Volumes
-            const getValidCurrency = () => {
-                if (typeof frappe !== 'undefined' && frappe.boot && frappe.boot.sysdefaults && frappe.boot.sysdefaults.currency) {
-                    return frappe.boot.sysdefaults.currency;
-                }
-                return 'INR';
+            const formatFloatFallback = (val) => {
+                return parseFloat(val || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 });
             };
 
-            const formatCurrencyFallback = (val) => {
-                if (typeof format_currency === 'function') {
-                    return format_currency(val, getValidCurrency());
-                }
-                return '₹' + parseFloat(val || 0).toLocaleString('en-IN');
-            };
-
-            $wrapper.find('.booked-volume-val').text(formatCurrencyFallback(data.booked_volume || 0));
-            $wrapper.find('.pipeline-volume-val').text(formatCurrencyFallback(data.pipeline_volume || 0));
+            $wrapper.find('.booked-volume-val').text(formatFloatFallback(data.booked_volume || 0));
+            $wrapper.find('.pipeline-volume-val').text(formatFloatFallback(data.pipeline_volume || 0));
 
             // ── Helper to render a pie chart + table ──────────────────────────────
             const renderPainSection = (data_items, chartSelector, listSelector, chartTitle) => {
