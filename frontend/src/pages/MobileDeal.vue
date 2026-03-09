@@ -808,12 +808,6 @@ async function triggerStatusChange(value) {
     document.doc.product_type = document.doc.trial_product
   }
 
-  if (['Won'].includes(value)) {
-    statusValidation.fields = mandatoryFields
-    statusValidation.targetStatus = value
-    statusValidation.show = true
-    return
-  }
 
 
   const missingFields = mandatoryFields.filter((f) => !document.doc?.[f.fieldname])

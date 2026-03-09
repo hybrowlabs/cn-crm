@@ -165,9 +165,13 @@ async function convertToDeal() {
   if (_deal) {
     show.value = false
     error.value = ''
-    updateOnboardingStep('convert_lead_to_deal', true, false, () => {
-      localStorage.setItem('firstDeal' + user, _deal)
-    })
+    try {
+      updateOnboardingStep('convert_lead_to_deal', true, false, () => {
+        localStorage.setItem('firstDeal' + user, _deal)
+      })
+    } catch (e) {
+      console.warn('Onboarding step update failed:', e)
+    }
     capture('convert_lead_to_deal')
     router.push({ name: 'Deal', params: { dealId: _deal } })
   }

@@ -18,7 +18,7 @@
               'lead',
               document.statuses?.length
                 ? document.statuses
-                : lead.data._customStatuses,
+                : lead.data?._customStatuses,
               triggerStatusChange,
               document.doc.status,
               { [document.doc.status]: statusVisibility }
@@ -69,26 +69,7 @@
         />
       </div>
     </div>
-    <div
-      v-if="document.doc && ['Contacted', 'Nurture', 'Qualified'].includes(document.doc.status)"
-      class="flex items-center justify-between gap-2 border-b px-3 py-2 bg-gray-50"
-    >
-      <span class="text-xs font-medium text-ink-gray-5">{{ __('Meeting Outcome') }}:</span>
-      <Dropdown :options="meetingOutcomeOptions">
-        <template #default="{ open }">
-          <Button :label="document.doc.meeting_outcomes || __('Select Outcome')">
-            <template #prefix v-if="document.doc.meeting_outcomes">
-              <IndicatorIcon
-                :class="getOutcomeColor(document.doc.meeting_outcomes)"
-              />
-            </template>
-            <template #suffix>
-              <FeatherIcon :name="open ? 'chevron-up' : 'chevron-down'" class="h-4" />
-            </template>
-          </Button>
-        </template>
-      </Dropdown>
-    </div>
+
     <div v-if="lead?.data" class="flex h-full overflow-hidden">
       <Tabs as="div" v-model="tabIndex" :tabs="tabs" class="flex flex-col flex-1 overflow-hidden">
         <template #tab-panel="{ tab }">
@@ -229,34 +210,6 @@ const { brand } = getSettings()
 const { $dialog, $socket } = globalStore()
 const { statusOptions, getLeadStatus } = statusesStore()
 const { doctypeMeta } = getMeta('CRM Lead')
-
-const meetingOutcomeColorMap = {
-  Qualified: 'text-green-500',
-  'Follow-up Required': 'text-blue-500',
-  Nurture: 'text-orange-500',
-  Disqualified: 'text-red-500',
-  Closed: 'text-gray-500',
-}
-
-function getOutcomeColor(outcome) {
-  return meetingOutcomeColorMap[outcome] || 'text-gray-500'
-}
-
-const meetingOutcomeOptions = computed(() => {
-  const fields = doctypeMeta['CRM Lead']?.fields || []
-  const field = fields.find((f) => f.fieldname === 'meeting_outcomes')
-  if (!field || !field.options) return []
-
-  return field.options.split('\n').map((option) => ({
-    label: option,
-    value: option,
-    icon: () => h(IndicatorIcon, { class: getOutcomeColor(option) }),
-    onClick: () => {
-      triggerOnChange('meeting_outcomes', option)
-      document.save.submit()
-    },
-  }))
-})
 
 const lead = createResource({
   url: 'crm.fcrm.doctype.crm_lead.api.get_lead',

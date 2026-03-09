@@ -54,7 +54,7 @@
               :class="i != activities.length - 1 ? 'after:h-full' : 'after:h-4'"
             >
               <div
-                class="z-10 flex h-8 w-7 items-center justify-center bg-surface-white"
+                class=" flex h-8 w-7 items-center justify-center bg-surface-white"
               >
                 <CommentIcon class="text-ink-gray-8" />
               </div>
@@ -76,7 +76,7 @@
               :class="i != activities.length - 1 ? 'after:h-full' : 'after:h-4'"
             >
               <div
-                class="z-10 flex h-8 w-7 items-center justify-center bg-surface-white text-ink-gray-8"
+                class=" flex h-8 w-7 items-center justify-center bg-surface-white text-ink-gray-8"
               >
                 <MissedCallIcon
                   v-if="call.status == 'No Answer'"
@@ -121,7 +121,7 @@
           :class="[i != activities.length - 1 ? 'before:h-full' : 'before:h-4']"
         >
           <div
-            class="z-10 flex h-7 w-7 items-center justify-center bg-surface-white"
+            class=" flex h-7 w-7 items-center justify-center bg-surface-white"
             :class="{
               'mt-2.5': ['communication'].includes(activity.activity_type),
               'bg-surface-white': ['added', 'removed', 'changed'].includes(
