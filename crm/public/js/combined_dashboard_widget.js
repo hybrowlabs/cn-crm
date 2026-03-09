@@ -28,36 +28,38 @@ crm._widget_utils = {
      * @param {Function} onSliceClick - Called with the clicked bucket object.
      */
     render_pie_chart(chartWrapper, buckets, colors, title, onSliceClick) {
-        setTimeout(() => {
+        // Cancel any pending draw for this wrapper to avoid stale callbacks on detached nodes
+        if (chartWrapper[0]._frappe_chart_timer) {
+            clearTimeout(chartWrapper[0]._frappe_chart_timer);
+        }
+
+        // Destroy existing chart BEFORE clearing/replacing the container element.
+        // This disconnects frappe.Chart's internal ResizeObserver while the node
+        // is still attached to the DOM, preventing the "removeChild" NotFoundError.
+        if (chartWrapper[0]._frappe_chart) {
+            try {
+                chartWrapper[0]._frappe_chart.destroy();
+            } catch (e) {
+                console.warn('Error destroying chart before re-render:', e);
+            }
+            delete chartWrapper[0]._frappe_chart;
+        }
+
+        chartWrapper[0]._frappe_chart_timer = setTimeout(() => {
+            chartWrapper[0]._frappe_chart_timer = null;
             if (typeof frappe === 'undefined' || typeof frappe.Chart === 'undefined') {
                 chartWrapper.hide();
+                return;
+            }
+            // If the wrapper is no longer in the document, skip drawing
+            if (!document.contains(chartWrapper[0])) {
                 return;
             }
             try {
                 const hasData = buckets.some(b => b.count > 0);
                 if (!hasData) {
-                    // Destroy any existing chart if we're now showing "No Data"
-                    if (chartWrapper[0]._frappe_chart) {
-                        try {
-                            chartWrapper[0]._frappe_chart.destroy();
-                        } catch (e) {
-                            console.warn('Error destroying chart:', e);
-                        }
-                        delete chartWrapper[0]._frappe_chart;
-                    }
                     chartWrapper.html('<div style="text-align:center;color:#94a3b8;padding:20px;">No Data</div>');
                     return;
-                }
-
-                // Cleanup existing chart instance safely
-                if (chartWrapper[0]._frappe_chart) {
-                    try {
-                        let chartObj = chartWrapper[0]._frappe_chart;
-                        if (chartObj.destroy) chartObj.destroy();
-                    } catch (e) {
-                        console.warn('Error destroying existing chart instance:', e);
-                    }
-                    delete chartWrapper[0]._frappe_chart;
                 }
 
                 chartWrapper.empty();

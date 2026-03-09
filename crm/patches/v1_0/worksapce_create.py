@@ -27,35 +27,6 @@ def create_dashboards():
             "charts": [],
             "cards": []
         },
-        # 4. Peer Comparison Dashboard
-        {
-            "name": "Peer Comparison Dashboard",
-            "parent": "Frappe CRM",
-            "charts": [],
-            "cards": []
-        },
-        # 5. Repeat Order Dashboard
-         {
-            "name": "Repeat Order Dashboard",
-            "parent": "Frappe CRM",
-            "charts": [],
-            "cards": []
-        },
-        # 6. Inactive Customer Dashboard
-        {
-            "name": "Inactive Customer Dashboard",
-            "parent": "Frappe CRM",
-            "charts": [],
-            "cards": [],
-            "shortcuts": [
-                {
-                    "label": "Inactive Accounts (>60 Days)",
-                    "type": "Report",
-                    "link_to": "CRM Organization",
-                    "url": "/app/crm-organization?status=Inactive"
-                }
-            ]
-        }
     ]
 
     for db_config in dashboards:
