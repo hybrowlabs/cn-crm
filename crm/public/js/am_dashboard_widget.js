@@ -37,14 +37,27 @@ crm.am_dashboard_widget = {
 
                     </div>
 
-                    <!-- Pain Mix -->
-                    <div style="border: 1px solid var(--border-color, #d1d8dd); border-radius: 6px; padding: 15px;">
-                        <div style="font-size: 14px; font-weight: 600; margin-bottom: 15px;">My Pain Mix (Active Deals)</div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-                            <div class="pain-mix-chart" style="flex: 1; min-width: 300px; min-height: 250px;"></div>
-                            <div class="pain-mix-list" style="flex: 1; min-width: 200px; max-height: 250px; overflow-y: auto;">
+                    <!-- Pain Mix Row -->
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+
+                        <!-- Commercial Pain Category -->
+                        <div style="flex: 1; min-width: 300px; border: 1px solid var(--border-color, #d1d8dd); border-radius: 6px; padding: 15px;">
+                            <div style="font-size: 14px; font-weight: 600; margin-bottom: 15px;">Commercial Pain Category (Active Deals)</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                                <div class="pain-mix-chart" style="flex: 1; min-width: 280px; min-height: 250px;"></div>
+                                <div class="pain-mix-list" style="flex: 1; min-width: 180px; max-height: 250px; overflow-y: auto;"></div>
                             </div>
                         </div>
+
+                        <!-- Technical Pain Category -->
+                        <div style="flex: 1; min-width: 300px; border: 1px solid var(--border-color, #d1d8dd); border-radius: 6px; padding: 15px;">
+                            <div style="font-size: 14px; font-weight: 600; margin-bottom: 15px;">Technical Pain Category (Active Deals)</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                                <div class="tech-pain-mix-chart" style="flex: 1; min-width: 280px; min-height: 250px;"></div>
+                                <div class="tech-pain-mix-list" style="flex: 1; min-width: 180px; max-height: 250px; overflow-y: auto;"></div>
+                            </div>
+                        </div>
+
                     </div>
 
                 </div>
@@ -106,74 +119,65 @@ crm.am_dashboard_widget = {
             $wrapper.find('.booked-volume-val').text(formatCurrencyFallback(data.booked_volume || 0));
             $wrapper.find('.pipeline-volume-val').text(formatCurrencyFallback(data.pipeline_volume || 0));
 
-            // Render Pain Mix List
-            const painMix = data.pain_mix || [];
-            const listContainer = $wrapper.find('.pain-mix-list');
-            listContainer.empty();
+            // ── Helper to render a pie chart + table ──────────────────────────────
+            const renderPainSection = (data_items, chartSelector, listSelector, chartTitle) => {
+                const listContainer = $wrapper.find(listSelector);
+                listContainer.empty();
 
-            if (painMix.length === 0) {
-                console.log("AM Dashboard: No Pain Mix data.");
-                listContainer.html('<div style="color: var(--text-muted); padding: 10px;">No deals found.</div>');
-                $wrapper.find('.pain-mix-chart').empty();
-                return;
-            }
-
-            let labels = [];
-            let values = [];
-            let htmlList = '<table class="table table-bordered table-hover" style="font-size: 13px; margin: 0;">';
-            htmlList += '<thead><tr><th>Pain Category</th><th style="text-align: right;">Deals</th></tr></thead><tbody>';
-
-            painMix.forEach(item => {
-                labels.push(item.category);
-                values.push(item.value);
-                htmlList += `<tr><td>${item.category}</td><td style="text-align: right;">${item.value}</td></tr>`;
-            });
-
-            htmlList += '</tbody></table>';
-            listContainer.html(htmlList);
-            console.log("AM Dashboard: Pain Mix list rendered");
-
-            // Chart Render - Safe fallback for Custom HTML blocks
-            setTimeout(() => {
-                if (typeof frappe.Chart !== 'undefined') {
-                    console.log("AM Dashboard: Creating pie chart...");
-                    try {
-                        const chartData = {
-                            labels: labels,
-                            datasets: [{ values: values }]
-                        };
-
-                        const chartContainer = $wrapper.find('.pain-mix-chart')[0];
-                        if (chartContainer) {
-                            if (chartContainer._frappe_chart) {
-                                try {
-                                    let oldChart = chartContainer._frappe_chart;
-                                    if (oldChart.destroy) oldChart.destroy();
-                                } catch (e) {
-                                    console.warn("AM Dashboard: Error destroying old chart", e);
-                                }
-                                delete chartContainer._frappe_chart;
-                            }
-
-                            $(chartContainer).empty();
-
-                            chartContainer._frappe_chart = new frappe.Chart(chartContainer, {
-                                title: "Deals by Pain Category",
-                                data: chartData,
-                                type: 'pie',
-                                height: 250,
-                                colors: ['#2490ef', '#ff5858', '#ffa00a', '#1379b4', '#15cb86', '#eebb00']
-                            });
-                        }
-                        console.log("AM Dashboard: Pie chart rendered safely");
-                    } catch (err) {
-                        console.error("AM Dashboard: Chart rendering failed", err);
-                    }
-                } else {
-                    console.warn("AM Dashboard: frappe.Chart is undefined! Cannot draw Pie chart.");
-                    $wrapper.find('.pain-mix-chart').html('<div style="color: var(--text-muted); padding: 10px; border: 1px dashed var(--border-color); border-radius: 4px; display: flex; align-items: center; justify-content: center; height: 100%;">Pie chart library not loaded by workspace.</div>');
+                if (!data_items || data_items.length === 0) {
+                    listContainer.html('<div style="color: var(--text-muted); padding: 10px;">No deals found.</div>');
+                    $wrapper.find(chartSelector).empty();
+                    return;
                 }
-            }, 100);
+
+                let labels = [];
+                let values = [];
+                let htmlList = '<table class="table table-bordered table-hover" style="font-size: 13px; margin: 0;">';
+                htmlList += '<thead><tr><th>Category</th><th style="text-align: right;">Deals</th></tr></thead><tbody>';
+
+                data_items.forEach(item => {
+                    labels.push(item.category);
+                    values.push(item.value);
+                    htmlList += `<tr><td>${item.category}</td><td style="text-align: right;">${item.value}</td></tr>`;
+                });
+
+                htmlList += '</tbody></table>';
+                listContainer.html(htmlList);
+
+                setTimeout(() => {
+                    if (typeof frappe.Chart !== 'undefined') {
+                        try {
+                            const chartContainer = $wrapper.find(chartSelector)[0];
+                            if (chartContainer) {
+                                if (chartContainer._frappe_chart) {
+                                    try {
+                                        if (chartContainer._frappe_chart.destroy) chartContainer._frappe_chart.destroy();
+                                    } catch (e) { /* ignore */ }
+                                    delete chartContainer._frappe_chart;
+                                }
+                                $(chartContainer).empty();
+                                chartContainer._frappe_chart = new frappe.Chart(chartContainer, {
+                                    title: chartTitle,
+                                    data: { labels, datasets: [{ values }] },
+                                    type: 'pie',
+                                    height: 250,
+                                    colors: ['#2490ef', '#ff5858', '#ffa00a', '#1379b4', '#15cb86', '#eebb00']
+                                });
+                            }
+                        } catch (err) {
+                            console.error("AM Dashboard: Chart rendering failed", err);
+                        }
+                    } else {
+                        $wrapper.find(chartSelector).html('<div style="color: var(--text-muted); padding: 10px;">Pie chart library not loaded.</div>');
+                    }
+                }, 100);
+            };
+
+            // Render Commercial Pain Category
+            renderPainSection(data.pain_mix || [], '.pain-mix-chart', '.pain-mix-list', 'Deals by Commercial Pain Category');
+
+            // Render Technical Pain Category
+            renderPainSection(data.technical_pain_mix || [], '.tech-pain-mix-chart', '.tech-pain-mix-list', 'Deals by Technical Pain Category');
 
         } catch (e) {
             console.error("AM Dashboard: Render Error caught in Try-Catch!", e);

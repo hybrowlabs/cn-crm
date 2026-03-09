@@ -83,6 +83,14 @@ const fields = [
     visible: true,
   },
   {
+    fieldname: 'technical_pain_category',
+    label: 'Technical Pain Category',
+    fieldtype: 'Link',
+    options: 'CRM Technical Pain Category',
+    reqd: 0,
+    visible: true,
+  },
+  {
     fieldname: 'product_alloy_type',
     label: 'Product /Alloy type',
     fieldtype: 'Link',

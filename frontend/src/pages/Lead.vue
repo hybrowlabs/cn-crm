@@ -416,10 +416,10 @@ async function proceedWithStatusChange() {
 
 // TODO: Add validation for meeting stage here
 async function triggerStatusChange(value) {
-  const missingFields = getMissingFields(value)
+  const allValidationFields = getFieldsForValidation('CRM Lead', value)
 
-  if (missingFields.length) {
-    statusValidation.fields = missingFields
+  if (allValidationFields.length) {
+    statusValidation.fields = allValidationFields
     statusValidation.targetStatus = value
     statusValidation.show = true
     return

@@ -50,9 +50,21 @@ def get_am_dashboard_data():
 	""", {
 		"user": user
 	}, as_dict=True)
+
+	# 4. My Technical Pain Mix (CRM Deal)
+	# Formula: Group by technical_pain_category where deal_owner = user
+	technical_pain_mix = frappe.db.sql("""
+		SELECT IFNULL(technical_pain_category, 'Uncategorized') as category, COUNT(name) as value
+		FROM `tabCRM Deal`
+		WHERE deal_owner = %(user)s
+		GROUP BY technical_pain_category
+	""", {
+		"user": user
+	}, as_dict=True)
 	
 	return {
 		"booked_volume": booked_volume,
 		"pipeline_volume": pipeline_volume,
-		"pain_mix": pain_mix
+		"pain_mix": pain_mix,
+		"technical_pain_mix": technical_pain_mix
 	}
