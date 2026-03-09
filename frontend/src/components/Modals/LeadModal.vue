@@ -600,9 +600,13 @@ async function createNewLead() {
         show.value = false
         emit('success', data)
         router.push({ name: 'Lead', params: { leadId: data.name } })
-        updateOnboardingStep('create_first_lead', true, false, () => {
-          localStorage.setItem('firstLead' + user, data.name)
-        })
+        try {
+          updateOnboardingStep('create_first_lead', true, false, () => {
+            localStorage.setItem('firstLead' + user, data.name)
+          })
+        } catch (e) {
+          console.warn('Onboarding step update failed:', e)
+        }
       },
       onError(err) {
         isLeadCreating.value = false
