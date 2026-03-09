@@ -211,7 +211,7 @@ def _build_efficiency_for_users(sales_persons):
 				SELECT MAX(transaction_date) as last_date
 				FROM `tabSales Order`
 				WHERE customer = %(customer)s
-				  AND custom_sales_by = %(sp_name)s
+				  AND custom_sale_by = %(sp_name)s
 				  AND docstatus = 1
 			""", {"customer": customer, "sp_name": sp.name}, as_dict=True)
 
@@ -287,7 +287,7 @@ def get_efficiency_details(sp_name):
 		SELECT DISTINCT customer
 		FROM `tabSales Order`
 		WHERE customer IN %(customers)s
-		  AND custom_sales_by = %(sp_name)s
+		  AND custom_sale_by = %(sp_name)s
 		  AND docstatus = 1
 		  AND transaction_date BETWEEN %(first_day)s AND %(last_day)s
 	""", {
@@ -321,7 +321,7 @@ def get_efficiency_details(sp_name):
 					SELECT MAX(transaction_date) as last_date
 					FROM `tabSales Order`
 					WHERE customer = %(customer)s
-					  AND custom_sales_by = %(sp_name)s
+					  AND custom_sale_by = %(sp_name)s
 					  AND docstatus = 1
 				""", {"customer": customer, "sp_name": sp_name}, as_dict=True)
 
