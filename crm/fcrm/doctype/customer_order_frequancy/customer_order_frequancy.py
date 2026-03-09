@@ -3,7 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import getdate
+from frappe.utils import getdate, add_days, today
 from datetime import datetime
 
 
@@ -15,55 +15,114 @@ class CustomerOrderFrequancy(Document):
 def calculate_frequency_for_customer(customer_id):
 	"""
 	Whitelist method to calculate frequency for a specific customer.
-	Called from the front-end button.
+	Called from the front-end button — always force-recalculates regardless of recent orders.
 	"""
 	if not customer_id:
 		frappe.throw("Customer ID is required")
 	
-	calculate_customer_order_frequency(customer=customer_id)
+	process_customer_frequency(customer_id)
+	frappe.db.commit()
 	frappe.msgprint(f"Frequency calculation completed for {customer_id}")
 
 
 def calculate_customer_order_frequency(customer=None):
 	"""
-	Calculate item-wise order frequency for customers based on their last 10 Sales Orders.
-	
-	Args:
-		customer (str, optional): Specific customer to process. If None, processes all customers.
+	Scheduled nightly job (runs at midnight via cron 0 0 * * *).
+
+	Behaviour:
+	  - If `customer` is given (e.g. triggered manually): always recalculate that customer.
+	  - If running automatically (customer=None):
+	      1. CREATE a new Customer Order Frequancy for customers who have Sales Orders
+	         but do NOT yet have a frequency record.
+	      2. UPDATE the existing Customer Order Frequancy ONLY for customers who placed
+	         a Sales Order on the previous calendar day (yesterday).
+
+	This keeps the nightly job lightweight and data fresh for active customers.
 	"""
 	try:
-		# Get list of customers to process
 		if customer:
-			customers = [customer]
-		else:
-			# Get all customers who have at least one Sales Order
-			customers = frappe.db.sql_list("""
-				SELECT DISTINCT customer
-				FROM `tabSales Order`
-				WHERE docstatus = 1
-			""")
-		
-		frappe.logger().info(f"Processing {len(customers)} customers for order frequency calculation")
-		
-		for customer_id in customers:
+			# Manual / specific customer — always process
+			frappe.logger().info(f"[COF] Force-processing customer: {customer}")
+			process_customer_frequency(customer)
+			frappe.db.commit()
+			frappe.logger().info("[COF] Done (manual).")
+			return
+
+		yesterday = add_days(today(), -1)
+
+		# ── 1. CREATE: customers with Sales Orders but NO frequency record ──────────
+		all_so_customers = frappe.db.sql_list("""
+			SELECT DISTINCT customer
+			FROM `tabSales Order`
+			WHERE docstatus = 1
+			  AND customer IS NOT NULL
+			  AND customer != ''
+		""")
+
+		existing_records = frappe.db.sql_list("""
+			SELECT DISTINCT customer_id
+			FROM `tabCustomer Order Frequancy`
+			WHERE customer_id IS NOT NULL
+		""")
+
+		existing_set = set(existing_records)
+		new_customers = [c for c in all_so_customers if c not in existing_set]
+
+		frappe.logger().info(
+			f"[COF] Nightly run — {len(new_customers)} new customer(s) to CREATE, "
+			f"checking yesterday's reorders for UPDATE..."
+		)
+
+		created = 0
+		for customer_id in new_customers:
 			try:
 				process_customer_frequency(customer_id)
+				created += 1
 			except Exception as e:
-				frappe.logger().error(f"Error processing customer {customer_id}: {str(e)}")
-				continue
-		
+				frappe.logger().error(f"[COF] Error creating for {customer_id}: {str(e)}")
+
+		# ── 2. UPDATE: customers who placed a Sales Order yesterday ──────────────────
+		yesterday_customers = frappe.db.sql_list("""
+			SELECT DISTINCT customer
+			FROM `tabSales Order`
+			WHERE docstatus = 1
+			  AND transaction_date = %(yesterday)s
+			  AND customer IS NOT NULL
+			  AND customer != ''
+		""", {"yesterday": yesterday})
+
+		# Only update customers who already HAVE a frequency record
+		to_update = [c for c in yesterday_customers if c in existing_set]
+
+		frappe.logger().info(
+			f"[COF] {len(to_update)} existing customer(s) to UPDATE (reordered yesterday: {yesterday})."
+		)
+
+		updated = 0
+		for customer_id in to_update:
+			try:
+				process_customer_frequency(customer_id)
+				updated += 1
+			except Exception as e:
+				frappe.logger().error(f"[COF] Error updating for {customer_id}: {str(e)}")
+
 		frappe.db.commit()
-		frappe.logger().info("Customer order frequency calculation completed")
-		
+		frappe.logger().info(
+			f"[COF] Nightly run complete — created: {created}, updated: {updated}."
+		)
+
 	except Exception as e:
-		frappe.logger().error(f"Error in calculate_customer_order_frequency: {str(e)}")
+		frappe.logger().error(f"[COF] Fatal error in calculate_customer_order_frequency: {str(e)}")
 		frappe.db.rollback()
 
 
 def process_customer_frequency(customer_id):
 	"""
 	Process frequency calculation for a single customer.
-	
+	Fetches their last 10 submitted Sales Orders, computes item-wise average
+	order frequency (days between orders), then saves/updates the
+	Customer Order Frequancy document.
+
 	Args:
 		customer_id (str): Customer ID to process
 	"""
@@ -78,10 +137,9 @@ def process_customer_frequency(customer_id):
 	""", {'customer': customer_id}, as_dict=True)
 	
 	if not sales_orders:
-		# No orders for this customer, skip
+		# No orders for this customer — skip (nothing to calculate)
 		return
 	
-	# Collect all items from these orders with their details
 	sales_order_names = [so.name for so in sales_orders]
 	
 	allowed_item_groups = [
@@ -125,15 +183,14 @@ def process_customer_frequency(customer_id):
 		# Sort by date descending (most recent first)
 		item_orders.sort(key=lambda x: x.transaction_date, reverse=True)
 		
-		# Get quantity from the most recent order
+		# Quantity from the most recent order
 		last_order_qty = item_orders[0].qty
 		
-		# Calculate frequency_day
+		# Calculate frequency_day (average days between consecutive orders)
 		if len(item_orders) == 1:
-			# Only one order containing this item
 			frequency_day = 0
 		else:
-			# Get unique dates for this item (in case same item appears multiple times in one order)
+			# Deduplicate by Sales Order (an item may appear multiple times in one order)
 			order_dates = []
 			seen_orders = set()
 			for item_order in item_orders:
@@ -141,11 +198,9 @@ def process_customer_frequency(customer_id):
 					order_dates.append(item_order.transaction_date)
 					seen_orders.add(item_order.sales_order)
 			
-			# Sort dates ascending (oldest first)
-			order_dates.sort()
+			order_dates.sort()  # ascending (oldest first)
 			
 			if len(order_dates) > 1:
-				# Calculate average days between orders
 				oldest_date = getdate(order_dates[0])
 				newest_date = getdate(order_dates[-1])
 				days_diff = (newest_date - oldest_date).days
@@ -159,34 +214,29 @@ def process_customer_frequency(customer_id):
 			'frequency_day': int(round(frequency_day))
 		})
 	
-	# Update or create Customer Order Frequancy document
+	# Save / update the Customer Order Frequancy document
 	update_customer_frequency_doc(customer_id, frequency_data)
 
 
 def update_customer_frequency_doc(customer_id, frequency_data):
 	"""
 	Update or create Customer Order Frequancy document for a customer.
-	
+
 	Args:
 		customer_id (str): Customer ID
 		frequency_data (list): List of dicts with item, quantity, frequency_day
 	"""
-	# Check if document already exists
 	existing_doc = frappe.db.exists("Customer Order Frequancy", {"customer_id": customer_id})
 	
 	if existing_doc:
-		# Update existing document
 		doc = frappe.get_doc("Customer Order Frequancy", existing_doc)
-		doc.item_wise_frequency = []  # Clear existing data
+		doc.item_wise_frequency = []  # Clear existing data before repopulating
 	else:
-		# Create new document
 		doc = frappe.new_doc("Customer Order Frequancy")
 		doc.customer_id = customer_id
 	
-	# Add frequency data to child table
 	for item_freq in frequency_data:
 		doc.append("item_wise_frequency", item_freq)
 	
-	# Save the document
 	doc.save(ignore_permissions=True)
-	frappe.logger().info(f"Updated Customer Order Frequancy for {customer_id}")
+	frappe.logger().info(f"[COF] Saved Customer Order Frequancy for {customer_id}")

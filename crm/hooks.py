@@ -33,7 +33,8 @@ app_include_js = [
 	"/assets/crm/js/combined_dashboard_widget.js",
 	"/assets/crm/js/pending_tasks_widget.js",
 	"/assets/crm/js/am_dashboard_widget.js",
-	"/assets/crm/js/sm_pipeline_dashboard_widget.js"
+	"/assets/crm/js/sm_pipeline_dashboard_widget.js",
+	"/assets/crm/js/sm_efficiency_dashboard_widget.js"
 ]
 
 
@@ -171,6 +172,9 @@ doc_events = {
 	},
 	"Quotation": {
 		"after_insert": ["crm.fcrm.doctype.frequency_log_list.frequency_log_list.mark_followups_on_quotation"],
+	},
+	"Sales Order": {
+		"on_submit": ["crm.fcrm.doctype.frequency_log_list.frequency_log_list.mark_followups_on_sales_order_submit"],
 	},
 	"Comment": {
 		"on_update": ["crm.api.comment.on_update"],

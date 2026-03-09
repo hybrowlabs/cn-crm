@@ -313,6 +313,52 @@ def mark_followups_on_quotation(doc, method=None):
 			frappe.logger().error(f"Error in mark_followups_on_quotation for {doc.name}: {str(e)}")
 
 
+def mark_followups_on_sales_order_submit(doc, method=None):
+	"""
+	Hook triggered on Sales Order submission (on_submit).
+	For each item in the order, if a Frequency Log entry exists for that
+	(customer, item) pair and it is not yet marked done, mark it done immediately.
+	"""
+	if not doc.customer or not doc.items:
+		return
+
+	try:
+		for item_row in doc.items:
+			if not item_row.item_code:
+				continue
+
+			# Find open frequency log(s) for this customer + item
+			open_logs = frappe.get_all(
+				"Frequency Log List",
+				filters={
+					"customer_code": doc.customer,
+					"item": item_row.item_code,
+					"done_flow_up": 0
+				},
+				fields=["name"]
+			)
+
+			for log in open_logs:
+				frappe.db.set_value(
+					"Frequency Log List",
+					log.name,
+					"done_flow_up",
+					1,
+					update_modified=False
+				)
+				frappe.logger().info(
+					f"[COF] Marked Frequency Log {log.name} as done "
+					f"(SO {doc.name}: customer={doc.customer}, item={item_row.item_code})"
+				)
+
+		frappe.db.commit()
+
+	except Exception as e:
+		frappe.logger().error(
+			f"[COF] Error in mark_followups_on_sales_order_submit for SO {doc.name}: {str(e)}"
+		)
+
+
 @frappe.whitelist()
 def get_customers_for_user(**kwargs):
 	user = frappe.session.user
