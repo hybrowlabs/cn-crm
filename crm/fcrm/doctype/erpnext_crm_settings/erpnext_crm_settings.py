@@ -389,7 +389,7 @@ def get_customer_link(crm_deal):
 	if not erpnext_crm_settings.is_erpnext_in_different_site:
 		customer = frappe.db.exists("Customer", {"crm_deal": crm_deal})
 		if not customer and organization_name:
-			customer = frappe.db.exists("Customer", {"name": organization_name})
+			customer = frappe.db.exists("Customer", {"customer_name": organization_name})
 		return get_url_to_form("Customer", customer) if customer else ""
 	else:
 		client = get_erpnext_site_client(erpnext_crm_settings)
@@ -398,7 +398,7 @@ def get_customer_link(crm_deal):
 			customer = customer_list[0].get("name") if len(customer_list) else None
 			
 			if not customer and organization_name:
-				customer_list = client.get_list("Customer", {"name": organization_name})
+				customer_list = client.get_list("Customer", {"customer_name": organization_name})
 				customer = customer_list[0].get("name") if len(customer_list) else None
 
 			if customer:
@@ -627,6 +627,22 @@ def create_customer_in_erpnext(doc, method):
 				f"Failed to add GST validation comment to customer: {str(e)}"
 			)
 
+	# Add Activity (Comment) on CRM Deal regarding Customer creation
+	try:
+		customer_name = customer_doc if isinstance(customer_doc, str) else customer_doc.get("name") if customer_doc else customer.get("customer_name")
+		if customer_name:
+			frappe.get_doc({
+				"doctype": "Comment",
+				"comment_type": "Comment",
+				"reference_doctype": "CRM Deal",
+				"reference_name": doc.name,
+				"content": f"Customer **{customer_name}** has been successfully created.",
+				"comment_email": frappe.session.user,
+				"comment_by": frappe.session.user
+			}).insert(ignore_permissions=True)
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), "Failed to create customer activity log")
+
 	frappe.publish_realtime("crm_customer_created")
 
 
@@ -735,6 +751,22 @@ def create_customer_from_deal(crm_deal, customer_data):
 		else:
 			create_customer_in_remote_site(customer, erpnext_crm_settings)
 		
+		# Add Activity (Comment) on CRM Deal regarding Customer creation
+		try:
+			customer_name = customer.get("customer_name") or doc.organization
+			if customer_name:
+				frappe.get_doc({
+					"doctype": "Comment",
+					"comment_type": "Comment",
+					"reference_doctype": "CRM Deal",
+					"reference_name": crm_deal,
+					"content": f"Customer **{customer_name}** has been successfully created.",
+					"comment_email": frappe.session.user,
+					"comment_by": frappe.session.user
+				}).insert(ignore_permissions=True)
+		except Exception as e:
+			frappe.log_error(frappe.get_traceback(), "Failed to create customer activity log")
+
 		frappe.publish_realtime("crm_customer_created")
 		return {"success": True}
 	except Exception as e:
