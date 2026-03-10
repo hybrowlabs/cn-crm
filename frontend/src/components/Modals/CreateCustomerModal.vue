@@ -299,7 +299,8 @@ function createCustomer() {
         show.value = false
         emit('success')
       } else {
-        error.value = __('Failed to create customer')
+        error.value = (r.message && r.message.error) ? r.message.error : __('Failed to create customer')
+        toast.error(error.value)
       }
     }
   })

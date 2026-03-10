@@ -751,6 +751,26 @@ def create_customer_from_deal(crm_deal, customer_data):
 		else:
 			create_customer_in_remote_site(customer, erpnext_crm_settings)
 		
+		# Check for swallowed validation errors (e.g., from create_address)
+		import re
+		
+		has_errors = False
+		error_messages = []
+		if hasattr(frappe.local, 'message_log') and frappe.local.message_log:
+			for msg in getattr(frappe.local, 'message_log', []):
+				try:
+					msg_dict = json.loads(msg)
+					if isinstance(msg_dict, dict) and msg_dict.get('indicator') == 'red':
+						has_errors = True
+						error_messages.append(msg_dict.get('message', ''))
+				except Exception:
+					pass
+					
+		if has_errors:
+			frappe.db.rollback()
+			error_msg = " ".join([re.sub(r'<[^>]+>', ' ', m) for m in error_messages if m]) or str(_("Validation Error during customer creation"))
+			return {"success": False, "error": error_msg}
+
 		# Add Activity (Comment) on CRM Deal regarding Customer creation
 		try:
 			customer_name = customer.get("customer_name") or doc.organization
@@ -770,8 +790,24 @@ def create_customer_from_deal(crm_deal, customer_data):
 		frappe.publish_realtime("crm_customer_created")
 		return {"success": True}
 	except Exception as e:
+		frappe.db.rollback()
 		frappe.log_error(frappe.get_traceback(), "Manual Customer Creation Error")
-		frappe.throw(_(str(e)))
+		
+		# If it's a Frappe exception, there might be messages in the message log
+		error_msg = str(e)
+		if hasattr(frappe.local, 'message_log') and frappe.local.message_log:
+			try:
+				messages = [json.loads(msg) for msg in frappe.local.message_log if msg]
+				error_messages = [msg.get("message") for msg in messages if isinstance(msg, dict) and msg.get("indicator") == "red"]
+				if error_messages:
+					error_msg = error_messages[-1]
+			except Exception:
+				pass
+				
+		import re
+		error_msg = re.sub(r'<[^>]+>', ' ', error_msg) if error_msg else str(_("Failed to create customer. Please check error logs."))
+		
+		return {"success": False, "error": frappe.as_unicode(error_msg)}
 
 
 @frappe.whitelist()
