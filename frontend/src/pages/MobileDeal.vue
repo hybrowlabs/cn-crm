@@ -52,7 +52,17 @@
       :data="document.doc"
       doctype="CRM Deal"
     />
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 overflow-x-auto pb-1">
+      <Button
+        v-if="customer.data === ''"
+        variant="solid"
+        :label="__('Create Customer')"
+        @click="showCreateCustomerModal = true"
+      >
+        <template #prefix>
+          <FeatherIcon name="user-plus" class="h-4 w-4" />
+        </template>
+      </Button>
       <Button
         v-if="document.doc?.trial_outcome === 'Qualified'"
         variant="solid"
@@ -281,6 +291,11 @@
       afterInsert: (doc) => addContact(doc.name),
     }"
   />
+  <CreateCustomerModal
+    v-if="showCreateCustomerModal"
+    v-model="showCreateCustomerModal"
+    :deal="document"
+  />
   <LostReasonModal
     v-if="showLostReasonModal"
     v-model="showLostReasonModal"
@@ -316,6 +331,7 @@ import SuccessIcon from '@/components/Icons/SuccessIcon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import OrganizationModal from '@/components/Modals/OrganizationModal.vue'
+import CreateCustomerModal from '@/components/Modals/CreateCustomerModal.vue'
 import LostReasonModal from '@/components/Modals/LostReasonModal.vue'
 import AssignTo from '@/components/AssignTo.vue'
 import ContactModal from '@/components/Modals/ContactModal.vue'
@@ -351,7 +367,7 @@ import {
   usePageMeta,
   toast,
 } from 'frappe-ui'
-import { ref, computed, h, onMounted, reactive, provide } from 'vue'
+import { ref, computed, h, onMounted, reactive, provide, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const { brand } = getSettings()
@@ -361,8 +377,7 @@ const { doctypeMeta } = getMeta('CRM Deal')
 const route = useRoute()
 const router = useRouter()
 
-
-
+const __ = (window)._ || ((t) => t)
 
 const props = defineProps({
   dealId: {
@@ -472,15 +487,33 @@ const organization = createResource({
   onSuccess: (data) => (deal.data._organizationObj = data),
 })
 
+const customer = createResource({
+  url: 'crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings.get_customer_link',
+  params: { crm_deal: props.dealId },
+  cache: ['deal', 'customer', props.dealId],
+})
+
 onMounted(() => {
+  $socket.on('crm_customer_created', () => {
+    toast.success(__('Customer created successfully'))
+    deal.reload()
+    customer.reload()
+  })
+
   if (deal.data) return
   deal.fetch()
   quotations.fetch()
   visits.fetch()
+  customer.fetch()
+})
+
+onBeforeUnmount(() => {
+  $socket.off('crm_customer_created')
 })
 
 const reload = ref(false)
 const showOrganizationModal = ref(false)
+const showCreateCustomerModal = ref(false)
 const _organization = ref({})
 
 function updateDeal(fieldname, value, callback) {

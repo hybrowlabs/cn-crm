@@ -18,7 +18,7 @@ def get_am_dashboard_data():
 		booked_volume = frappe.db.sql("""
 			SELECT IFNULL(SUM(base_grand_total), 0) as total
 			FROM `tabSales Order`
-			WHERE custom_sales_by = %(sales_person)s
+			WHERE custom_sale_by = %(sales_person)s
 			AND transaction_date BETWEEN %(first_day)s AND %(last_day)s
 			AND docstatus = 1
 		""", {

@@ -39,7 +39,17 @@
         </Dropdown>
       </div>
       <Button
-        v-if="document.doc?.trial_outcome === 'Qualified'"
+        v-if="customer.data === ''"
+        variant="solid"
+        :label="__('Create Customer')"
+        @click="showCreateCustomerModal = true"
+      >
+        <template #prefix>
+          <FeatherIcon name="user-plus" class="h-4 w-4" />
+        </template>
+      </Button>
+      <Button
+        v-if="['Qualified', 'Proposal/Quotation', 'Negotiation', 'Won', 'Lost'].includes(document.doc?.status) && customer.data"
         variant="solid"
         theme="green"
         :label="__('Create Quotation')"
@@ -370,6 +380,12 @@
     v-model="showLostReasonModal"
     :deal="document"
   />
+  <CreateCustomerModal
+    v-if="showCreateCustomerModal"
+    v-model="showCreateCustomerModal"
+    :deal="deal"
+    @success="() => { deal.reload(); customer.reload() }"
+  />
   <StatusValidationModal
     v-if="statusValidation.show"
     v-model="statusValidation.show"
@@ -404,6 +420,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import Activities from '@/components/Activities/Activities.vue'
 import OrganizationModal from '@/components/Modals/OrganizationModal.vue'
 import LostReasonModal from '@/components/Modals/LostReasonModal.vue'
+import CreateCustomerModal from '@/components/Modals/CreateCustomerModal.vue'
 import StatusValidationModal from '@/components/Modals/StatusValidationModal.vue'
 import AssignTo from '@/components/AssignTo.vue'
 import FilesUploader from '@/components/FilesUploader/FilesUploader.vue'
@@ -578,18 +595,27 @@ const organization = createResource({
   onSuccess: (data) => (deal.data._organizationObj = data)
 })
 
+const customer = createResource({
+  url: 'crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings.get_customer_link',
+  params: { crm_deal: props.dealId },
+  cache: ['deal', 'customer', props.dealId],
+})
+
 onMounted(() => {
   $socket.on('crm_customer_created', () => {
     toast.success(__('Customer created successfully'))
+    deal.reload()
+    customer.reload()
   })
 
   if (deal.data) {
     organization.data = deal.data._organizationObj
-    return
+  } else {
+    deal.fetch()
   }
-  deal.fetch()
   quotations.fetch()
   visits.fetch()
+  customer.fetch()
 })
 
 onBeforeUnmount(() => {
@@ -598,6 +624,7 @@ onBeforeUnmount(() => {
 
 const reload = ref(false)
 const showOrganizationModal = ref(false)
+const showCreateCustomerModal = ref(false)
 const showFilesUploader = ref(false)
 const _organization = ref({})
 const showDeleteLinkedDocModal = ref(false)

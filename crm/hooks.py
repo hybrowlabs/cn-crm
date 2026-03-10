@@ -184,9 +184,7 @@ doc_events = {
 		"on_update": ["crm.api.whatsapp.on_update"],
 	},
 	"CRM Deal": {
-		"on_update": [
-			"crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings.create_customer_in_erpnext"
-		],
+		# Hook removed: customer creation is now manual via form button
 	},
 	"CRM Site Visit": {
 		"before_save": [

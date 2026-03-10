@@ -383,14 +383,24 @@ def get_customer_link(crm_deal):
 	if not erpnext_crm_settings.enabled:
 		frappe.throw(_("ERPNext is not integrated with the CRM"))
 
+	deal = frappe.get_doc("CRM Deal", crm_deal)
+	organization_name = deal.organization if hasattr(deal, "organization") else ""
+
 	if not erpnext_crm_settings.is_erpnext_in_different_site:
 		customer = frappe.db.exists("Customer", {"crm_deal": crm_deal})
+		if not customer and organization_name:
+			customer = frappe.db.exists("Customer", {"name": organization_name})
 		return get_url_to_form("Customer", customer) if customer else ""
 	else:
 		client = get_erpnext_site_client(erpnext_crm_settings)
 		try:
-			customer = client.get_list("Customer", {"crm_deal": crm_deal})
-			customer = customer[0].get("name") if len(customer) else None
+			customer_list = client.get_list("Customer", {"crm_deal": crm_deal})
+			customer = customer_list[0].get("name") if len(customer_list) else None
+			
+			if not customer and organization_name:
+				customer_list = client.get_list("Customer", {"name": organization_name})
+				customer = customer_list[0].get("name") if len(customer_list) else None
+
 			if customer:
 				return f"{erpnext_crm_settings.erpnext_site_url}/app/customer/{customer}"
 			else:
@@ -662,6 +672,77 @@ def create_customer_in_remote_site(customer, erpnext_crm_settings):
 
 
 @frappe.whitelist()
+def create_customer_from_deal(crm_deal, customer_data):
+	if isinstance(customer_data, str):
+		customer_data = json.loads(customer_data)
+		
+	erpnext_crm_settings = frappe.get_single("ERPNext CRM Settings")
+	if not erpnext_crm_settings.enabled:
+		frappe.throw(_("ERPNext is not integrated with the CRM"))
+
+	doc = frappe.get_cached_doc("CRM Deal", crm_deal)
+	
+	default_customer_group = frappe.db.get_single_value("Selling Settings", "customer_group")
+	if not default_customer_group:
+		default_customer_group = frappe.db.get_value(
+			"Customer Group",
+			{"parent_customer_group": ("is", "not set")},
+			"name"
+		)
+	if not default_customer_group:
+		default_customer_group = frappe.db.get_value("Customer Group", {"is_group": 1}, "name")
+
+	contacts = get_contacts(doc)
+	
+	address = {
+		"address_title": customer_data.get("organization"),
+		"address_line1": customer_data.get("address_line1"),
+		"address_line2": customer_data.get("address_line2"),
+		"city": customer_data.get("city"),
+		"state": customer_data.get("state"),
+		"country": customer_data.get("country"),
+		"pincode": customer_data.get("pincode"),
+	}
+
+	customer = {
+		"customer_name": customer_data.get("organization"),
+		"customer_group": default_customer_group,
+		"customer_type": customer_data.get("customer_type") or "Company",
+		"territory": customer_data.get("territory") or doc.territory,
+		"default_currency": customer_data.get("default_currency") or doc.currency,
+		"gstin": customer_data.get("gstin", "").upper().strip(),
+		"disabled": 0,
+		"website": doc.website,
+		"crm_deal": doc.name,
+		"contacts": json.dumps(contacts) if contacts else None,
+		"address": json.dumps(address) if any(address.values()) else None,
+		"gst_category": customer_data.get("gst_category"),
+	}
+	
+	credit_limit_amount = customer_data.get("credit_limit")
+	if credit_limit_amount:
+		default_company = frappe.db.get_single_value("Global Defaults", "default_company") or frappe.defaults.get_user_default("company")
+		if default_company:
+			customer["credit_limits"] = [{
+				"company": default_company,
+				"credit_limit": credit_limit_amount
+			}]
+
+	try:
+		if not erpnext_crm_settings.is_erpnext_in_different_site:
+			from erpnext.crm.frappe_crm_api import create_customer
+			create_customer(customer)
+		else:
+			create_customer_in_remote_site(customer, erpnext_crm_settings)
+		
+		frappe.publish_realtime("crm_customer_created")
+		return {"success": True}
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback(), "Manual Customer Creation Error")
+		frappe.throw(_(str(e)))
+
+
+@frappe.whitelist()
 def validate_gstin_number(gstin):
 	"""
 	Standalone API method to validate GSTIN
@@ -865,27 +946,10 @@ def map_constitution_to_company_type(constitution):
 @frappe.whitelist()
 def get_crm_form_script():
 	return """
-async function setupForm({ doc, call, $dialog, updateField, toast }) {
-	let actions = [];
-	let is_erpnext_integration_enabled = await call("frappe.client.get_single_value", {doctype: "ERPNext CRM Settings", field: "enabled"});
-	if (!["Lost", "Won"].includes(doc?.status) && is_erpnext_integration_enabled) {
-		actions.push({
-			label: __("Create Quotation"),
-			onClick: async () => {
-				let quotation_url = await call(
-					"crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings.get_quotation_url", 
-					{
-						crm_deal: doc.name,
-						organization: doc.organization
-					}
-				);
+ async function setupForm({ doc, call, $dialog, updateField, toast }) {
+ 	let actions = [];
+ 	let is_erpnext_integration_enabled = await call("frappe.client.get_single_value", {doctype: "ERPNext CRM Settings", field: "enabled"});
 
-				if (quotation_url) {
-					window.open(quotation_url, '_blank');
-				}
-			}
-		})
-	}
 	if (is_erpnext_integration_enabled) {
 		let customer_url = await call("crm.fcrm.doctype.erpnext_crm_settings.erpnext_crm_settings.get_customer_link", {
 			crm_deal: doc.name

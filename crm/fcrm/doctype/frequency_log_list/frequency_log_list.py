@@ -365,6 +365,7 @@ def get_customers_for_user(**kwargs):
 	
 	limit = frappe.form_dict.get("limit_page_length") or kwargs.get("limit_page_length") or 20
 	start = frappe.form_dict.get("limit_start") or kwargs.get("limit_start") or 0
+	search_term = frappe.form_dict.get("search_term") or kwargs.get("search_term") or ""
 	
 	try:
 		limit = int(limit)
@@ -374,10 +375,14 @@ def get_customers_for_user(**kwargs):
 		start = 0
 
 	fields = ["name", "customer_name", "customer_group", "territory", "primary_address", "mobile_no"]
+	filters = {}
+
+	if search_term:
+		filters["customer_name"] = ["like", f"%{search_term}%"]
 	
 	roles = frappe.get_roles(user)
 	if "Administrator" in roles or "System Manager" in roles:
-		return frappe.get_all("Customer", fields=fields, order_by="creation desc", limit_start=start, limit_page_length=limit)
+		return frappe.get_all("Customer", filters=filters, fields=fields, order_by="creation desc", limit_start=start, limit_page_length=limit)
 	else:
 		employee = frappe.db.get_value("Employee", {"user_id": user}, "name")
 		sales_person = frappe.db.get_value("Sales Person", {"employee": employee}, "name") if employee else None
@@ -397,8 +402,9 @@ def get_customers_for_user(**kwargs):
 			return []
 			
 		customer_ids = [c.parent for c in customer_list]
+		filters["name"] = ["in", customer_ids]
 		
-		return frappe.get_all("Customer", filters={"name": ["in", customer_ids]}, fields=fields, order_by="creation desc", limit_start=start, limit_page_length=limit)
+		return frappe.get_all("Customer", filters=filters, fields=fields, order_by="creation desc", limit_start=start, limit_page_length=limit)
 
 
 def generate_frequency_logs():

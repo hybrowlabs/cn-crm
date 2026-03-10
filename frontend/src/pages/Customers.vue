@@ -7,61 +7,96 @@
     </template>
   </LayoutHeader>
   
-  <div class="flex h-full flex-col overflow-auto">
-    <ListView
-      :columns="columns"
-      :rows="allCustomers || []"
-      :options="{
-        selectable: false,
-        showTooltip: true,
-        resizeColumn: true,
-      }"
-      row-key="name"
-    >
-      <ListHeader class="sm:mx-5 mx-3">
-        <ListHeaderItem
-            v-for="column in columns"
-            :key="column.key"
-            :item="column"
+  <div class="flex flex-col flex-1 h-full overflow-hidden">
+    <!-- Header with Search -->
+    <div class="flex items-center justify-between border-b px-5 py-3 bg-surface-gray-2">
+      <div class="w-1/3">
+        <FormControl
+          type="text"
+          :placeholder="__('Search Customers...')"
+          v-model="searchQuery"
+          @input="handleSearch"
         />
-      </ListHeader>
-      <ListRows :rows="allCustomers || []" v-slot="{ idx, column, item, row }" doctype="Customer">
-        <ListRowItem :item="item" :align="column.align">
-            <template #default="{ label }">
-                 <div class="truncate text-base">{{ label }}</div>
-            </template>
-        </ListRowItem>
-      </ListRows>
-    </ListView>
-    <div class="flex items-center justify-between border-t px-5 py-3" v-if="allCustomers && allCustomers.length >= pageLengthCount">
-        <Button
-            variant="subtle"
-            @click="loadNextPage"
-            :loading="loading"
-            class="w-full"
-        >
-            {{ __('Load More') }}
-        </Button>
+      </div>
+    </div>
+
+    <!-- Customer List -->
+    <div class="flex flex-col flex-1 overflow-auto">
+      <ListView
+        :columns="columns"
+        :rows="allCustomers || []"
+        :options="{
+          selectable: false,
+          showTooltip: true,
+          resizeColumn: true,
+        }"
+        row-key="name"
+      >
+        <ListHeader class="sm:mx-5 mx-3">
+          <ListHeaderItem
+              v-for="column in columns"
+              :key="column.key"
+              :item="column"
+          />
+        </ListHeader>
+        <ListRows :rows="allCustomers || []" v-slot="{ idx, column, item, row }" doctype="Customer">
+          <ListRowItem :item="item" :align="column.align" @click="openCustomerModal(row)">
+              <template #default="{ label }">
+                   <div class="truncate text-base">{{ label }}</div>
+              </template>
+          </ListRowItem>
+        </ListRows>
+      </ListView>
+      <div class="flex items-center justify-between border-t px-5 py-3" v-if="allCustomers && allCustomers.length >= pageLengthCount && !searchQuery">
+          <Button
+              variant="subtle"
+              @click="loadNextPage"
+              :loading="loading"
+              class="w-full"
+          >
+              {{ __('Load More') }}
+          </Button>
+      </div>
     </div>
   </div>
+
+  <CustomerDetailsModal
+    v-if="showCustomerModal"
+    v-model="showCustomerModal"
+    :customerName="selectedCustomerName"
+  />
 </template>
 
 <script setup>
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import ListRows from '@/components/ListViews/ListRows.vue'
-import { ListView, ListHeader, ListHeaderItem, ListRowItem, Button, call } from 'frappe-ui'
+import CustomerDetailsModal from '@/components/Modals/CustomerDetailsModal.vue'
+import { ListView, ListHeader, ListHeaderItem, ListRowItem, Button, FormControl, call } from 'frappe-ui'
 import { ref, onMounted } from 'vue'
+
+const __ = (window)._ || ((t) => t)
 
 const pageLengthCount = ref(20)
 const pageStart = ref(0)
 const loading = ref(false)
 const allCustomers = ref([])
+const searchQuery = ref('')
+let searchTimeout = null
 
-function fetchCustomers() {
+const showCustomerModal = ref(false)
+const selectedCustomerName = ref('')
+
+function fetchCustomers(reset = false) {
+    if (reset) {
+      pageStart.value = 0
+      allCustomers.value = []
+    }
+    
     loading.value = true
     call('crm.fcrm.doctype.frequency_log_list.frequency_log_list.get_customers_for_user', {
         limit_start: pageStart.value,
-        limit_page_length: pageLengthCount.value
+        limit_page_length: pageLengthCount.value,
+        search_term: searchQuery.value
     }).then(res => {
         if (res) {
             if (pageStart.value === 0) {
@@ -73,6 +108,18 @@ function fetchCustomers() {
     }).finally(() => {
         loading.value = false
     })
+}
+
+function handleSearch() {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    fetchCustomers(true)
+  }, 300)
+}
+
+function openCustomerModal(row) {
+  selectedCustomerName.value = row.name
+  showCustomerModal.value = true
 }
 
 onMounted(() => {
