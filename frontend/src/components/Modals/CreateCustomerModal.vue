@@ -8,7 +8,7 @@
       <div class="flex flex-col gap-3 sm:min-w-[400px] w-full">
         <div>
           <div class="mb-2 text-sm text-ink-gray-5">
-            {{ __('Organization Name') }}
+            {{ __('Customer Name') }}
             <span class="text-ink-red-2">*</span>
           </div>
           <FormControl

@@ -294,7 +294,8 @@
   <CreateCustomerModal
     v-if="showCreateCustomerModal"
     v-model="showCreateCustomerModal"
-    :deal="document"
+    :deal="deal"
+    @success="() => { deal.reload(); customer.reload() }"
   />
   <LostReasonModal
     v-if="showLostReasonModal"
