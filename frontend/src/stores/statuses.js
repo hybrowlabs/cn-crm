@@ -58,23 +58,23 @@ export const statusesStore = defineStore('crm-statuses', () => {
 
   function getLeadStatus(name) {
     if (!name) {
-      name = leadStatuses.data[0].name
+      name = leadStatuses.data?.[0]?.name
     }
-    return leadStatusesByName[name]
+    return leadStatusesByName[name] || { name: name || '', color: 'text-ink-gray-5' }
   }
 
   function getDealStatus(name) {
     if (!name) {
-      name = dealStatuses.data[0].name
+      name = dealStatuses.data?.[0]?.name
     }
-    return dealStatusesByName[name]
+    return dealStatusesByName[name] || { name: name || '', color: 'text-ink-gray-5' }
   }
 
   function getCommunicationStatus(name) {
     if (!name) {
-      name = communicationStatuses.data[0].name
+      name = communicationStatuses.data?.[0]?.name
     }
-    return communicationStatuses[name]
+    return communicationStatusesByName[name] || { name: name || '', color: 'text-ink-gray-5' }
   }
 
   function statusOptions(

@@ -12,6 +12,7 @@
       :variant="attrs.variant"
       :placeholder="attrs.placeholder"
       :filterable="false"
+      :keepOpen="keepOpen"
     >
       <template #target="{ open, togglePopover }">
         <slot name="target" v-bind="{ open: disabled ? undefined : open , togglePopover: disabled ? undefined : togglePopover, disabled}" />
@@ -98,6 +99,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  keepOpen: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'change'])
@@ -136,6 +141,12 @@ watchDebounced(
   { debounce: 300, immediate: true },
 )
 
+watchDebounced(
+  () => props.filters,
+  () => reload(text.value),
+  { debounce: 300, deep: true },
+)
+
 const options = createResource({
   url: 'frappe.desk.search.search_link',
   cache: [props.doctype, text.value, props.hideMe, props.filters],
@@ -168,7 +179,8 @@ function reload(val) {
   if (
     options.data?.length &&
     val === options.params?.txt &&
-    props.doctype === options.params?.doctype
+    props.doctype === options.params?.doctype &&
+    JSON.stringify(props.filters) === JSON.stringify(options.params?.filters)
   )
     return
 

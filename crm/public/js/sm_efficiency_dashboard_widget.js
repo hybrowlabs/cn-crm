@@ -265,21 +265,25 @@ crm.sm_efficiency_dashboard_widget = {
 
     render_customer_list($body, records) {
         // Summary counts
-        const expectedList = records.filter(r => r.is_expected);
-        const reorderedExpected = expectedList.filter(r => r.did_reorder).length;
-        const totalExpected = expectedList.length;
-        const effPct = totalExpected > 0 ? ((reorderedExpected / totalExpected) * 100).toFixed(1) : null;
+        let totalExpected = 0;
+        let totalActual = 0;
+        records.forEach(r => {
+            totalExpected += r.cust_expected || 0;
+            totalActual += r.cust_actual || 0;
+        });
+
+        const effPct = totalExpected > 0 ? ((totalActual / totalExpected) * 100).toFixed(1) : null;
         const effColor = this._eff_color(effPct !== null ? parseFloat(effPct) : null);
 
         let summaryHtml = `
             <div style="display:flex; gap:16px; margin-bottom:14px; flex-wrap:wrap;">
                 <div style="padding:10px 18px; border-radius:8px; background:var(--subtle-bg,#f8f9fa); text-align:center; min-width:100px;">
                     <div style="font-size:22px; font-weight:800; color:var(--text-color);">${totalExpected}</div>
-                    <div style="font-size:11px; color:var(--text-muted);">Expected</div>
+                    <div style="font-size:11px; color:var(--text-muted);">Expected Items</div>
                 </div>
                 <div style="padding:10px 18px; border-radius:8px; background:var(--subtle-bg,#f8f9fa); text-align:center; min-width:100px;">
-                    <div style="font-size:22px; font-weight:800; color:var(--text-color);">${reorderedExpected}</div>
-                    <div style="font-size:11px; color:var(--text-muted);">Reordered</div>
+                    <div style="font-size:22px; font-weight:800; color:var(--text-color);">${totalActual}</div>
+                    <div style="font-size:11px; color:var(--text-muted);">Actual Items</div>
                 </div>
                 <div style="padding:10px 18px; border-radius:8px; background:${effColor}18; border:1px solid ${effColor}30; text-align:center; min-width:100px;">
                     <div style="font-size:22px; font-weight:800; color:${effColor};">${effPct !== null ? effPct + '%' : 'N/A'}</div>
@@ -294,28 +298,34 @@ crm.sm_efficiency_dashboard_widget = {
                     <tr style="background:var(--subtle-bg,#f8f9fa); border-bottom:2px solid var(--border-color);">
                         <th style="padding:8px 12px; text-align:left;">#</th>
                         <th style="padding:8px 12px; text-align:left;">Customer</th>
-                        <th style="padding:8px 12px; text-align:center;">Expected?</th>
-                        <th style="padding:8px 12px; text-align:center;">Reordered?</th>
-                        <th style="padding:8px 12px; text-align:center;">Freq (days)</th>
+                        <th style="padding:8px 12px; text-align:center;">Expected Qt.</th>
+                        <th style="padding:8px 12px; text-align:center;">Actual Qt.</th>
+                        <th style="padding:8px 12px; text-align:center;">Efficiency %</th>
+                        <th style="padding:8px 12px; text-align:left;">Expected Item Details</th>
                     </tr>
                 </thead>
                 <tbody>
         `;
 
         records.forEach((rec, idx) => {
-            const expBadge = rec.is_expected
-                ? `<span style="padding:2px 10px; border-radius:12px; background:#3b82f618; color:#3b82f6; border:1px solid #3b82f630; font-weight:600; font-size:12px;">Yes</span>`
-                : `<span style="padding:2px 10px; border-radius:12px; background:var(--subtle-bg,#f0f2f5); color:var(--text-muted); font-size:12px;">No</span>`;
+            const actColor = rec.cust_actual >= rec.cust_expected ? '#22c55e' : (rec.cust_actual > 0 ? '#f59e0b' : '#ef4444');
+            const actBadge = `<span style="font-weight:600; color:${actColor};">${rec.cust_actual}</span>`;
 
-            const reordBadge = rec.did_reorder
-                ? `<span style="padding:2px 10px; border-radius:12px; background:#22c55e18; color:#22c55e; border:1px solid #22c55e30; font-weight:600; font-size:12px;">✓ Yes</span>`
-                : (rec.is_expected
-                    ? `<span style="padding:2px 10px; border-radius:12px; background:#ef444418; color:#ef4444; border:1px solid #ef444430; font-weight:600; font-size:12px;">✗ No</span>`
-                    : `<span style="color:var(--text-light,#c0c4cc); font-size:12px;">–</span>`);
-
-            const freqDisplay = rec.frequency_day
-                ? `<span style="color:var(--text-muted);">${rec.frequency_day}d</span>`
-                : `<span style="color:var(--text-light,#c0c4cc);">–</span>`;
+            const effPct = rec.efficiency_pct;
+            const effColor = this._eff_color(effPct !== null ? parseFloat(effPct) : null);
+            let effCell;
+            if (effPct === null || effPct === undefined) {
+                effCell = `<span style="color:var(--text-muted); font-size:13px;">N/A</span>`;
+            } else {
+                const pctDisplay = parseFloat(effPct).toFixed(1) + '%';
+                effCell = `
+                    <span style="display:inline-flex; align-items:center; justify-content:center;
+                                 padding:4px 10px; border-radius:6px; font-weight:700; font-size:12px;
+                                 background:${effColor}18; color:${effColor}; border:1px solid ${effColor}40;">
+                        ${pctDisplay}
+                    </span>
+                `;
+            }
 
             html += `
                 <tr style="border-bottom:1px solid var(--border-color,#eee); cursor:pointer;"
@@ -327,9 +337,10 @@ crm.sm_efficiency_dashboard_widget = {
                         </a>
                         <div style="font-size:11px; color:var(--text-muted);">${rec.customer}</div>
                     </td>
-                    <td style="padding:8px 12px; text-align:center;">${expBadge}</td>
-                    <td style="padding:8px 12px; text-align:center;">${reordBadge}</td>
-                    <td style="padding:8px 12px; text-align:center;">${freqDisplay}</td>
+                    <td style="padding:8px 12px; text-align:center; font-weight:600;">${rec.cust_expected}</td>
+                    <td style="padding:8px 12px; text-align:center;">${actBadge}</td>
+                    <td style="padding:8px 12px; text-align:center;">${effCell}</td>
+                    <td style="padding:8px 12px; text-align:left; line-height:1.4;">${rec.item_details || '-'}</td>
                 </tr>
             `;
         });

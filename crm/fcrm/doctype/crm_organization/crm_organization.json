@@ -32,7 +32,7 @@
             "fieldtype": "Link",
             "label": "Lead",
             "options": "CRM Lead",
-            "reqd": 1
+            "reqd": 0
         },
         {
             "fieldname": "website",

@@ -122,7 +122,7 @@ const fields = [
   },
   {
     fieldname: 'economic_buyer_name',
-    label: 'Economic Buyer Name',
+    label: 'Decision Maker',
     fieldtype: 'Data',
     reqd: 1,
     visible: true,
@@ -150,9 +150,9 @@ async function convertToDeal() {
   // Validate mandatory fields
   for (const field of fields) {
     if (field.reqd && !data.value[field.fieldname]) {
-      error.value = __('{0} is required', [__(field.label)])
-      return
-    }
+        error.value = __('{0} is required', [__(field.label)])
+        return
+      }
     if (field.fieldtype === 'Table MultiSelect' && (!data.value[field.fieldname] || data.value[field.fieldname].length === 0)) {
        error.value = __('{0} is required', [__(field.label)])
        return

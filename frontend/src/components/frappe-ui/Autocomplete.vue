@@ -174,6 +174,10 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  keepOpen: {
+    type: Boolean,
+    default: false,
+  },
 })
 const emit = defineEmits(['update:modelValue', 'update:query', 'change'])
 
@@ -191,9 +195,11 @@ const selectedValue = computed({
     return valuePropPassed.value ? attrs.value : props.modelValue
   },
   set(val) {
-    query.value = ''
-    if (val) {
-      showOptions.value = false
+    if (!props.keepOpen) {
+      query.value = ''
+      if (val) {
+        showOptions.value = false
+      }
     }
     emit(valuePropPassed.value ? 'change' : 'update:modelValue', val)
   },

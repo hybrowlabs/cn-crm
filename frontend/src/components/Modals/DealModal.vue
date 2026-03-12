@@ -206,10 +206,12 @@ async function createDeal() {
     auto: true,
     validate() {
       error.value = null
+      /*
       if (!deal.doc.lead) {
         error.value = __('Lead is required')
         return error.value
       }
+      */
       if (deal.doc.annual_revenue) {
         if (typeof deal.doc.annual_revenue === 'string') {
           deal.doc.annual_revenue = deal.doc.annual_revenue.replace(/,/g, '')

@@ -400,7 +400,12 @@ const statusValidation = reactive({
 
 function getMissingFields(targetStatus) {
   const mandatoryFields = getFieldsForValidation('CRM Lead', targetStatus)
-  return mandatoryFields.filter((f) => !document.doc?.[f.fieldname])
+  return mandatoryFields.filter((f) => {
+    if (['primary_pain_category', 'technical_pain_category'].includes(f.fieldname)) {
+      return !document.doc?.primary_pain_category?.length && !document.doc?.technical_pain_category?.length
+    }
+    return !document.doc?.[f.fieldname]
+  })
 }
 
 async function proceedWithStatusChange() {

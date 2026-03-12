@@ -103,6 +103,7 @@
       v-else-if="field.fieldtype === 'Table MultiSelect'"
       v-model="data[field.fieldname]"
       :doctype="field.options"
+      :filters="getMultiselectFilters(field)"
       @change="(v) => fieldChange(v, field)"
     />
 
@@ -322,6 +323,12 @@ const field = computed(() => {
 
 function isFieldVisible(field) {
   if (preview.value) return true
+
+  if (field.fieldname === 'product_discussed') {
+    const categories = data.value.product_category || []
+    if (categories.length === 0) return false
+  }
+
   return (
     (field.fieldtype == 'Check' ||
       (field.read_only && data.value[field.fieldname]) ||
@@ -359,6 +366,20 @@ function getDataValue(value, field) {
     return value || 0
   }
   return value
+}
+function getMultiselectFilters(df) {
+  if (
+    df.fieldname === 'product_discussed' &&
+    Array.isArray(data.value.product_category)
+  ) {
+    const categories = data.value.product_category
+      .map((row) => row.product_category)
+      .filter(Boolean)
+    if (categories.length) {
+      return { product_category: ['in', categories] }
+    }
+  }
+  return df.link_filters ? JSON.parse(df.link_filters) : []
 }
 </script>
 <style scoped>

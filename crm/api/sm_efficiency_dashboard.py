@@ -128,8 +128,7 @@ def _get_subordinates(parent_sales_person):
 def _build_efficiency_for_users(sales_persons):
 	"""
 	Build monthly reorder efficiency stats for a list of Sales Person records.
-	Returns a list of dicts with full_name, user, expected_count, actual_count, efficiency_pct,
-	and customers detail list.
+	Returns a list of dicts with full_name, user, expected_count, actual_count, efficiency_pct.
 	"""
 	first_day = get_first_day(today())
 	last_day = get_last_day(today())
@@ -146,103 +145,106 @@ def _build_efficiency_for_users(sales_persons):
 
 		full_name = frappe.db.get_value("User", sp_user, "full_name") or sp.sales_person_name
 
-		# --- Step 1: Find all customers for this sales person (via Sales Orders) ---
-		customer_rows = frappe.db.sql("""
+		# --- Step 1: Query last order dates per customer & item BEFORE this month ---
+		last_orders = frappe.db.sql("""
+			SELECT 
+				so.customer, 
+				soi.item_code as item, 
+				MAX(so.transaction_date) as last_date
+			FROM `tabSales Order` so
+			JOIN `tabSales Order Item` soi ON soi.parent = so.name
+			WHERE so.docstatus = 1 
+			  AND so.custom_sale_by = %(sp_name)s 
+			  AND so.transaction_date < %(first_day)s
+			GROUP BY so.customer, soi.item_code
+		""", {"sp_name": sp.name, "first_day": first_day}, as_dict=True)
+		
+		last_item_orders = {}
+		for row in last_orders:
+			if row.customer not in last_item_orders:
+				last_item_orders[row.customer] = {}
+			last_item_orders[row.customer][row.item] = getdate(row.last_date)
+
+		# --- Step 2: Query ACTUAL orders per customer & item DURING this month ---
+		actual_orders = frappe.db.sql("""
+			SELECT 
+				so.customer, 
+				soi.item_code as item, 
+				COUNT(DISTINCT so.name) as actual_qty
+			FROM `tabSales Order` so
+			JOIN `tabSales Order Item` soi ON soi.parent = so.name
+			WHERE so.docstatus = 1 
+			  AND so.custom_sale_by = %(sp_name)s 
+			  AND so.transaction_date BETWEEN %(first_day)s AND %(last_day)s
+			GROUP BY so.customer, soi.item_code
+		""", {"sp_name": sp.name, "first_day": first_day, "last_day": last_day}, as_dict=True)
+		
+		actual_month_counts = {}
+		for row in actual_orders:
+			if row.customer not in actual_month_counts:
+				actual_month_counts[row.customer] = {}
+			actual_month_counts[row.customer][row.item] = row.actual_qty
+
+		# --- Step 3: Get all unique customers linked to this SP ---
+		customers_rows = frappe.db.sql("""
 			SELECT DISTINCT customer
 			FROM `tabSales Order`
 			WHERE custom_sale_by = %(sp_name)s
 			  AND docstatus = 1
 		""", {"sp_name": sp.name}, as_dict=True)
-
-		customers = [r.customer for r in customer_rows if r.customer]
+		customers = [r.customer for r in customers_rows if r.customer]
 
 		if not customers:
-			# No customers linked → efficiency not applicable
 			sales_users.append({
 				"sales_person": sp.name,
 				"full_name": full_name,
 				"user": sp_user,
 				"expected_count": 0,
 				"actual_count": 0,
-				"efficiency_pct": None  # N/A
+				"efficiency_pct": None
 			})
 			continue
 
-		# --- Step 2: For each customer, determine if they were expected to reorder this month ---
-		expected_customers = []
-		actual_reorder_set = set()
-
-		# Get customers who reordered this month (submitted SO with transaction_date in current month)
-		if customers:
-			reordered_rows = frappe.db.sql("""
-				SELECT DISTINCT customer
-				FROM `tabSales Order`
-				WHERE customer IN %(customers)s
-				  AND custom_sale_by = %(sp_name)s
-				  AND docstatus = 1
-				  AND transaction_date BETWEEN %(first_day)s AND %(last_day)s
-			""", {
-				"customers": customers,
-				"sp_name": sp.name,
-				"first_day": first_day,
-				"last_day": last_day
-			}, as_dict=True)
-			actual_reorder_set = {r.customer for r in reordered_rows}
+		expected_count = 0
+		actual_count = 0
 
 		for customer in customers:
-			# Check Customer Order Frequancy for this customer
-			cof_name = frappe.db.get_value(
-				"Customer Order Frequancy", {"customer_id": customer}, "name"
-			)
+			cof_name = frappe.db.get_value("Customer Order Frequancy", {"customer_id": customer}, "name")
 			if not cof_name:
-				continue  # No frequency data → skip
-
-			# Get item-wise frequency records (only items with frequency_day > 0)
+				continue
+			
 			freq_items = frappe.db.get_all(
 				"Item Wise Order Frequancy",
 				filters={"parent": cof_name, "frequency_day": [">", 0]},
 				fields=["item", "frequency_day"]
 			)
-			if not freq_items:
-				continue  # No valid frequency data
-
-			# Get the last Sales Order date for this customer from this sales person
-			last_so = frappe.db.sql("""
-				SELECT MAX(transaction_date) as last_date
-				FROM `tabSales Order`
-				WHERE customer = %(customer)s
-				  AND custom_sale_by = %(sp_name)s
-				  AND docstatus = 1
-			""", {"customer": customer, "sp_name": sp.name}, as_dict=True)
-
-			last_order_date = last_so[0].last_date if last_so and last_so[0].last_date else None
-			if not last_order_date:
-				continue
-
-			last_order_date = getdate(last_order_date)
-
-			# Check if any item's next expected reorder falls within this month
-			is_expected = False
+			
 			for freq_item in freq_items:
+				item = freq_item.item
 				freq_day = int(freq_item.frequency_day or 0)
-				if freq_day <= 0:
+				
+				last_date = last_item_orders.get(customer, {}).get(item)
+				if not last_date:
 					continue
-				next_expected_date = last_order_date + timedelta(days=freq_day)
-				# Expected if next order date is within current month (or already overdue → still expected)
-				if next_expected_date <= last_day:
-					is_expected = True
-					break
-
-			if is_expected:
-				expected_customers.append(customer)
-
-		expected_count = len(expected_customers)
-		actual_count = len([c for c in expected_customers if c in actual_reorder_set])
+					
+				expected_times_this_month = 0
+				cur_date = last_date + timedelta(days=freq_day)
+				
+				while cur_date <= last_day:
+					if cur_date >= first_day:
+						expected_times_this_month += 1
+					cur_date += timedelta(days=freq_day)
+					
+				if expected_times_this_month > 0:
+					expected_count += expected_times_this_month
+					
+					actual_times = actual_month_counts.get(customer, {}).get(item, 0)
+					actual_count += min(actual_times, expected_times_this_month)
 
 		if expected_count > 0:
 			efficiency_pct = round((actual_count / expected_count) * 100, 1)
 		else:
-			efficiency_pct = None  # N/A — no customers were expected to reorder
+			efficiency_pct = None
 
 		sales_users.append({
 			"sales_person": sp.name,
@@ -259,7 +261,7 @@ def _build_efficiency_for_users(sales_persons):
 @frappe.whitelist()
 def get_efficiency_details(sp_name):
 	"""
-	Returns a customer-by-customer breakdown for the given Sales Person.
+	Returns a customer and item breakdown for the given Sales Person.
 	Used for drill-down in the dashboard widget.
 	"""
 	current_user = frappe.session.user
@@ -269,88 +271,113 @@ def get_efficiency_details(sp_name):
 	first_day = get_first_day(today())
 	last_day = get_last_day(today())
 
-	# All customers for this sales person
-	customer_rows = frappe.db.sql("""
+	# Query last orders BEFORE this month per item
+	last_orders = frappe.db.sql("""
+		SELECT 
+			so.customer, 
+			soi.item_code as item, 
+			MAX(so.transaction_date) as last_date
+		FROM `tabSales Order` so
+		JOIN `tabSales Order Item` soi ON soi.parent = so.name
+		WHERE so.docstatus = 1 
+		  AND so.custom_sale_by = %(sp_name)s 
+		  AND so.transaction_date < %(first_day)s
+		GROUP BY so.customer, soi.item_code
+	""", {"sp_name": sp_name, "first_day": first_day}, as_dict=True)
+	
+	last_item_orders = {}
+	for row in last_orders:
+		if row.customer not in last_item_orders:
+			last_item_orders[row.customer] = {}
+		last_item_orders[row.customer][row.item] = getdate(row.last_date)
+
+	# Query ACTUAL orders DURING this month per item
+	actual_orders = frappe.db.sql("""
+		SELECT 
+			so.customer, 
+			soi.item_code as item, 
+			COUNT(DISTINCT so.name) as actual_qty
+		FROM `tabSales Order` so
+		JOIN `tabSales Order Item` soi ON soi.parent = so.name
+		WHERE so.docstatus = 1 
+		  AND so.custom_sale_by = %(sp_name)s 
+		  AND so.transaction_date BETWEEN %(first_day)s AND %(last_day)s
+		GROUP BY so.customer, soi.item_code
+	""", {"sp_name": sp_name, "first_day": first_day, "last_day": last_day}, as_dict=True)
+	
+	actual_month_counts = {}
+	for row in actual_orders:
+		if row.customer not in actual_month_counts:
+			actual_month_counts[row.customer] = {}
+		actual_month_counts[row.customer][row.item] = row.actual_qty
+
+	customers_rows = frappe.db.sql("""
 		SELECT DISTINCT customer
 		FROM `tabSales Order`
 		WHERE custom_sale_by = %(sp_name)s
 		  AND docstatus = 1
 	""", {"sp_name": sp_name}, as_dict=True)
-
-	customers = [r.customer for r in customer_rows if r.customer]
-
-	if not customers:
-		return []
-
-	# Customers who reordered this month
-	reordered_rows = frappe.db.sql("""
-		SELECT DISTINCT customer
-		FROM `tabSales Order`
-		WHERE customer IN %(customers)s
-		  AND custom_sale_by = %(sp_name)s
-		  AND docstatus = 1
-		  AND transaction_date BETWEEN %(first_day)s AND %(last_day)s
-	""", {
-		"customers": customers,
-		"sp_name": sp_name,
-		"first_day": first_day,
-		"last_day": last_day
-	}, as_dict=True)
-	actual_reorder_set = {r.customer for r in reordered_rows}
+	customers = [r.customer for r in customers_rows if r.customer]
 
 	records = []
 	for customer in customers:
 		customer_name = frappe.db.get_value("Customer", customer, "customer_name") or customer
-
-		cof_name = frappe.db.get_value(
-			"Customer Order Frequancy", {"customer_id": customer}, "name"
+		cof_name = frappe.db.get_value("Customer Order Frequancy", {"customer_id": customer}, "name")
+		
+		if not cof_name:
+			continue
+			
+		freq_items = frappe.db.get_all(
+			"Item Wise Order Frequancy",
+			filters={"parent": cof_name, "frequency_day": [">", 0]},
+			fields=["item", "frequency_day"]
 		)
 
-		is_expected = False
-		min_freq_day = None
+		has_expected_or_actual_items = False
+		cust_expected = 0
+		cust_actual = 0
+		cust_items = []
 
-		if cof_name:
-			freq_items = frappe.db.get_all(
-				"Item Wise Order Frequancy",
-				filters={"parent": cof_name, "frequency_day": [">", 0]},
-				fields=["item", "frequency_day"]
-			)
+		for freq_item in freq_items:
+			item = freq_item.item
+			freq_day = int(freq_item.frequency_day or 0)
+			
+			last_date = last_item_orders.get(customer, {}).get(item)
+			if not last_date:
+				continue
+				
+			expected_times_this_month = 0
+			cur_date = last_date + timedelta(days=freq_day)
+			
+			while cur_date <= last_day:
+				if cur_date >= first_day:
+					expected_times_this_month += 1
+				cur_date += timedelta(days=freq_day)
+				
+			actual_times = actual_month_counts.get(customer, {}).get(item, 0)
+			
+			if expected_times_this_month > 0:
+				has_expected_or_actual_items = True
+				actual_capped = min(actual_times, expected_times_this_month)
+				cust_expected += expected_times_this_month
+				cust_actual += actual_capped
+				
+				actual_class = "22c55e" if actual_capped >= expected_times_this_month else ("f59e0b" if actual_capped > 0 else "ef4444")
+				cust_items.append(f"<span style='color:#{actual_class}; font-weight:600;'>{item} ({actual_times}/{expected_times_this_month})</span>")
 
-			if freq_items:
-				last_so = frappe.db.sql("""
-					SELECT MAX(transaction_date) as last_date
-					FROM `tabSales Order`
-					WHERE customer = %(customer)s
-					  AND custom_sale_by = %(sp_name)s
-					  AND docstatus = 1
-				""", {"customer": customer, "sp_name": sp_name}, as_dict=True)
+		if has_expected_or_actual_items:
+			efficiency_pct = round((cust_actual / cust_expected) * 100, 1) if cust_expected > 0 else None
+			records.append({
+				"customer": customer,
+				"customer_name": customer_name,
+				"cust_expected": cust_expected,
+				"cust_actual": cust_actual,
+				"efficiency_pct": efficiency_pct,
+				"doc_route": f"/app/customer/{customer}",
+				"item_details": ", ".join(cust_items)
+			})
 
-				last_order_date = last_so[0].last_date if last_so and last_so[0].last_date else None
-
-				if last_order_date:
-					last_order_date = getdate(last_order_date)
-					for freq_item in freq_items:
-						freq_day = int(freq_item.frequency_day or 0)
-						if freq_day <= 0:
-							continue
-						next_expected = last_order_date + timedelta(days=freq_day)
-						if next_expected <= last_day:
-							is_expected = True
-							if min_freq_day is None or freq_day < min_freq_day:
-								min_freq_day = freq_day
-
-		did_reorder = customer in actual_reorder_set
-
-		records.append({
-			"customer": customer,
-			"customer_name": customer_name,
-			"is_expected": is_expected,
-			"did_reorder": did_reorder,
-			"frequency_day": min_freq_day,
-			"doc_route": f"/app/customer/{customer}"
-		})
-
-	# Sort: expected first, then by did_reorder desc
-	records.sort(key=lambda r: (not r["is_expected"], not r["did_reorder"]))
+	# Sort: Most expected items first
+	records.sort(key=lambda r: (-r["cust_expected"], -r["cust_actual"]))
 
 	return records

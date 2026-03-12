@@ -153,13 +153,6 @@ watch(() => props.lead, (lead) => {
     if (lead.lead_owner) {
       deal.doc.deal_owner = lead.lead_owner
     }
-    // Pre-populate pain categories
-    if (lead.primary_pain_category) {
-      deal.doc.primary_pain_category = lead.primary_pain_category
-    }
-    if (lead.technical_pain_category) {
-      deal.doc.technical_pain_category = lead.technical_pain_category
-    }
   }
 }, { immediate: true })
 
@@ -177,13 +170,6 @@ watch(() => show.value, (isOpen) => {
     // Pre-populate deal owner from lead owner
     if (props.lead.lead_owner) {
       deal.doc.deal_owner = props.lead.lead_owner
-    }
-    // Pre-populate pain categories
-    if (props.lead.primary_pain_category) {
-      deal.doc.primary_pain_category = props.lead.primary_pain_category
-    }
-    if (props.lead.technical_pain_category) {
-      deal.doc.technical_pain_category = props.lead.technical_pain_category
     }
   }
 })

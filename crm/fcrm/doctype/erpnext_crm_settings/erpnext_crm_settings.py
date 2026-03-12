@@ -425,7 +425,7 @@ def get_quotation_url(crm_deal, organization):
 
 	if not erpnext_crm_settings.is_erpnext_in_different_site:
 		quotation_url = get_url_to_list("Quotation")
-		return f"{quotation_url}/new?quotation_to=CRM Deal&crm_deal={crm_deal}&party_name={crm_deal}&company={erpnext_crm_settings.erpnext_company}&contact_person={contact}&customer_address={address}"
+		return f"{quotation_url}/new?quotation_to=CRM Deal&crm_deal={crm_deal}&party_name={organization}&company={erpnext_crm_settings.erpnext_company}&contact_person={contact}&customer_address={address}"
 	else:
 		site_url = erpnext_crm_settings.get("erpnext_site_url")
 		quotation_url = f"{site_url}/app/quotation"

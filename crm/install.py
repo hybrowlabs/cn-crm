@@ -263,7 +263,7 @@ def add_default_fields_layout(force=False):
 	side_data_bar_layouts = {
 		"CRM Lead-Side Data Bar": {
 			"doctype": "CRM Lead",
-			"layout": '[{"label": "Meeting Details", "opened": true, "columns": [{"fields": ["meeting_type", "meeting_outcomes", "next_action_date"]}]}, {"label": "Outcome Analysis", "opened": true, "columns": [{"fields": ["decision_process", "pain_description", "primary_pain_category"]}]}, {"label": "Product Context", "opened": true, "columns": [{"fields": ["product_discussed", "product_interested", "volume_rangekg"]}]}]',
+			"layout": '[{"label": "Meeting Details", "opened": true, "columns": [{"fields": ["meeting_type", "meeting_outcomes", "next_action_date"]}]}, {"label": "Outcome Analysis", "opened": true, "columns": [{"fields": ["decision_process", "pain_description", "primary_pain_category"]}]}, {"label": "Product Context", "opened": true, "columns": [{"fields": ["product_category","product_discussed", "product_interested", "volume_rangekg"]}]}]',
 		},
 		"CRM Deal-Side Data Bar": {
 			"doctype": "CRM Deal",

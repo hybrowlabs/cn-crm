@@ -30,12 +30,31 @@
           :doctype="linkField.options"
           @change="(v) => addValue(v)"
           :hideMe="true"
+          :keepOpen="true"
         >
           <template #target="{ togglePopover }">
             <button
               class="w-full h-7 cursor-text"
               @click.stop="togglePopover"
             />
+          </template>
+          <template #item-label="{ option }">
+            <div class="flex items-center justify-between w-full">
+              <div v-if="option.description" class="flex flex-col gap-1">
+                <div class="flex-1 font-semibold truncate text-ink-gray-7">
+                  {{ option.label }}
+                </div>
+                <div class="flex-1 text-sm truncate text-ink-gray-5">
+                  {{ option.description }}
+                </div>
+              </div>
+              <div v-else class="flex-1 truncate text-ink-gray-7">
+                {{ option.label }}
+              </div>
+              <div v-if="parsedValues.includes(option.value)" class="flex items-center justify-center text-surface-white bg-ink-gray-9 shrink-0 ml-2 rounded shadow-sm w-4 h-4">
+                <FeatherIcon name="check" class="w-2.5 h-2.5" />
+              </div>
+            </div>
           </template>
         </Link>
       </div>
@@ -58,6 +77,10 @@ const props = defineProps({
     type: Function,
     default: (value) => `${value} is an Invalid value`,
   },
+  filters: {
+    type: [Array, Object, String],
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['change'])
@@ -76,10 +99,7 @@ const query = ref('')
 const linkField = ref('')
 
 const filters = computed(() => {
-  if (!linkField.value) return []
-  return {
-    name: ['not in', parsedValues.value],
-  }
+  return props.filters
 })
 
 const parsedValues = computed(() => {
@@ -107,16 +127,16 @@ const getLinkField = () => {
 const addValue = (value) => {
   error.value = null
 
+  if (!value) return
+
   if (values.value.some((row) => row[linkField.value.fieldname] === value)) {
-    error.value = 'Value already exists'
+    removeValue(value)
     return
   }
 
-  if (value) {
-    values.value.push({ [linkField.value.fieldname]: value })
-    emit('change', values.value)
-    !error.value && (query.value = '')
-  }
+  values.value.push({ [linkField.value.fieldname]: value })
+  emit('change', values.value)
+  !error.value && (query.value = '')
 }
 
 const removeValue = (value) => {

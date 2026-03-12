@@ -13,8 +13,10 @@ class CRMOrganization(Document):
 
 	def validate_lead_requirement(self):
 		"""Ensure Lead is required for new organizations"""
-		if self.is_new() and not self.lead:
-			frappe.throw(_("Lead is required to create an Organization"), frappe.MandatoryError)
+		# Lead is optional - deals can be created without a lead
+		# if self.is_new() and not self.lead:
+		# 	frappe.throw(_("Lead is required to create an Organization"), frappe.MandatoryError)
+		pass
 
 	def auto_fetch_gstin_details(self):
 		"""Automatically fetch and populate organization details from GSTIN"""

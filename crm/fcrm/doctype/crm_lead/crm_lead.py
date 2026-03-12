@@ -56,7 +56,6 @@ class CRMLead(Document):
 				("meeting_type", _("Meeting Type")),
 				("product_discussed", _("Product Discussed")),
 				("volume_rangekg", _("Volume Range (kg)")),
-				("primary_pain_category", _("Primary Pain Category")),
 				("pain_description", _("Pain Description")),
 				("customer_role_type", _("Customer Role Type")),
 				("current_supplier", _("Current Supplier")),
@@ -70,6 +69,12 @@ class CRMLead(Document):
 						_("{0} is mandatory for '{1}' status").format(label, self.status),
 						title=_("Missing Required Information")
 					)
+
+			if not self.primary_pain_category and not self.technical_pain_category:
+				frappe.throw(
+					_("Please provide either Commercial Pain Category or Technical Pain Category for '{0}' status").format(self.status),
+					title=_("Missing Required Information")
+				)
 
 		# Validate GST Number when GST Applicable is checked
 		if hasattr(self, 'gst_applicable') and self.gst_applicable:
@@ -93,6 +98,25 @@ class CRMLead(Document):
 
 	def before_save(self):
 		self.apply_sla()
+
+	def on_update(self):
+		self.create_task_on_next_action_date()
+
+	def create_task_on_next_action_date(self):
+		if self.status in ["Contacted", "Nurture"] and self.next_action_date:
+			doc_before_save = self.get_doc_before_save()
+			if not doc_before_save or doc_before_save.next_action_date != self.next_action_date:
+				user = frappe.session.user
+				
+				frappe.get_doc({
+					"doctype": "CRM Task",
+					"title": f"Follow up with {self.lead_name}",
+					"reference_doctype": "CRM Lead",
+					"reference_docname": self.name,
+					"assigned_to": user,
+					"due_date": self.next_action_date,
+					"status": "Todo",
+				}).insert(ignore_permissions=True)
 
 	def set_full_name(self):
 		if self.first_name:

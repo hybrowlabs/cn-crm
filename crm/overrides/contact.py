@@ -10,8 +10,10 @@ class CustomContact(Contact):
 
 	def validate_lead_requirement(self):
 		"""Ensure Lead is required for new contacts (Lead can come from Deal context)"""
-		if self.is_new() and not self.lead:
-			frappe.throw(_("Lead is required to create a Contact. Please link this contact to a CRM Lead or CRM Deal (which will link to its Lead)."), frappe.MandatoryError)
+		# Lead is optional - deals can be created without a lead
+		# if self.is_new() and not self.lead:
+		# 	frappe.throw(_("Lead is required to create a Contact. Please link this contact to a CRM Lead or CRM Deal (which will link to its Lead)."), frappe.MandatoryError)
+		pass
 
 	@staticmethod
 	def default_list_data():

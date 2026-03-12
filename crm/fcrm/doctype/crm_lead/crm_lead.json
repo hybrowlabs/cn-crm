@@ -47,6 +47,7 @@
   "middle_name",
   "gender",
   "phone",
+  "product_category",
   "primary_pain_category",
   "technical_pain_category",
   "column_break_dbsv",
@@ -426,9 +427,9 @@
   },
   {
    "fieldname": "product_discussed",
-   "fieldtype": "Link",
+   "fieldtype": "Table MultiSelect",
    "label": "Product Discussed",
-   "options": "CRM Product"
+   "options": "Product Discussed Multi Select"
   },
   {
    "fieldname": "column_break_hshw",
@@ -441,9 +442,9 @@
   },
   {
    "fieldname": "primary_pain_category",
-   "fieldtype": "Link",
+   "fieldtype": "Table MultiSelect",
    "label": "Commercial Pain Category",
-   "options": "CRM Pain Category"
+   "options": "commercial pain Category Multi select"
   },
   {
    "fieldname": "pain_description",
@@ -473,16 +474,22 @@
   },
   {
    "fieldname": "technical_pain_category",
-   "fieldtype": "Link",
+   "fieldtype": "Table MultiSelect",
    "label": "Technical Pain Category",
-   "options": "CRM Technical Pain Category"
+   "options": "Technical Pain Category Multi Select"
+  },
+  {
+   "fieldname": "product_category",
+   "fieldtype": "Table MultiSelect",
+   "label": "Product Category",
+   "options": "Product Category Multi Select"
   }
  ],
  "grid_page_length": 50,
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-03-09 11:23:41.379331",
+ "modified": "2026-03-12 09:38:27.075136",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Lead",
