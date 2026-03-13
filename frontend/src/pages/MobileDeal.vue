@@ -56,7 +56,7 @@
       <Button
         v-if="document.doc?.status === 'Qualification' && !document.doc?.is_approved_by_tech_team"
         variant="solid"
-        :label="__('Send Trial request to tech team')"
+        :label="__('Send Trial')"
         @click="sendTrialRequest"
       >
         <template #prefix>
