@@ -99,7 +99,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Meeting Type",
-   "options": "Initial Meeting\nDemo/Presentation\nNegotiation\nContract Signing\nFollow-up\nSupport\nOther",
+   "options": "Initial Meeting\nDemo/Presentation\nContract Signing\nFollow-up\nSupport\nOther",
    "reqd": 1
   },
   {

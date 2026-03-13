@@ -24,6 +24,8 @@
   "lost_reason",
   "lost_notes",
   "custom_formulation_required",
+  "is_approved_by_tech_team",
+  "is_suspended_by_tech_team",
   "section_break_jgpm",
   "probability",
   "deal_value",
@@ -618,12 +620,24 @@
   {
    "fieldname": "column_break_anxm",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_approved_by_tech_team",
+   "fieldtype": "Check",
+   "label": "Is Approved By Tech Team"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_suspended_by_tech_team",
+   "fieldtype": "Check",
+   "label": "Is Suspended By Tech team"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-03-12 16:23:01.685359",
+ "modified": "2026-03-13 11:13:01.273542",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Deal",

@@ -544,7 +544,6 @@ class CRMSiteVisit(Document):
                 "key": "visit_type",
                 "options": """Initial Meeting
 Demo/Presentation
-Negotiation
 Contract Signing
 Follow-up
 Support

@@ -39,6 +39,9 @@ def get_permission_query_conditions(doctype, user=None):
 	elif doctype == "CRM Deal":
 		conditions.append(f"deal_owner = '{user}'")
 
+	# Check for explicitly assigned users via _assign
+	conditions.append(f"_assign LIKE '%\"{user}\"%'")
+
 	if user_territories:
 		territory_list = "', '".join(user_territories)
 		conditions.append(f"territory in ('{territory_list}')")
@@ -67,6 +70,18 @@ def has_permission(doc, ptype=None, user=None):
 		getattr(doc, 'lead_owner', None) == user or
 		getattr(doc, 'deal_owner', None) == user):
 		return True
+
+	# Explicitly Assigned check
+	_assign = getattr(doc, '_assign', None)
+	if _assign:
+		try:
+			import json
+			assign_list = json.loads(_assign)
+			if user in assign_list:
+				return True
+		except Exception:
+			# Handle any JSON parsing errors gracefully
+			pass
 
 	# Check if document has territory field
 	if not hasattr(doc, 'territory') or not doc.territory:

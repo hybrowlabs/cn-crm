@@ -61,7 +61,6 @@ crm.sm_pipeline_dashboard_widget = {
         'Qualification': '#6b7280',
         'Demo/Making': '#f97316',
         'Proposal/Quotation': '#3b82f6',
-        'Negotiation': '#eab308',
         'Won': '#22c55e',
         'Lost': '#ef4444'
     },

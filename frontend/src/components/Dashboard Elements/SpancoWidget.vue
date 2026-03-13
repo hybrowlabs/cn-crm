@@ -523,9 +523,7 @@ const analysisView = computed(() =>
 const proposalView = computed(() =>
   parseView(fcrmSettings.data?.proposal || null),
 )
-const negotiationView = computed(() =>
-  parseView(fcrmSettings.data?.negotiation || null),
-)
+const trialView = computed(() => parseView(fcrmSettings.data?.negotiation || null))
 const closureView = computed(() => parseView(fcrmSettings.data?.closed || null))
 const orderView = computed(() => parseView(fcrmSettings.data?.order || null))
 
@@ -548,9 +546,6 @@ const spancoData = computed(() => {
   const proposalStage = deals.filter((d) =>
     ['Proposal/Quotation'].includes(d.status),
   )
-  const pricingStage = deals.filter((d) =>
-    ['Negotiation'].includes(d.status),
-  )
   const orderStage = deals.filter((d) =>
     ['Won'].includes(d.status),
   )
@@ -562,7 +557,6 @@ const spancoData = computed(() => {
     opportunitiesStage.length +
     trialStage.length +
     proposalStage.length +
-    pricingStage.length +
     orderStage.length
 
   const total = totalRecords || 1
@@ -574,14 +568,13 @@ const spancoData = computed(() => {
     opportunitiesStage.length,
     trialStage.length,
     proposalStage.length,
-    pricingStage.length,
     orderStage.length,
   ]
   const rawPercents = counts.map((count) => Math.round((count / total) * 100))
 
   // Adjust last percentage to ensure sum equals exactly 100%
   const sumWithoutLast = rawPercents.slice(0, -1).reduce((a, b) => a + b, 0)
-  rawPercents[6] = Math.max(0, 100 - sumWithoutLast)
+  rawPercents[5] = Math.max(0, 100 - sumWithoutLast)
 
   return [
     {
@@ -636,7 +629,7 @@ const spancoData = computed(() => {
       ),
       color: 'bg-gradient-to-br from-amber-600 to-amber-700 sm:bg-amber-600/95',
       textColor: 'text-white',
-      view: negotiationView.value,
+      view: trialView.value,
     },
     {
       stage: 'Pr',
@@ -653,24 +646,10 @@ const spancoData = computed(() => {
       view: proposalView.value,
     },
     {
-      stage: 'P',
-      fullName: 'Pricing Discussion Stage',
-      number: pricingStage.length,
-      percent: rawPercents[5],
-      valuation: pricingStage.reduce(
-        (sum, d) => sum + (Number(d.annual_revenue) || 0),
-        0,
-      ),
-      color:
-        'bg-gradient-to-br from-teal-600 to-teal-700 sm:bg-teal-600/95',
-      textColor: 'text-white',
-      view: closureView.value,
-    },
-    {
       stage: 'OB',
       fullName: 'Order Booking Stage',
       number: orderStage.length,
-      percent: rawPercents[6],
+      percent: rawPercents[5],
       valuation: orderStage.reduce(
         (sum, d) => sum + (Number(d.annual_revenue) || 0),
         0,

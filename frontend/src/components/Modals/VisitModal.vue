@@ -117,7 +117,6 @@ const visitStatuses = computed(() => {
 const visitTypes = computed(() => [
   { label: 'Initial Meeting', value: 'Initial Meeting' },
   { label: 'Demo/Presentation', value: 'Demo/Presentation' },
-  { label: 'Negotiation', value: 'Negotiation' },
   { label: 'Contract Signing', value: 'Contract Signing' },
   { label: 'Follow-up', value: 'Follow-up' },
   { label: 'Support', value: 'Support' },

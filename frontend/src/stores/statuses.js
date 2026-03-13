@@ -96,12 +96,10 @@ export const statusesStore = defineStore('crm-statuses', () => {
           'Qualification',
           'Demo/Making',
           'Proposal/Quotation',
-          'Negotiation',
           'Lost',
         ],
         'Proposal/Quotation': [
           'Proposal/Quotation',
-          'Negotiation',
           'Won',
           'Lost',
         ],
@@ -137,11 +135,20 @@ export const statusesStore = defineStore('crm-statuses', () => {
 
       if (
         doctype === 'deal' &&
+        !doc?.is_approved_by_tech_team
+      ) {
+        allowedStatuses = allowedStatuses.filter(
+          (s) => s !== 'Demo/Making',
+        )
+      }
+
+      if (
+        doctype === 'deal' &&
         currentStatus === 'Demo/Making' &&
         doc?.trial_outcome !== 'Qualified'
       ) {
         allowedStatuses = allowedStatuses.filter(
-          (s) => !['Proposal/Quotation', 'Negotiation'].includes(s),
+          (s) => !['Proposal/Quotation'].includes(s),
         )
       }
 

@@ -107,20 +107,15 @@ def add_default_deal_statuses():
 			"probability": 50,
 			"position": 3,
 		},
-		"Negotiation": {
-			"color": "yellow",
-			"probability": 70,
-			"position": 4,
-		},
 		"Won": {
 			"color": "green",
 			"probability": 100,
-			"position": 5,
+			"position": 4,
 		},
 		"Lost": {
 			"color": "red",
 			"probability": 0,
-			"position": 6,
+			"position": 5,
 		},
 	}
 
@@ -496,7 +491,7 @@ def add_default_spanco_views():
 		"pricing": {
 			"label": "Pricing Discussion Stage",
 			"dt": "CRM Deal",
-			"filters": '{"status": ["in", ["Negotiation"]]}',
+			"filters": '{"status": ["in", ["Proposal/Quotation"]]}',
 			"route_name": "Deals",
 		},
 		"proposal": {
@@ -519,7 +514,7 @@ def add_default_spanco_views():
 		(["Prospects", "Configure Meetings Stage"], "Meetings Stage", "meetings"),
 		(["Analysis", "Configure Opportunities Stage"], "Opportunities Stage", "opportunities"),
 		(["Commitment", "Configure Trial Stage"], "Trial Stage", "trial"),
-		(["Negotiation", "Configure Pricing Discussion Stage"], "Pricing Discussion Stage", "pricing"),
+		(["Configure Pricing Discussion Stage"], "Pricing Discussion Stage", "pricing"),
 		(["Order", "Configure Order Booking Stage"], "Order Booking Stage", "orderbooking"),
 	]
 

@@ -117,3 +117,14 @@ def get_deal_visits(name):
 	)
 
 	return visits
+
+@frappe.whitelist()
+def send_trial_request(name):
+	"""
+	Sets is_approved_by_tech_team to 1 for the specified deal.
+	"""
+	deal = frappe.get_doc("CRM Deal", name)
+	deal.check_permission("write")
+	deal.is_approved_by_tech_team = 1
+	deal.save()
+	return True

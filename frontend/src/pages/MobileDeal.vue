@@ -54,6 +54,16 @@
     />
     <div class="flex items-center gap-2 overflow-x-auto pb-1">
       <Button
+        v-if="document.doc?.status === 'Qualification' && !document.doc?.is_approved_by_tech_team"
+        variant="solid"
+        :label="__('Send Trial request to tech team')"
+        @click="sendTrialRequest"
+      >
+        <template #prefix>
+          <FeatherIcon name="send" class="h-4 w-4" />
+        </template>
+      </Button>
+      <Button
         v-if="customer.data === ''"
         variant="solid"
         :label="__('Create Customer')"
@@ -516,6 +526,30 @@ const reload = ref(false)
 const showOrganizationModal = ref(false)
 const showCreateCustomerModal = ref(false)
 const _organization = ref({})
+
+function sendTrialRequest() {
+  createResource({
+    url: 'crm.fcrm.doctype.crm_deal.api.send_trial_request',
+    params: {
+      name: props.dealId
+    },
+    auto: true,
+    onSuccess: () => {
+      deal.reload()
+      if (document && document.doc) {
+        document.doc.is_approved_by_tech_team = 1
+      }
+      if (document && typeof document.reload === 'function') {
+        document.reload()
+      }
+      reload.value = true
+      toast.success(__('Trial request sent'))
+    },
+    onError: (err) => {
+      toast.error(__('Error sending request: {0}', [err.messages?.[0]]))
+    }
+  })
+}
 
 function updateDeal(fieldname, value, callback) {
   value = Array.isArray(fieldname) ? '' : value

@@ -106,9 +106,6 @@ def create_default_dashboards():
 	# 8.1.5: Revenue Dashboard
 	create_revenue_dashboard()
 	
-	# 8.1.6: Negotiation Dashboard
-	create_negotiation_dashboard()
-	
 	# 8.2.1: Team Performance Reports
 	create_team_performance_reports()
 	
@@ -544,92 +541,6 @@ def create_revenue_dashboard():
 	add_lmotpo_widget(dashboard)
 	dashboard.insert(ignore_permissions=True)
 
-
-def create_negotiation_dashboard():
-	"""8.1.6: Create Negotiation Dashboard - Display negotiation volumes"""
-	dashboard_name = "Negotiation Dashboard"
-	
-	if frappe.db.exists("CRM Dashboard", {"dashboard_name": dashboard_name}):
-		return
-	
-	dashboard = make_dashboard_doc(dashboard_name, "Display negotiation volumes")
-	
-	# Widget 1: Deals in Negotiation (KPI)
-	widget1 = dashboard.append("widgets", {
-		"widget_type": "KPI",
-		"widget_title": "Deals in Negotiation",
-		"widget_description": "Number of deals currently in negotiation stage",
-		"width": 4,
-		"height": 3,
-		"x_position": 0,
-		"y_position": 0,
-		"data_source_type": "DocType",
-		"data_source": "CRM Deal",
-		"metric_field": "name",
-		"aggregation_type": "Count",
-		"color_scheme": "Orange",
-		"show_refresh": 1,
-		"refresh_interval": 0
-	})
-	
-	# Widget 2: Negotiation Value (KPI)
-	widget2 = dashboard.append("widgets", {
-		"widget_type": "KPI",
-		"widget_title": "Total Negotiation Value",
-		"widget_description": "Sum of deal values in negotiation",
-		"width": 4,
-		"height": 3,
-		"x_position": 4,
-		"y_position": 0,
-		"data_source_type": "DocType",
-		"data_source": "CRM Deal",
-		"metric_field": "deal_value",
-		"aggregation_type": "Sum",
-		"color_scheme": "Purple",
-		"show_refresh": 1,
-		"refresh_interval": 0
-	})
-	
-	# Widget 3: Average Negotiation Time (KPI)
-	widget3 = dashboard.append("widgets", {
-		"widget_type": "KPI",
-		"widget_title": "Avg Deal Probability",
-		"widget_description": "Average probability across deals",
-		"width": 4,
-		"height": 3,
-		"x_position": 8,
-		"y_position": 0,
-		"data_source_type": "DocType",
-		"data_source": "CRM Deal",
-		"metric_field": "probability",
-		"aggregation_type": "Average",
-		"color_scheme": "Blue",
-		"show_refresh": 1,
-		"refresh_interval": 0
-	})
-	
-	# Widget 4: Negotiation Volume Trend (Chart)
-	widget4 = dashboard.append("widgets", {
-		"widget_type": "Chart",
-		"widget_title": "Negotiation Volume Trend",
-		"widget_description": "Number of deals entering negotiation over time",
-		"width": 12,
-		"height": 4,
-		"x_position": 0,
-		"y_position": 3,
-		"data_source_type": "DocType",
-		"data_source": "CRM Deal",
-		"chart_type": "Area",
-		"x_axis_field": "modified",
-		"y_axis_field": "name",
-		"group_by_field": "modified",
-		"color_scheme": "Orange",
-		"show_refresh": 1,
-		"refresh_interval": 0
-	})
-
-	add_lmotpo_widget(dashboard)
-	dashboard.insert(ignore_permissions=True)
 
 
 def create_team_performance_reports():

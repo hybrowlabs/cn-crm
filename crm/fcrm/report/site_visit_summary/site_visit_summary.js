@@ -35,7 +35,7 @@ frappe.query_reports["Site Visit Summary"] = {
             "fieldname": "visit_type",
             "label": __("Visit Type"),
             "fieldtype": "Select",
-            "options": "\nInitial Meeting\nDemo/Presentation\nNegotiation\nContract Signing\nFollow-up\nSupport\nOther",
+            "options": "\nInitial Meeting\nDemo/Presentation\nContract Signing\nFollow-up\nSupport\nOther",
             "width": "120px"
         },
         {

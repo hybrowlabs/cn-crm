@@ -186,7 +186,6 @@ def get_event_color(visit_type, status):
     type_colors = {
         'Initial Meeting': '#6f42c1',     # Purple
         'Demo/Presentation': '#20c997',   # Teal
-        'Negotiation': '#fd7e14',         # Orange
         'Contract Signing': '#ffc107',    # Yellow
         'Follow-up': '#6c757d',           # Gray
         'Support': '#17a2b8',             # Cyan
