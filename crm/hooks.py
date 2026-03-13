@@ -139,13 +139,15 @@ before_uninstall = "crm.uninstall.before_uninstall"
 # Permissions evaluated in scripted ways
 
 permission_query_conditions = {
-	"CRM Lead": "crm.api.territory_permissions.get_permission_query_conditions",
-	"CRM Deal": "crm.api.territory_permissions.get_permission_query_conditions",
+	"CRM Lead": "crm.api.territory_permissions.get_lead_permission_query_conditions",
+	"CRM Deal": "crm.api.territory_permissions.get_deal_permission_query_conditions",
+	"CRM Task": "crm.api.territory_permissions.get_task_permission_conditions",
 }
 
 has_permission = {
 	"CRM Lead": "crm.api.territory_permissions.has_permission",
 	"CRM Deal": "crm.api.territory_permissions.has_permission",
+	"CRM Task": "crm.api.territory_permissions.has_task_permission",
 }
 
 # DocType Class

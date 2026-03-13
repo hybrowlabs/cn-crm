@@ -1,0 +1,2 @@
+LEAD: (owner = 'test@example.com' OR lead_owner = 'test@example.com')
+DEAL: (owner = 'test@example.com' OR deal_owner = 'test@example.com')

@@ -2,14 +2,23 @@ import frappe
 from frappe import _
 
 
-def get_permission_query_conditions(user=None):
+def get_lead_permission_query_conditions(user=None):
+	return get_permission_query_conditions("CRM Lead", user)
+
+
+def get_deal_permission_query_conditions(user=None):
+	return get_permission_query_conditions("CRM Deal", user)
+
+
+def get_permission_query_conditions(doctype, user=None):
 	"""
 	Returns permission query conditions for CRM Lead and CRM Deal based on territory access.
 
 	Users can access records where:
-	1. They are territory manager of the record's territory
-	2. They have User Permission for the record's territory
-	3. They have Sales Manager or System Manager role (broader access)
+	1. They are owner or assigned owner (lead_owner for Lead, deal_owner for Deal)
+	2. They are territory manager of the record's territory
+	3. They have User Permission for the record's territory
+	4. They have Sales Manager or System Manager role (broader access)
 	"""
 	if not user:
 		user = frappe.session.user
@@ -21,15 +30,20 @@ def get_permission_query_conditions(user=None):
 	# Get user territories (where user is territory manager)
 	user_territories = get_user_territories(user)
 
-	# If user has no territory access, restrict to no records
-	if not user_territories:
-		return "1=0"  # This condition will always be false
+	# Base conditions: owner
+	conditions = [f"owner = '{user}'"]
 
-	# Format territory list for SQL IN clause
-	territory_list = "', '".join(user_territories)
-	condition = f"territory in ('{territory_list}')"
+	# Check for assignment field based on doctype
+	if doctype == "CRM Lead":
+		conditions.append(f"lead_owner = '{user}'")
+	elif doctype == "CRM Deal":
+		conditions.append(f"deal_owner = '{user}'")
 
-	return condition
+	if user_territories:
+		territory_list = "', '".join(user_territories)
+		conditions.append(f"territory in ('{territory_list}')")
+
+	return "(" + " OR ".join(conditions) + ")"
 
 
 def has_permission(doc, ptype=None, user=None):
@@ -48,6 +62,12 @@ def has_permission(doc, ptype=None, user=None):
 	if user == "Administrator" or "System Manager" in frappe.get_roles(user):
 		return True
 
+	# Ownership check (owner, lead_owner or deal_owner)
+	if (doc.owner == user or
+		getattr(doc, 'lead_owner', None) == user or
+		getattr(doc, 'deal_owner', None) == user):
+		return True
+
 	# Check if document has territory field
 	if not hasattr(doc, 'territory') or not doc.territory:
 		# If no territory is set, check if user has general access
@@ -62,7 +82,6 @@ def has_permission(doc, ptype=None, user=None):
 def get_user_territories(user=None):
 	"""
 	Get list of territories that a user has access to.
-
 	This includes:
 	1. Territories where user is territory_manager
 	2. Territories granted via User Permission
@@ -203,6 +222,69 @@ def get_user_territory_access(user=None):
 		"territories": territory_details,
 		"total_count": len(territories)
 	}
+
+
+def get_task_permission_conditions(user=None):
+	"""
+	Returns permission query conditions for CRM Task.
+	Users can see tasks if:
+	1. Assigned to them
+	2. Created by them (owner)
+	3. Related to a Lead/Deal in their territory (for Managers)
+	"""
+	if not user:
+		user = frappe.session.user
+
+	# System Managers and Administrators get full access
+	if user == "Administrator" or "System Manager" in frappe.get_roles(user):
+		return ""
+
+	user_territories = get_user_territories(user)
+
+	# Base condition: Assigned to or Owned by user
+	conditions = [f"(assigned_to = '{user}' OR owner = '{user}')"]
+
+	if user_territories:
+		territory_list = "', '".join(user_territories)
+
+		# Add conditions for Leads/Deals in accessible territories
+		conditions.append(f"""(
+			reference_doctype = 'CRM Lead'
+			AND reference_docname IN (SELECT name FROM `tabCRM Lead` WHERE territory IN ('{territory_list}'))
+		)""")
+
+		conditions.append(f"""(
+			reference_doctype = 'CRM Deal'
+			AND reference_docname IN (SELECT name FROM `tabCRM Deal` WHERE territory IN ('{territory_list}'))
+		)""")
+
+	return "(" + " OR ".join(conditions) + ")"
+
+
+def has_task_permission(doc, ptype=None, user=None):
+	"""
+	Checks if user has permission to access a specific CRM Task.
+	"""
+	if not user:
+		user = frappe.session.user
+
+	# System Managers and Administrators get full access
+	if user == "Administrator" or "System Manager" in frappe.get_roles(user):
+		return True
+
+	# Base access: Assigned to or Owned by user
+	if doc.assigned_to == user or doc.owner == user:
+		return True
+
+	# Territory-based access via reference Lead/Deal
+	if doc.reference_doctype in ["CRM Lead", "CRM Deal"] and doc.reference_docname:
+		try:
+			ref_doc = frappe.get_cached_doc(doc.reference_doctype, doc.reference_docname)
+			return has_permission(ref_doc, ptype, user)
+		except frappe.DoesNotExistError:
+			return False
+
+	return False
 
 
 @frappe.whitelist()

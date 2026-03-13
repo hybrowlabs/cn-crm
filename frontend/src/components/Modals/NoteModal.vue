@@ -245,5 +245,6 @@ watch(
       tabs.reload()
     })
   },
+  { immediate: true },
 )
 </script>
