@@ -25,7 +25,7 @@ def get_sm_pipeline_data():
 	# Deal stages (CRM Deal statuses)
 	deal_stages = frappe.get_all("CRM Deal Status", pluck="name", order_by="position asc")
 	if not deal_stages:
-		deal_stages = ["Qualification", "Demo/Making", "Proposal/Quotation", "Won", "Lost"]
+		deal_stages = ["Disqualified", "Trial", "Proposal/Quotation", "Won", "Lost"]
 
 	stage_columns = [
 		{"stage": s, "doctype": "CRM Lead"} for s in lead_stages

@@ -4,11 +4,14 @@
     :columns="columns"
     :rows="rows"
     :options="{
-      getRowRoute: (row) => ({
-        name: 'Contact',
-        params: { contactId: row.name },
-        query: { view: route.query.view, viewType: route.params.viewType },
-      }),
+      getRowRoute: (row) => {
+        if (!row.name) return { name: 'Contacts' }
+        return {
+          name: 'Contact',
+          params: { contactId: row.name },
+          query: { view: route.query.view, viewType: route.params.viewType },
+        }
+      },
       selectable: options.selectable,
       showTooltip: options.showTooltip,
       resizeColumn: options.resizeColumn,
@@ -40,7 +43,7 @@
     <ListRows
       class="mx-3 sm:mx-5"
       :rows="rows"
-      v-slot="{ idx, column, item }"
+      v-slot="{ idx, column, item, row }"
       doctype="Contact"
     >
       <ListRowItem :item="item" :align="column.align">

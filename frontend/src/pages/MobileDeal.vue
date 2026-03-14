@@ -54,7 +54,7 @@
     />
     <div class="flex items-center gap-2 overflow-x-auto pb-1">
       <Button
-        v-if="document.doc?.status === 'Qualification' && !document.doc?.is_approved_by_tech_team"
+        v-if="document.doc?.status === 'Disqualified' && !document.doc?.is_approved_by_tech_team"
         variant="solid"
         :label="__('Send Trial')"
         @click="sendTrialRequest"
@@ -95,7 +95,7 @@
     </div>
   </div>
   <div
-    v-if="deal.data && document.doc?.status === 'Demo/Making'"
+    v-if="deal.data && document.doc?.status === 'Trial'"
     class="flex items-center justify-between gap-2 border-b px-3 py-2 bg-gray-50"
   >
     <span class="text-xs font-medium text-ink-gray-5">{{ __('Trial Outcome') }}:</span>

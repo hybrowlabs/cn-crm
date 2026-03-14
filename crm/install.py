@@ -92,12 +92,12 @@ def add_default_lead_statuses():
 
 def add_default_deal_statuses():
 	statuses = {
-		"Qualification": {
+		"DisQualified": {
 			"color": "gray",
 			"probability": 10,
 			"position": 1,
 		},
-		"Demo/Making": {
+		"Trial": {
 			"color": "orange",
 			"probability": 25,
 			"position": 2,
@@ -479,13 +479,13 @@ def add_default_spanco_views():
 		"opportunities": {
 			"label": "Opportunities Stage",
 			"dt": "CRM Deal",
-			"filters": '{"status": ["in", ["Qualification"]]}',
+			"filters": '{"status": ["in", ["Disqualified"]]}',
 			"route_name": "Deals",
 		},
 		"trial": {
 			"label": "Trial Stage",
 			"dt": "CRM Deal",
-			"filters": '{"status": ["in", ["Demo/Making"]]}',
+			"filters": '{"status": ["in", ["Trial"]]}',
 			"route_name": "Deals",
 		},
 		"pricing": {

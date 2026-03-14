@@ -6,7 +6,8 @@ export const MANDATORY_FIELDS_BY_STATUS = {
         Nurture: ['meeting_type', 'product_category', 'product_discussed', 'volume_rangekg', 'primary_pain_category', 'technical_pain_category', 'pain_description', 'customer_role_type', 'current_supplier', 'decision_process', 'next_action_date'],
     },
     'CRM Deal': {
-        'Demo/Making': ['trial_product', 'trial_volume_kg', 'trial_start_date', 'trial_end_date', 'trial_success_criteria'],
+        'Qualified': ['primary_pain_category', 'technical_pain_category', 'product_alloy_type', 'first_order_volume', 'expected_monthly_volume', 'decision_criteria', 'economic_buyer_name', 'custom_formulation_required', 'decision_timeline'],
+        'Trial': ['trial_product', 'trial_volume_kg', 'trial_start_date', 'trial_end_date', 'trial_success_criteria'],
         // 'Proposal/Quotation': ['final_volume_kg', 'final_price__kg', 'approval_authority', 'commercial_acceptance', 'paper_process_status', 'proposal_acknowledged'],
 
         // 'Won': ['order_date', 'final_volume_kg', 'final_price__kg', 'product_type'],

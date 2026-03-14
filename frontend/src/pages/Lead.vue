@@ -230,21 +230,7 @@
     v-if="showConvertToDealModal"
     v-model="showConvertToDealModal"
     :lead="lead.data"
-    @next="
-      (data) => {
-        conversionData = data
-        showConvertToDealModal = false
-        showDealDetailModal = true
-      }
-    "
-  />
-  <DealDetailModal
-    v-if="showDealDetailModal"
-    v-model="showDealDetailModal"
-    :lead="lead.data"
-    :deal="conversionData.deal"
-    :existingContact="conversionData.existingContact"
-    :existingOrganization="conversionData.existingOrganization"
+    @next="convertToDeal"
   />
   <FilesUploader
     v-if="lead.data?.name"
@@ -301,7 +287,6 @@ import SLASection from '@/components/SLASection.vue'
 import CustomActions from '@/components/CustomActions.vue'
 import ConvertToDealModal from '@/components/Modals/ConvertToDealModal.vue'
 import StatusValidationModal from '@/components/Modals/StatusValidationModal.vue'
-import DealDetailModal from '@/components/Modals/DealDetailModal.vue'
 import { getFieldsForValidation } from '@/utils/validation'
 import {
   openWebsite,
@@ -316,6 +301,9 @@ import { statusesStore } from '@/stores/statuses'
 import { getMeta } from '@/stores/meta'
 import { useDocument } from '@/data/document'
 import { whatsappEnabled, callEnabled } from '@/composables/settings'
+import { capture } from '@/telemetry'
+import { sessionStore } from '@/stores/session'
+import { useOnboarding } from 'frappe-ui/frappe'
 import {
   createResource,
   FileUploader,
@@ -331,6 +319,8 @@ import {
 import { ref, h, computed, onMounted, watch, nextTick, watchEffect, reactive, provide } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useActiveTabManager } from '@/composables/useActiveTabManager'
+
+const __ = window.__ || ((s, ...args) => s)
 
 const props = defineProps({
   leadId: {
@@ -356,6 +346,8 @@ const { brand } = getSettings()
 const { $dialog, $socket, makeCall } = globalStore()
 const { statusOptions, getLeadStatus } = statusesStore()
 const { doctypeMeta } = getMeta('CRM Lead')
+
+const { updateOnboardingStep } = useOnboarding('frappecrm')
 
 const meetingOutcomeColorMap = {
   Qualified: 'text-green-500',
@@ -389,14 +381,41 @@ const errorTitle = ref('')
 const errorMessage = ref('')
 const showDeleteLinkedDocModal = ref(false)
 const showConvertToDealModal = ref(false)
-const showDealDetailModal = ref(false)
 const conversionData = ref({})
 
+async function convertToDeal(data) {
+  const _deal = await call('crm.fcrm.doctype.crm_lead.crm_lead.convert_to_deal', {
+    lead: props.leadId,
+    deal: data.deal,
+    existing_contact: data.existingContact,
+    existing_organization: data.existingOrganization,
+  }).catch((err) => {
+    toast.error(__('Error converting to deal: {0}', [err.messages?.[0] || err.message]))
+  })
+
+  if (_deal) {
+    showConvertToDealModal.value = false
+    try {
+      const { user } = sessionStore()
+      updateOnboardingStep('convert_lead_to_deal', true, false, () => {
+        localStorage.setItem('firstDeal' + user, _deal)
+      })
+    } catch (e) {
+      console.warn('Onboarding step update failed:', e)
+    }
+    capture('convert_lead_to_deal')
+    router.push({ name: 'Deal', params: { dealId: _deal } })
+  }
+}
 const statusValidation = reactive({
   show: false,
   fields: [],
   targetStatus: '',
 })
+
+function reloadAssignees() {
+  assignees.reload()
+}
 
 function getMissingFields(targetStatus) {
   const mandatoryFields = getFieldsForValidation('CRM Lead', targetStatus)
@@ -723,6 +742,8 @@ const tabs = computed(() => {
 })
 
 const { tabIndex, changeTabTo } = useActiveTabManager(tabs, 'lastLeadTab')
+
+// Tab handling logic
 
 watch(tabs, (value) => {
   if (value && route.params.tabName) {

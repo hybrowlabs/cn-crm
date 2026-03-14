@@ -87,14 +87,19 @@ export const statusesStore = defineStore('crm-statuses', () => {
   ) {
     const defaultVisibilityMaps = {
       deal: {
-        Qualification: [
-          'Qualification',
-          'Demo/Making',
+        Disqualified: [
+          'Disqualified',
+          'Qualified',
+          'Trial',
           'Lost',
         ],
-        'Demo/Making': [
-          'Qualification',
-          'Demo/Making',
+        'Qualified': [
+          'Qualified',
+          'Trial',
+          'Lost',
+        ],
+        'Trial': [
+          'Trial',
           'Proposal/Quotation',
           'Lost',
         ],
@@ -126,10 +131,10 @@ export const statusesStore = defineStore('crm-statuses', () => {
 
       if (
         doctype === 'deal' &&
-        currentStatus !== 'Qualification'
+        currentStatus !== 'Disqualified'
       ) {
         allowedStatuses = allowedStatuses.filter(
-          (s) => s !== 'Qualification',
+          (s) => s !== 'Disqualified',
         )
       }
 
@@ -138,13 +143,13 @@ export const statusesStore = defineStore('crm-statuses', () => {
         !doc?.is_approved_by_tech_team
       ) {
         allowedStatuses = allowedStatuses.filter(
-          (s) => s !== 'Demo/Making',
+          (s) => s !== 'Trial',
         )
       }
 
       if (
         doctype === 'deal' &&
-        currentStatus === 'Demo/Making' &&
+        currentStatus === 'Trial' &&
         doc?.trial_outcome !== 'Qualified'
       ) {
         allowedStatuses = allowedStatuses.filter(

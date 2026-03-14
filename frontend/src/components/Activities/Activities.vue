@@ -371,7 +371,7 @@
         :doctype="doctype"
         :docname="doc.data.name"
         :layoutType="
-          ['Demo/Making', 'Proposal/Quotation', 'Won'].includes(doc.data.status)
+          ['Trial', 'Proposal/Quotation', 'Won'].includes(doc.data.status)
             ? 'Trial Data'
             : 'Data Fields'
         "

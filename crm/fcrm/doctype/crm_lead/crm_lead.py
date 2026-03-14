@@ -375,6 +375,9 @@ class CRMLead(Document):
 			},
 		)
 
+		if not contact.lead or contact.lead != self.name:
+			frappe.db.set_value("Contact", contact.name, "lead", self.name)
+
 	def contact_exists(self, throw=True):
 		email_exist = frappe.db.exists("Contact Email", {"email_id": self.email})
 		phone_exist = frappe.db.exists("Contact Phone", {"phone": self.phone})
@@ -453,7 +456,11 @@ class CRMLead(Document):
 				if fieldname == "organization":
 					new_deal.update({fieldname: organization})
 				else:
-					new_deal.update({fieldname: self.get(field.fieldname)})
+					val = self.get(field.fieldname)
+					# Handle cases where value is a list (e.g. Table MultiSelect) but target is not a table
+					if isinstance(val, list) and new_deal.meta.get_field(fieldname).fieldtype != "Table":
+						continue
+					new_deal.update({fieldname: val})
 
 		new_deal.update(
 			{

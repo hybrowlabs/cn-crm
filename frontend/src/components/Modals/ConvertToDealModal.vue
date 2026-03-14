@@ -112,6 +112,8 @@ import { Switch, Dialog, createResource, call } from 'frappe-ui'
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
+const __ = window.__ || ((s, ...args) => s)
+
 const props = defineProps({
   lead: {
     type: Object,
@@ -199,7 +201,7 @@ async function goToNextStep() {
 
   // Pass necessary data to the next step
   emit('next', {
-    deal: deal.doc,
+    deal: JSON.parse(JSON.stringify(deal.doc)),
     existingContact: existingContact.value,
     existingOrganization: existingOrganization.value
   })
@@ -220,7 +222,7 @@ const dealTabs = createResource({
   auto: true,
   transform: (_tabs) => {
     let hasFields = false
-    let parsedTabs = _tabs?.forEach((tab) => {
+    const parsedTabs = _tabs?.map((tab) => {
       tab.sections?.forEach((section) => {
         section.columns?.forEach((column) => {
           column.fields?.forEach((field) => {
@@ -237,6 +239,7 @@ const dealTabs = createResource({
           })
         })
       })
+      return tab
     })
     return hasFields ? parsedTabs : []
   },

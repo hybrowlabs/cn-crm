@@ -349,10 +349,20 @@ def get_data(
 
 		if not custom_view and frappe.db.exists("CRM View Settings", default_view_filters):
 			list_view_settings = frappe.get_doc("CRM View Settings", default_view_filters)
-			columns = frappe.parse_json(list_view_settings.columns)
-			rows = frappe.parse_json(list_view_settings.rows)
-			is_default = False
-		elif not custom_view or (is_default and hasattr(_list, "default_list_data")):
+			_columns = frappe.parse_json(list_view_settings.columns)
+			_rows = frappe.parse_json(list_view_settings.rows)
+			if _columns and _rows:
+				columns = _columns
+				rows = _rows
+				is_default = False
+			else:
+				# Fallback if saved settings are empty/invalid
+				if hasattr(_list, "default_list_data"):
+					rows = default_rows
+					columns = _list.default_list_data().get("columns")
+				is_default = True
+
+		elif (not custom_view or is_default) and hasattr(_list, "default_list_data"):
 			rows = default_rows
 			columns = _list.default_list_data().get("columns")
 

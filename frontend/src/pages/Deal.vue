@@ -21,7 +21,7 @@
         :data="document.doc"
         doctype="CRM Deal"
       />
-      <div v-if="document.doc?.status === 'Demo/Making'" class="flex items-center gap-2">
+      <div v-if="document.doc?.status === 'Trial'" class="flex items-center gap-2">
         <span class="text-sm text-ink-gray-5">{{ __('Trial Outcome') }}:</span>
         <Dropdown
           :options="trialOutcomeOptions"
@@ -39,7 +39,7 @@
         </Dropdown>
       </div>
       <Button
-        v-if="document.doc?.status === 'Qualification' && !document.doc?.is_approved_by_tech_team"
+        v-if="document.doc?.status === 'Disqualified' && !document.doc?.is_approved_by_tech_team"
         variant="solid"
         :label="__('Send Trial')"
         @click="sendTrialRequest"
@@ -758,7 +758,7 @@ const tabs = computed(() => {
     },
     {
       name: 'Data',
-      label: ['Demo/Making', 'Proposal/Quotation', 'Won'].includes(deal.data?.status) ? __('Trial Data') : __('Data'),
+      label: ['Trial', 'Proposal/Quotation', 'Won'].includes(deal.data?.status) ? __('Trial Data') : __('Data'),
       icon: DetailsIcon,
     },
     {

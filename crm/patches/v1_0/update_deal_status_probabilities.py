@@ -6,9 +6,9 @@ def execute():
 
 	for status in deal_statuses:
 		if status.probability is None or status.probability == 0:
-			if status.deal_status == "Qualification":
+			if status.deal_status == "Disqualified":
 				probability = 10
-			elif status.deal_status == "Demo/Making":
+			elif status.deal_status == "Trial":
 				probability = 25
 			elif status.deal_status == "Proposal/Quotation":
 				probability = 50
