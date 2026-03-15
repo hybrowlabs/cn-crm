@@ -14,13 +14,13 @@
   "organization",
   "company_type",
   "lead_owner",
-  "engagement_type",
   "industry",
   "meeting_type",
   "decision_process",
   "next_action_date",
   "column_break_hshw",
   "source",
+  "sub_source",
   "territory",
   "website",
   "job_title",
@@ -413,13 +413,6 @@
    "reqd": 1
   },
   {
-   "fieldname": "engagement_type",
-   "fieldtype": "Select",
-   "label": "Engagement Type",
-   "options": "Inbound Enquiry\nOutbound Prospecting\nReferral\nExisting Customer\nEvent / Exhibition\nPartner / Channel\nReactivation",
-   "reqd": 1
-  },
-  {
    "fieldname": "meeting_type",
    "fieldtype": "Link",
    "label": "Meeting Type",
@@ -483,13 +476,19 @@
    "fieldtype": "Table MultiSelect",
    "label": "Product Category",
    "options": "Product Category Multi Select"
+  },
+  {
+   "fieldname": "sub_source",
+   "fieldtype": "Link",
+   "label": "Sub Source",
+   "options": "Sub Sorce"
   }
  ],
  "grid_page_length": 50,
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-03-12 09:38:27.075136",
+ "modified": "2026-03-15 11:28:30.236758",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Lead",

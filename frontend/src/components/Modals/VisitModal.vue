@@ -314,6 +314,15 @@ async function createVisit() {
     return
   }
 
+  if (visit.doc.planned_start_time && visit.doc.planned_end_time) {
+    const start = new Date(visit.doc.planned_start_time)
+    const end = new Date(visit.doc.planned_end_time)
+    if (end <= start) {
+      error.value = __('Planned end time must be after planned start time')
+      return
+    }
+  }
+
   try {
     await triggerOnBeforeCreate?.()
 
@@ -362,19 +371,19 @@ async function createVisit() {
     handleResourceError(err, 'create meeting')
     
     // Set specific local error message
-    if (err._server_messages) {
+    if (err.messages && Array.isArray(err.messages) && err.messages.length > 0) {
+      error.value = err.messages.join('\n')
+    } else if (err._server_messages) {
       try {
         const messages = JSON.parse(err._server_messages)
         error.value = messages[0]?.message || 'Failed to create meeting'
       } catch {
         error.value = 'Server error occurred while creating meeting'
       }
-    } else if (err.exception) {
-      error.value = 'Please check all required fields and try again'
     } else if (err.exc_type) {
       error.value = 'Validation error - please check your input'
-    } else if (err.messages && Array.isArray(err.messages)) {
-      error.value = err.messages.join('\n')
+    } else if (err.exception) {
+      error.value = 'Please check all required fields and try again'
     } else if (err.message) {
       error.value = err.message
     } else {
@@ -389,6 +398,18 @@ async function saveChanges() {
   try {
     isVisitCreating.value = true
     
+    // Validate if the user changed the times such that end is before start
+    const startObj = visit.doc.planned_start_time || originalDoc.value.planned_start_time
+    const endObj = visit.doc.planned_end_time || originalDoc.value.planned_end_time
+    
+    if (startObj && endObj) {
+      const start = new Date(startObj)
+      const end = new Date(endObj)
+      if (end <= start) {
+        throw new Error(__('Planned end time must be after planned start time'))
+      }
+    }
+
     // Get only changed fields
     const changedFields = {}
     Object.keys(visit.doc).forEach(key => {
@@ -428,13 +449,17 @@ async function saveChanges() {
     isVisitCreating.value = false
     handleResourceError(err, 'update meeting')
     
-    if (err._server_messages) {
+    if (err.messages && Array.isArray(err.messages) && err.messages.length > 0) {
+      error.value = err.messages.join('\n')
+    } else if (err._server_messages) {
       try {
         const messages = JSON.parse(err._server_messages)
         error.value = messages[0]?.message || 'Failed to update meeting'
       } catch {
         error.value = 'Server error occurred while updating meeting'
       }
+    } else if (err.exc_type) {
+      error.value = 'Validation error - please check your input'
     } else if (err.message) {
       error.value = err.message
     } else {

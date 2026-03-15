@@ -303,9 +303,21 @@ const field = computed(() => {
     }
   }
 
+  let _filters = field.link_filters ? JSON.parse(field.link_filters) : {}
+  if (['sub_sorce', 'sub_source'].includes(field.fieldname)) {
+    const parentVal = data.value.sorce || data.value.source
+    if (parentVal) {
+      _filters.parent_source = parentVal
+    } else {
+      // If no source is selected, ensure no sub-sources are shown
+      // by setting an impossible filter or an empty parent
+      _filters.parent_source = '___UNSELECTED___'
+    }
+  }
+
   let _field = {
     ...field,
-    filters: field.link_filters && JSON.parse(field.link_filters),
+    filters: Object.keys(_filters).length > 0 ? _filters : null,
     placeholder: field.placeholder || field.label,
     display_via_depends_on: evaluateDependsOnValue(
       field.depends_on,
@@ -353,6 +365,16 @@ function fieldChange(value, df) {
   // Directly update the reactive data object so the parent component (e.g. TaskModal's taskDoc)
   // always reflects the latest field values regardless of document cache state.
   data.value[df.fieldname] = value
+
+  if (['sorce', 'source'].includes(df.fieldname)) {
+    let subField = df.fieldname === 'sorce' ? 'sub_sorce' : 'sub_source'
+    data.value[subField] = ''
+    if (isGridRow) {
+      triggerOnChange(subField, '', data.value)
+    } else {
+      triggerOnChange(subField, '')
+    }
+  }
 
   if (isGridRow) {
     triggerOnChange(df.fieldname, value, data.value)

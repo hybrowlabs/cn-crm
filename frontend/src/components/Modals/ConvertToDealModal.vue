@@ -75,6 +75,7 @@
           size="md"
           :value="existingContact"
           doctype="Contact"
+          :filters="existingOrganizationChecked && existingOrganization ? { company_name: existingOrganization } : null"
           @change="(data) => (existingContact = data)"
         />
         <div v-else class="mt-2.5 text-base">
@@ -136,6 +137,10 @@ const existingOrganizationChecked = ref(false)
 const existingContact = ref('')
 const existingOrganization = ref('')
 const error = ref('')
+
+watch(existingOrganization, () => {
+  existingContact.value = ''
+})
 
 const { triggerConvertToDeal } = useDocument('CRM Lead', props.lead.name)
 const { document: deal } = useDocument('CRM Deal')

@@ -1,0 +1,63 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:sub_source",
+ "creation": "2026-03-15 11:19:51.396939",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "parent_source",
+  "sub_source"
+ ],
+ "fields": [
+  {
+   "fieldname": "parent_source",
+   "fieldtype": "Link",
+   "label": "Parent Source",
+   "options": "Lead Source"
+  },
+  {
+   "fieldname": "sub_source",
+   "fieldtype": "Data",
+   "label": "Sub Source",
+   "unique": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-03-15 11:21:08.982067",
+ "modified_by": "Administrator",
+ "module": "FCRM",
+ "name": "Sub Sorce",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
