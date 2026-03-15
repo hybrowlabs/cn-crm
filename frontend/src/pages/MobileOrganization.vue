@@ -1,13 +1,21 @@
 <template>
   <LayoutHeader v-if="organization.doc">
     <header
-      class="relative flex h-10.5 items-center justify-between gap-2 py-2.5 pl-2"
+      class="relative flex w-full h-10.5 items-center justify-between gap-2 py-2.5 pl-2 pr-2"
     >
       <Breadcrumbs :items="breadcrumbs">
         <template #prefix="{ item }">
           <Icon v-if="item.icon" :icon="item.icon" class="mr-2 h-4" />
         </template>
       </Breadcrumbs>
+      <Button
+        v-if="tabs[tabIndex].name === 'Deals'"
+        variant="solid"
+        :label="__('Create Opportunity')"
+        @click="showDealModal = true"
+      >
+        <template #prefix><FeatherIcon name="plus" class="h-4" /></template>
+      </Button>
     </header>
   </LayoutHeader>
   <div v-if="organization.doc" class="flex flex-col h-full overflow-hidden">
@@ -145,6 +153,11 @@
       </template>
     </Tabs>
   </div>
+  <DealModal
+    v-if="showDealModal"
+    v-model="showDealModal"
+    :defaults="dealDefaults"
+  />
 </template>
 
 <script setup>
@@ -153,6 +166,7 @@ import Icon from '@/components/Icon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import DealsListView from '@/components/ListViews/DealsListView.vue'
 import ContactsListView from '@/components/ListViews/ContactsListView.vue'
+import DealModal from '@/components/Modals/DealModal.vue'
 import DetailsIcon from '@/components/Icons/DetailsIcon.vue'
 import CameraIcon from '@/components/Icons/CameraIcon.vue'
 import DealsIcon from '@/components/Icons/DealsIcon.vue'
@@ -196,6 +210,12 @@ const { doctypeMeta } = getMeta('CRM Organization')
 
 const route = useRoute()
 const router = useRouter()
+
+const showDealModal = ref(false)
+
+const dealDefaults = computed(() => ({
+  organization: props.organizationId,
+}))
 
 const organization = createDocumentResource({
   doctype: 'CRM Organization',

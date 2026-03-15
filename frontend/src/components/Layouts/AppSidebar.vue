@@ -275,11 +275,6 @@ const links = [
     to: 'Reports',
   },
   {
-    label: 'Prospects',
-    icon: ContactsIcon,
-    to: 'Prospects',
-  },
-  {
     label: 'Customers',
     icon: OrganizationsIcon,
     to: 'Customers',

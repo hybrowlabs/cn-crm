@@ -7,6 +7,16 @@
         </template>
       </Breadcrumbs>
     </template>
+    <template #right-header>
+      <Button
+        v-if="tabs[tabIndex].label === 'Deals'"
+        variant="solid"
+        :label="__('Create Opportunity')"
+        @click="showDealModal = true"
+      >
+        <template #prefix><FeatherIcon name="plus" class="h-4" /></template>
+      </Button>
+    </template>
   </LayoutHeader>
   <div v-if="organization.doc" ref="parentRef" class="flex h-full">
     <Resizer
@@ -171,6 +181,11 @@
     :docname="props.organizationId"
     name="Organizations"
   />
+  <DealModal
+    v-if="showDealModal"
+    v-model="showDealModal"
+    :defaults="dealDefaults"
+  />
 </template>
 
 <script setup>
@@ -181,6 +196,7 @@ import Icon from '@/components/Icon.vue'
 import LayoutHeader from '@/components/LayoutHeader.vue'
 import DealsListView from '@/components/ListViews/DealsListView.vue'
 import ContactsListView from '@/components/ListViews/ContactsListView.vue'
+import DealModal from '@/components/Modals/DealModal.vue'
 import WebsiteIcon from '@/components/Icons/WebsiteIcon.vue'
 import CameraIcon from '@/components/Icons/CameraIcon.vue'
 import DealsIcon from '@/components/Icons/DealsIcon.vue'
@@ -231,6 +247,11 @@ const errorTitle = ref('')
 const errorMessage = ref('')
 
 const showDeleteLinkedDocModal = ref(false)
+const showDealModal = ref(false)
+
+const dealDefaults = computed(() => ({
+  organization: props.organizationId,
+}))
 
 const organization = createDocumentResource({
   doctype: 'CRM Organization',

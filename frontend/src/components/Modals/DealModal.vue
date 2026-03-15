@@ -108,24 +108,13 @@ const chooseExistingContact = ref(false)
 const chooseExistingOrganization = ref(false)
 const fieldLayoutRef = ref(null)
 
-watch(
-  [chooseExistingOrganization, chooseExistingContact],
-  ([organization, contact]) => {
-    tabs.data.forEach((tab) => {
-      tab.sections.forEach((section) => {
-        if (section.name === 'organization_section') {
-          section.hidden = !organization
-        } else if (section.name === 'organization_details_section') {
-          section.hidden = organization
-        } else if (section.name === 'contact_section') {
-          section.hidden = !contact
-        } else if (section.name === 'contact_details_section') {
-          section.hidden = contact
-        }
-      })
-    })
-  },
-)
+const dealStatuses = computed(() => {
+  let statuses = statusOptions('deal')
+  if (!deal.doc.status) {
+    deal.doc.status = statuses[0].value
+  }
+  return statuses
+})
 
 const tabs = createResource({
   url: 'crm.fcrm.doctype.crm_fields_layout.crm_fields_layout.get_fields_layout',
@@ -134,7 +123,7 @@ const tabs = createResource({
   auto: true,
   transform: (_tabs) => {
     hasOrganizationSections.value = false
-    return _tabs.forEach((tab) => {
+    _tabs.forEach((tab) => {
       tab.sections.forEach((section) => {
         section.columns.forEach((column) => {
           if (
@@ -157,16 +146,9 @@ const tabs = createResource({
               field.prefix = getDealStatus(deal.doc.status).color
             }
 
-            // Filter contacts and organizations by lead
-            if (field.fieldname === 'contact' && deal.doc.lead) {
-              field.getFilters = () => ({
-                lead: deal.doc.lead
-              })
-            }
-            if (field.fieldname === 'organization' && deal.doc.lead) {
-              field.getFilters = () => ({
-                lead: deal.doc.lead
-              })
+            // Initial filter setup
+            if (['contact', 'organization', 'sub_sorce'].includes(field.fieldname)) {
+              field.link_filters = JSON.stringify({})
             }
 
             if (field.fieldtype === 'Table') {
@@ -179,13 +161,79 @@ const tabs = createResource({
   },
 })
 
-const dealStatuses = computed(() => {
-  let statuses = statusOptions('deal')
-  if (!deal.doc.status) {
-    deal.doc.status = statuses[0].value
-  }
-  return statuses
-})
+function updateFieldVisibility() {
+  if (!tabs.data) return
+  tabs.data.forEach((tab) => {
+    tab.sections.forEach((section) => {
+      if (section.name === 'organization_section') {
+        section.hidden = !chooseExistingOrganization.value
+      } else if (section.name === 'organization_details_section') {
+        section.hidden = chooseExistingOrganization.value
+      } else if (section.name === 'contact_section') {
+        section.hidden = !chooseExistingContact.value
+      } else if (section.name === 'contact_details_section') {
+        section.hidden = chooseExistingContact.value
+      }
+
+      section.columns.forEach((column) => {
+        column.fields.forEach((field) => {
+          if (field.fieldname === 'contact') {
+            let filters = {}
+            if (deal.doc.lead) {
+              filters.lead = deal.doc.lead
+            }
+            if (chooseExistingOrganization.value && deal.doc.organization) {
+              filters.company_name = deal.doc.organization
+            }
+            field.link_filters = JSON.stringify(filters)
+          }
+          if (field.fieldname === 'organization' && deal.doc.lead) {
+            field.link_filters = JSON.stringify({ lead: deal.doc.lead })
+          }
+          if (field.fieldname === 'sub_sorce') {
+            let filters = {}
+            if (deal.doc.source) {
+              filters.parent_source = deal.doc.source
+            }
+            field.link_filters = JSON.stringify(filters)
+          }
+        })
+      })
+    })
+  })
+}
+
+watch(
+  [
+    chooseExistingOrganization,
+    chooseExistingContact,
+    () => tabs.data,
+    () => deal.doc.organization,
+    () => deal.doc.lead,
+    () => deal.doc.source,
+  ],
+  () => updateFieldVisibility(),
+  { immediate: true }
+)
+
+watch(
+  () => deal.doc.source,
+  (newSource, oldSource) => {
+    if (newSource !== oldSource) {
+      deal.doc.sub_sorce = null
+    }
+  },
+)
+
+watch(
+  () => deal.doc.organization,
+  (newOrg, oldOrg) => {
+    if (newOrg !== oldOrg && chooseExistingContact.value) {
+      deal.doc.contact = null
+    }
+  },
+)
+
 
 async function createDeal() {
   if (deal.doc.website && !deal.doc.website.startsWith('http')) {
@@ -263,6 +311,13 @@ function openQuickEntryModal() {
 onMounted(() => {
   deal.doc = { no_of_employees: '1-10' }
   Object.assign(deal.doc, props.defaults)
+
+  if (props.defaults?.organization) {
+    chooseExistingOrganization.value = true
+  }
+  if (props.defaults?.contact) {
+    chooseExistingContact.value = true
+  }
 
   if (!deal.doc.deal_owner) {
     deal.doc.deal_owner = getUser().name

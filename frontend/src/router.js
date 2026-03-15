@@ -145,11 +145,6 @@ const routes = [
     component: () => import('@/pages/InvalidPage.vue'),
   },
   {
-    path: '/prospects',
-    name: 'Prospects',
-    component: () => import('@/pages/Prospects.vue'),
-  },
-  {
     path: '/customers',
     name: 'Customers',
     component: () => import('@/pages/Customers.vue'),
