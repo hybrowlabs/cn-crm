@@ -230,7 +230,7 @@ const links = [
     to: 'Leads',
   },
   {
-    label: 'Deals',
+    label: 'Opportunities',
     icon: DealsIcon,
     to: 'Deals',
   },

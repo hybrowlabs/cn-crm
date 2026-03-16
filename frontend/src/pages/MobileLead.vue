@@ -55,7 +55,7 @@
       <div class="flex items-center gap-2">
         <Button
           v-if="isQualified"
-          :label="__('Convert to Deal')"
+          :label="__('Convert to Opportunity')"
           variant="solid"
           @click="showConvertToDealModal = true"
         />
