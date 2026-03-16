@@ -38,6 +38,7 @@
   "lead_details_tab",
   "lead",
   "source",
+  "territory",
   "column_break_wsde",
   "lead_name",
   "sub_sorce",
@@ -49,7 +50,6 @@
   "job_title",
   "address",
   "column_break_xbyf",
-  "territory",
   "currency",
   "annual_revenue",
   "industry",
@@ -477,8 +477,8 @@
    "fetch_from": "lead.product_discussed",
    "fieldname": "product_alloy_type",
    "fieldtype": "Link",
-   "label": "Product /Alloy type",
-   "options": "CRM Product"
+   "label": "Product type",
+   "options": "CRM Product Category"
   },
   {
    "fieldname": "expected_monthly_volume",
@@ -689,7 +689,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-03-16 14:41:54.091074",
+ "modified": "2026-03-16 16:19:02.186652",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Deal",

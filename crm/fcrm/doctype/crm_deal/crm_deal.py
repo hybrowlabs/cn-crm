@@ -66,6 +66,8 @@ class CRMDeal(Document):
 	def after_insert(self):
 		if self.deal_owner:
 			self.assign_agent(self.deal_owner)
+		if self.organization:
+			frappe.db.set_value("CRM Organization", self.organization, "is_deal_created", 1)
 
 	def before_save(self):
 		self.apply_sla()
