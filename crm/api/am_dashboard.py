@@ -35,7 +35,7 @@ def get_am_dashboard_data():
 		SELECT IFNULL(SUM(annual_revenue), 0) as total
 		FROM `tabCRM Deal`
 		WHERE deal_owner = %(user)s
-		AND status IN ('Disqualified', 'Trial', 'Proposal/Quotation')
+		AND status IN ('Unqualified', 'Trial', 'Proposal/Quotation')
 	""", {
 		"user": user
 	}, as_dict=True)[0].total

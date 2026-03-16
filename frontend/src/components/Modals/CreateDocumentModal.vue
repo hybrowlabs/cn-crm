@@ -156,7 +156,7 @@ watch(
         }
       } else if (props.doctype === 'CRM Deal') {
         if (!_data.doc.status) {
-          _data.doc.status = 'Disqualified'
+          _data.doc.status = 'Unqualified'
         }
       }
     })

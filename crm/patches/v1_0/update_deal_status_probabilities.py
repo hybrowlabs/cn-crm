@@ -6,7 +6,7 @@ def execute():
 
 	for status in deal_statuses:
 		if status.probability is None or status.probability == 0:
-			if status.deal_status == "Disqualified":
+			if status.deal_status == "Unqualified":
 				probability = 10
 			elif status.deal_status == "Trial":
 				probability = 25

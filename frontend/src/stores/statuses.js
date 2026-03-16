@@ -87,11 +87,15 @@ export const statusesStore = defineStore('crm-statuses', () => {
   ) {
     const defaultVisibilityMaps = {
       deal: {
-        Disqualified: [
-          'Disqualified',
-          'Qualified',
-          'Trial',
+        'Unqualified': [
+          'Unqualified',
+          'Meeting',
           'Lost',
+        ],
+        'Meeting': [
+          'Meeting',
+          'Qualified',
+          'Lost'
         ],
         'Qualified': [
           'Qualified',
@@ -131,10 +135,10 @@ export const statusesStore = defineStore('crm-statuses', () => {
 
       if (
         doctype === 'deal' &&
-        currentStatus !== 'Disqualified'
+        currentStatus !== 'Unqualified'
       ) {
         allowedStatuses = allowedStatuses.filter(
-          (s) => s !== 'Disqualified',
+          (s) => s !== 'Unqualified',
         )
       }
 

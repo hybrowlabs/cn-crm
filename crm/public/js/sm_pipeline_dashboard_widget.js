@@ -58,7 +58,7 @@ crm.sm_pipeline_dashboard_widget = {
         'Qualified': '#10b981',
         'Unqualified': '#ef4444',
         'Junk': '#8b5cf6',
-        'Disqualified': '#6b7280',
+        'Unqualified': '#6b7280',
         'Trial': '#f97316',
         'Proposal/Quotation': '#3b82f6',
         'Won': '#22c55e',

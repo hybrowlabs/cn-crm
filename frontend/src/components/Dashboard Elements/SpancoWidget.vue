@@ -538,7 +538,7 @@ const spancoData = computed(() => {
     ['Contacted', 'Nurture'].includes(l.status) && !l.converted,
   )
   const opportunitiesStage = deals.filter((d) =>
-    ['Disqualified'].includes(d.status),
+    ['Unqualified'].includes(d.status),
   )
   const trialStage = deals.filter((d) =>
     ['Trial'].includes(d.status),

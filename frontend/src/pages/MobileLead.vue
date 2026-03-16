@@ -365,12 +365,12 @@ const title = computed(() => {
 const statusVisibility = computed(() => {
   const status = document.doc?.status
   if (status === 'New') {
-    return ['New', 'Contacted', 'Nurture', 'Disqualified', 'Junk']
+    return ['New', 'Contacted', 'Nurture', 'Unqualified', 'Junk']
   } else if (['Contacted', 'Nurture', 'Qualified'].includes(status)) {
-    return ['Contacted', 'Nurture', 'Qualified', 'Disqualified', 'Junk']
+    return ['Contacted', 'Nurture', 'Qualified', 'Unqualified', 'Junk']
   } else {
-    // Junk, Disqualified, etc.
-    return ['Contacted', 'Nurture', 'Disqualified', 'Junk']
+    // Junk, Unqualified, etc.
+    return ['Contacted', 'Nurture', 'Unqualified', 'Junk']
   }
 })
 

@@ -59,17 +59,21 @@ def add_default_lead_statuses():
 			"color": "blue",
 			"position": 3,
 		},
+		"Meeting":{
+			"color": "blue",
+			"position": 4,
+		},
 		"Qualified": {
 			"color": "green",
-			"position": 4,
+			"position": 5,
 		},
 		"Unqualified": {
 			"color": "red",
-			"position": 5,
+			"position": 6,
 		},
 		"Junk": {
 			"color": "purple",
-			"position": 6,
+			"position": 7,
 		},
 	}
 
@@ -92,7 +96,7 @@ def add_default_lead_statuses():
 
 def add_default_deal_statuses():
 	statuses = {
-		"DisQualified": {
+		"Unqualified": {
 			"color": "gray",
 			"probability": 10,
 			"position": 1,
@@ -476,10 +480,16 @@ def add_default_spanco_views():
 			"filters": '{"status": ["in", ["Contacted", "Nurture", "Qualified"]]}',
 			"route_name": "Leads",
 		},
-		"opportunities": {
-			"label": "Opportunities Stage",
+		"Unqualified opportunities": {
+			"label": "Unqualified Opportunities Stage",
 			"dt": "CRM Deal",
-			"filters": '{"status": ["in", ["Disqualified"]]}',
+			"filters": '{"status": ["in", ["Unqualified"]]}',
+			"route_name": "Deals",
+		},
+		"Qua opportunities": {
+			"label": "Unqualified Opportunities Stage",
+			"dt": "CRM Deal",
+			"filters": '{"status": ["in", ["unqualified"]]}',
 			"route_name": "Deals",
 		},
 		"trial": {

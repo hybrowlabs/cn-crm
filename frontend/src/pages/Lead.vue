@@ -350,11 +350,11 @@ const { doctypeMeta } = getMeta('CRM Lead')
 const { updateOnboardingStep } = useOnboarding('frappecrm')
 
 const meetingOutcomeColorMap = {
-  Qualified: 'text-green-500',
+  'Qualified': 'text-green-500',
   'Follow-up Required': 'text-blue-500',
-  Nurture: 'text-orange-500',
-  Disqualified: 'text-red-500',
-  Closed: 'text-gray-500',
+  'Nurture': 'text-orange-500',
+  'Unqualified': 'text-red-500',
+  'Closed': 'text-gray-500',
 }
 
 function getOutcomeColor(outcome) {
@@ -610,12 +610,12 @@ function evaluateMandatoryCondition(expression) {
 const statusVisibility = computed(() => {
   const status = document.doc?.status
   if (status === 'New') {
-    return ['New', 'Contacted', 'Nurture', 'Disqualified', 'Junk']
+    return ['New', 'Contacted', 'Nurture', 'Unqualified', 'Junk']
   } else if (['Contacted', 'Nurture', 'Qualified'].includes(status)) {
-    return ['Contacted', 'Nurture', 'Qualified', 'Disqualified', 'Junk']
+    return ['Contacted', 'Nurture', 'Qualified', 'Unqualified', 'Junk']
   } else {
-    // Junk, Disqualified, etc.
-    return ['Contacted', 'Nurture', 'Disqualified', 'Junk']
+    // Junk, Unqualified, etc.
+    return ['Contacted', 'Nurture', 'Unqualified', 'Junk']
   }
 })
 

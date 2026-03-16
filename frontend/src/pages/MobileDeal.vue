@@ -54,7 +54,7 @@
     />
     <div class="flex items-center gap-2 overflow-x-auto pb-1">
       <Button
-        v-if="document.doc?.status === 'Disqualified' && !document.doc?.is_approved_by_tech_team"
+        v-if="document.doc?.status === 'Unqualified' && !document.doc?.is_approved_by_tech_team"
         variant="solid"
         :label="__('Send Trial')"
         @click="sendTrialRequest"
@@ -474,11 +474,11 @@ const quotations = createResource({
 
 function getOutcomeColor(outcome) {
   const trialOutcomeColorMap = {
-    Qualified: 'text-green-500',
+    'Qualified': 'text-green-500',
     'Follow-up Required': 'text-blue-500',
-    Nurture: 'text-orange-500',
-    Disqualified: 'text-red-500',
-    Closed: 'text-gray-500',
+    'Nurture': 'text-orange-500',
+    'Unqualified': 'text-red-500',
+    'Closed': 'text-gray-500',
   }
   return trialOutcomeColorMap[outcome] || 'text-gray-500'
 }

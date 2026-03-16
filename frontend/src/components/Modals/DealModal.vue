@@ -111,7 +111,7 @@ const fieldLayoutRef = ref(null)
 const dealStatuses = computed(() => {
   let statuses = statusOptions('deal')
   if (!deal.doc.status) {
-    deal.doc.status = 'Disqualified'
+    deal.doc.status = 'Unqualified'
   }
   return statuses
 })
