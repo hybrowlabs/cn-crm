@@ -39,7 +39,7 @@
         </Dropdown>
       </div>
       <Button
-        v-if="document.doc?.status === 'Unqualified' && !document.doc?.is_approved_by_tech_team"
+        v-if="document.doc?.status === 'Trial' && !document.doc?.is_approved_by_tech_team"
         variant="solid"
         :label="__('Send Trial')"
         @click="sendTrialRequest"

@@ -101,25 +101,35 @@ def add_default_deal_statuses():
 			"probability": 10,
 			"position": 1,
 		},
+		"Qualified": {
+			"color": "gray",
+			"probability": 10,
+			"position": 2,
+		},
+		"Meeting": {
+			"color": "gray",
+			"probability": 10,
+			"position": 3,
+		},
 		"Trial": {
 			"color": "orange",
 			"probability": 25,
-			"position": 2,
+			"position": 4,
 		},
 		"Proposal/Quotation": {
 			"color": "blue",
 			"probability": 50,
-			"position": 3,
+			"position": 5,
 		},
 		"Won": {
 			"color": "green",
 			"probability": 100,
-			"position": 4,
+			"position": 6,
 		},
 		"Lost": {
 			"color": "red",
 			"probability": 0,
-			"position": 5,
+			"position": 7,
 		},
 	}
 
@@ -475,7 +485,7 @@ def add_default_spanco_views():
 			"route_name": "Leads",
 		},
 		"meetings": {
-			"label": "Meetings Stage",
+			"label": "Contacted Lead",
 			"dt": "CRM Lead",
 			"filters": '{"status": ["in", ["Contacted", "Nurture", "Qualified"]]}',
 			"route_name": "Leads",
@@ -486,10 +496,16 @@ def add_default_spanco_views():
 			"filters": '{"status": ["in", ["Unqualified"]]}',
 			"route_name": "Deals",
 		},
-		"Qua opportunities": {
-			"label": "Unqualified Opportunities Stage",
+		"Meeting Stage": {
+			"label": "Meeting Stage",
 			"dt": "CRM Deal",
-			"filters": '{"status": ["in", ["unqualified"]]}',
+			"filters": '{"status": ["in", ["Meeting"]]}',
+			"route_name": "Deals",
+		},
+		"Qualified opportunities": {
+			"label": "Qualified Opportunities Stage",
+			"dt": "CRM Deal",
+			"filters": '{"status": ["in", ["Qualified"]]}',
 			"route_name": "Deals",
 		},
 		"trial": {
