@@ -157,6 +157,7 @@ declare module 'vue' {
     KeyboardShortcut: typeof import('./src/components/KeyboardShortcut.vue')['default']
     KPIWidget: typeof import('./src/components/Dashboard/KPIWidget.vue')['default']
     LayoutHeader: typeof import('./src/components/LayoutHeader.vue')['default']
+    LeadImportModal: typeof import('./src/components/Modals/LeadImportModal.vue')['default']
     LeadModal: typeof import('./src/components/Modals/LeadModal.vue')['default']
     LeadsIcon: typeof import('./src/components/Icons/LeadsIcon.vue')['default']
     LeadsListView: typeof import('./src/components/ListViews/LeadsListView.vue')['default']

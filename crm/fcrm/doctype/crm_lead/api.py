@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 
 from crm.api.doc import get_assigned_users, get_fields_meta
 from crm.fcrm.doctype.crm_form_script.crm_form_script import get_form_script
@@ -90,3 +91,221 @@ def get_meeting_data_sections(doctype):
 					column["fields"][column.get("fields").index(field)] = get_field_obj(field_obj)
 
 	return layout
+
+@frappe.whitelist()
+def get_importable_fields(doctype):
+	meta = frappe.get_meta(doctype)
+	fields = []
+	
+	# Skip standard fields that shouldn't be imported manually
+	skip_fields = [
+		"name", "owner", "creation", "modified", "modified_by", 
+		"docstatus", "idx", "lft", "rgt", "old_parent", 
+		"status_change_log", "products", "sla"
+	]
+	
+	for field in meta.fields:
+		if field.fieldname in skip_fields:
+			continue
+		if field.fieldtype in ["Section Break", "Column Break", "Tab Break", "HTML", "Button", "Table"]:
+			continue
+		if field.hidden or field.read_only or field.fieldname == "status":
+			continue
+			
+		fields.append({
+			"fieldname": field.fieldname,
+			"label": field.label,
+			"reqd": field.reqd,
+			"fieldtype": field.fieldtype,
+			"options": field.options
+		})
+		
+	return fields
+
+@frappe.whitelist()
+def download_lead_import_template(fields, file_type="csv"):
+	import json
+	if isinstance(fields, str):
+		fields = json.loads(fields)
+		
+	if file_type == "csv":
+		import csv
+		from io import StringIO
+		
+		f = StringIO()
+		writer = csv.writer(f)
+		writer.writerow(fields)
+		
+		frappe.response['filecontent'] = f.getvalue()
+		frappe.response['type'] = 'csv'
+		frappe.response['filename'] = 'crm_lead_import_template.csv'
+	elif file_type == "excel":
+		try:
+			import openpyxl
+			from openpyxl.worksheet.datavalidation import DataValidation
+			from io import BytesIO
+			
+			wb = openpyxl.Workbook()
+			ws = wb.active
+			ws.title = "Import Template"
+			
+			# Header row
+			ws.append(fields)
+			
+			# Create a hidden worksheet for large lists (links)
+			data_ws = wb.create_sheet("Data")
+			data_ws.sheet_state = 'hidden'
+			
+			meta = frappe.get_meta("CRM Lead")
+			
+			for col_idx, fieldname in enumerate(fields, 1):
+				field = meta.get_field(fieldname)
+				if not field: continue
+				
+				dv_options = []
+				if field.fieldtype == "Select" and field.options:
+					dv_options = field.options.split("\n")
+				elif field.fieldtype == "Link":
+					# Fetch existing values for Link fields (Top 100)
+					dv_options = frappe.get_all(field.options, limit=100, pluck="name")
+				
+				if dv_options:
+					# Clean options (remove empty strings)
+					dv_options = [str(o).strip() for o in dv_options if o]
+					
+					if dv_options:
+						# For short lists, we can use literal string
+						# Excel has a length limit for literal strings in DV
+						options_str = '"{}"'.format(",".join(dv_options))
+						
+						if len(options_str) < 255:
+							dv = DataValidation(type="list", formula1=options_str, allow_blank=True)
+						else:
+							# For longer lists, use the hidden worksheet
+							start_row = 1
+							for idx, opt in enumerate(dv_options):
+								data_ws.cell(row=start_row + idx, column=col_idx, value=opt)
+							
+							col_letter = openpyxl.utils.get_column_letter(col_idx)
+							formula = "Data!${}$1:${}${}".format(col_letter, col_letter, len(dv_options))
+							dv = DataValidation(type="list", formula1=formula, allow_blank=True)
+						
+						col_letter = openpyxl.utils.get_column_letter(col_idx)
+						dv.add("{col}2:{col}1000".format(col=col_letter))
+						ws.add_data_validation(dv)
+			
+			output = BytesIO()
+			wb.save(output)
+			output.seek(0)
+			
+			frappe.response['filecontent'] = output.getvalue()
+			frappe.response['type'] = 'binary'
+			frappe.response['filename'] = 'crm_lead_import_template.xlsx'
+		except ImportError:
+			frappe.throw(_("openpyxl is not installed. Please install it to use Excel templates."))
+
+@frappe.whitelist()
+def parse_import_file(file, file_type):
+	if not file:
+		frappe.throw(_("No file provided"))
+		
+	import json
+	rows = []
+	
+	# Get file content if it's a file object or a path
+	if hasattr(file, 'file_url'):
+		file_path = frappe.get_site_path(file.file_url.strip("/"))
+		with open(file_path, "rb") as f:
+			content = f.read()
+	elif isinstance(file, str) and file.startswith("data:"):
+		# Handle base64 encoded data (often from frontend)
+		import base64
+		header, encoded = file.split(",", 1)
+		content = base64.b64decode(encoded)
+	else:
+		frappe.throw(_("Invalid file format"))
+		
+	if file_type == "csv":
+		import csv
+		from io import StringIO
+		
+		# Detect encoding
+		decoded_content = content.decode('utf-8', errors='ignore')
+		f = StringIO(decoded_content)
+		reader = csv.DictReader(f)
+		for row in reader:
+			rows.append(row)
+			
+	elif file_type == "excel":
+		import openpyxl
+		from io import BytesIO
+		
+		wb = openpyxl.load_workbook(BytesIO(content), data_only=True)
+		ws = wb.active
+		
+		headers = []
+		for cell in ws[1]:
+			headers.append(cell.value)
+			
+		for row in ws.iter_rows(min_row=2, values_only=True):
+			data = {}
+			for idx, value in enumerate(row):
+				if idx < len(headers):
+					data[headers[idx]] = value
+			rows.append(data)
+			
+	return rows
+
+@frappe.whitelist()
+def bulk_import_leads(data):
+	import json
+	if isinstance(data, str):
+		data = json.loads(data)
+		
+	if not data:
+		return {"success": False, "message": _("No data provided")}
+		
+	meta = frappe.get_meta("CRM Lead")
+	valid_fields = [df.fieldname for df in meta.fields] + ["naming_series"]
+	
+	created_count = 0
+	errors = []
+	
+	for row in data:
+		try:
+			# Filter row to include only valid fields
+			filtered_row = {k: v for k, v in row.items() if k in valid_fields and v is not None and v != ""}
+			
+			# Set lead_owner if not provided
+			if not filtered_row.get("lead_owner"):
+				filtered_row["lead_owner"] = frappe.session.user
+				
+			doc = frappe.get_doc({
+				"doctype": "CRM Lead",
+				**filtered_row
+			})
+			doc.insert()
+			
+			# Add assignment
+			from frappe.desk.form.assign_to import add as add_assignment
+			add_assignment({
+				"doctype": "CRM Lead",
+				"name": doc.name,
+				"assign_to": [frappe.session.user],
+				"bulk_assign": True,
+				"re_assign": True
+			})
+			
+			created_count += 1
+		except frappe.LinkValidationError as e:
+			errors.append({"row": row, "error": str(e)})
+		except Exception as e:
+			frappe.log_error(frappe.get_traceback(), _("Lead Bulk Import Error"))
+			errors.append({"row": row, "error": str(e)})
+			
+	return {
+		"success": True,
+		"created_count": created_count,
+		"error_count": len(errors),
+		"errors": errors[:10] # Return first 10 errors
+	}

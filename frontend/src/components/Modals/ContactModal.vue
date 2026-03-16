@@ -115,29 +115,29 @@ watch(() => _contact.doc.lead, async (newLead) => {
 
 async function createContact() {
   // Validate that lead is provided (required for Contact creation)
-  if (!_contact.doc.lead) {
-    // Try to get lead from deal if deal is provided
-    if (_contact.doc.crm_deal) {
-      try {
-        const dealData = await call('frappe.client.get_value', {
-          doctype: 'CRM Deal',
-          fieldname: 'lead',
-          filters: { name: _contact.doc.crm_deal }
-        })
-        if (dealData.message?.lead) {
-          _contact.doc.lead = dealData.message.lead
-        } else {
-          throw new Error(__('Deal must have a Lead reference'))
-        }
-      } catch (err) {
-        toast.error(__('Lead or Deal is required to create a Contact'))
-        return
-      }
-    } else {
-      toast.error(__('Lead or Deal is required to create a Contact'))
-      return
-    }
-  }
+  // if (!_contact.doc.lead) {
+  //   // Try to get lead from deal if deal is provided
+  //   if (_contact.doc.crm_deal) {
+  //     try {
+  //       const dealData = await call('frappe.client.get_value', {
+  //         doctype: 'CRM Deal',
+  //         fieldname: 'lead',
+  //         filters: { name: _contact.doc.crm_deal }
+  //       })
+  //       if (dealData.message?.lead) {
+  //         _contact.doc.lead = dealData.message.lead
+  //       } else {
+  //         throw new Error(__('Deal must have a Lead reference'))
+  //       }
+  //     } catch (err) {
+  //       toast.error(__('Lead or Deal is required to create a Contact'))
+  //       return
+  //     }
+  //   } else {
+  //     toast.error(__('Lead or Deal is required to create a Contact'))
+  //     return
+  //   }
+  // }
 
   if (_contact.doc.email_id) {
     _contact.doc.email_ids = [{ email_id: _contact.doc.email_id }]

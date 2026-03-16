@@ -9,6 +9,13 @@
         :actions="leadsListView.customListActions"
       />
       <Button
+        variant="ghost"
+        :label="__('Bulk Import')"
+        @click="showImportModal = true"
+      >
+        <template #prefix><FeatherIcon name="download" class="h-4" /></template>
+      </Button>
+      <Button
         variant="solid"
         :label="__('Create')"
         @click="showLeadModal = true"
@@ -269,6 +276,11 @@
     v-model="showLeadModal"
     :defaults="defaults"
   />
+  <LeadImportModal
+    v-if="showImportModal"
+    v-model="showImportModal"
+    @success="leads.reload"
+  />
   <NoteModal
     v-if="showNoteModal"
     v-model="showNoteModal"
@@ -300,6 +312,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import LeadsListView from '@/components/ListViews/LeadsListView.vue'
 import KanbanView from '@/components/Kanban/KanbanView.vue'
 import LeadModal from '@/components/Modals/LeadModal.vue'
+import LeadImportModal from '@/components/Modals/LeadImportModal.vue'
 import NoteModal from '@/components/Modals/NoteModal.vue'
 import TaskModal from '@/components/Modals/TaskModal.vue'
 import ViewControls from '@/components/ViewControls.vue'
@@ -309,9 +322,13 @@ import { usersStore } from '@/stores/users'
 import { statusesStore } from '@/stores/statuses'
 import { callEnabled } from '@/composables/settings'
 import { formatDate, timeAgo, website, formatTime } from '@/utils'
-import { Avatar, Tooltip, Dropdown } from 'frappe-ui'
+import { Avatar, Tooltip, Dropdown, FeatherIcon } from 'frappe-ui'
 import { useRoute } from 'vue-router'
 import { ref, computed, reactive, h } from 'vue'
+
+const route = useRoute()
+
+const __ = window.__ || ((s, ...args) => s)
 
 const { getFormattedPercent, getFormattedFloat, getFormattedCurrency } =
   getMeta('CRM Lead')
@@ -319,10 +336,9 @@ const { makeCall } = globalStore()
 const { getUser } = usersStore()
 const { getLeadStatus } = statusesStore()
 
-const route = useRoute()
-
 const leadsListView = ref(null)
 const showLeadModal = ref(false)
+const showImportModal = ref(false)
 
 const defaults = reactive({})
 

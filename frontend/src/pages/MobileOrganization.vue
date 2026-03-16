@@ -16,6 +16,14 @@
       >
         <template #prefix><FeatherIcon name="plus" class="h-4" /></template>
       </Button>
+      <Button
+        v-if="tabs[tabIndex].name === 'Contacts'"
+        variant="solid"
+        :label="__('Create Contact')"
+        @click="showContactModal = true"
+      >
+        <template #prefix><FeatherIcon name="plus" class="h-4" /></template>
+      </Button>
     </header>
   </LayoutHeader>
   <div v-if="organization.doc" class="flex flex-col h-full overflow-hidden">
@@ -158,6 +166,15 @@
     v-model="showDealModal"
     :defaults="dealDefaults"
   />
+  <ContactModal
+    v-if="showContactModal"
+    v-model="showContactModal"
+    :contact="contactDefaults"
+    :options="{
+      redirect: false,
+      afterInsert: () => contacts.reload(),
+    }"
+  />
 </template>
 
 <script setup>
@@ -167,6 +184,7 @@ import LayoutHeader from '@/components/LayoutHeader.vue'
 import DealsListView from '@/components/ListViews/DealsListView.vue'
 import ContactsListView from '@/components/ListViews/ContactsListView.vue'
 import DealModal from '@/components/Modals/DealModal.vue'
+import ContactModal from '@/components/Modals/ContactModal.vue'
 import DetailsIcon from '@/components/Icons/DetailsIcon.vue'
 import CameraIcon from '@/components/Icons/CameraIcon.vue'
 import DealsIcon from '@/components/Icons/DealsIcon.vue'
@@ -212,9 +230,14 @@ const route = useRoute()
 const router = useRouter()
 
 const showDealModal = ref(false)
+const showContactModal = ref(false)
 
 const dealDefaults = computed(() => ({
   organization: props.organizationId,
+}))
+
+const contactDefaults = computed(() => ({
+  company_name: props.organizationId,
 }))
 
 const organization = createDocumentResource({

@@ -154,6 +154,10 @@ watch(
         if (!_data.doc.status || _data.doc.status !== 'New') {
           _data.doc.status = 'New'
         }
+      } else if (props.doctype === 'CRM Deal') {
+        if (!_data.doc.status) {
+          _data.doc.status = 'Disqualified'
+        }
       }
     })
   },

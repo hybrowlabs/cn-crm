@@ -40,6 +40,15 @@
         <Button variant="solid" @click="goToBuilder" class="flex sm:hidden p-2">
           <FeatherIcon name="layout" class="h-4 w-4" />
         </Button>
+        <Button
+          variant="solid"
+          @click="showDealModal = true"
+          :label="__('Create Opportunity')"
+        >
+          <template #prefix>
+            <FeatherIcon name="plus" class="h-4 w-4" />
+          </template>
+        </Button>
       </div>
     </template>
   </LayoutHeader>
@@ -103,6 +112,7 @@
       </div>
     </div>
   </div>
+  <DealModal v-model="showDealModal" />
 </template>
 
 
@@ -117,10 +127,12 @@ import ChartWidget from '@/components/Dashboard/ChartWidget.vue'
 import TableWidget from '@/components/Dashboard/TableWidget.vue'
 import SpancoWidget from '@/components/Dashboard Elements/SpancoWidget.vue'
 import RefreshIcon from '@/components/Icons/RefreshIcon.vue'
+import DealModal from '@/components/Modals/DealModal.vue'
 
 const router = useRouter()
 const dashboardStore = useDashboardStore()
 const loading = ref(false)
+const showDealModal = ref(false)
 
 const title = 'Dashboard'
 const breadcrumbs = [{ label: title, route: { name: 'Dashboard' } }]
