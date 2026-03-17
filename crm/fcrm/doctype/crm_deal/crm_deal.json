@@ -18,6 +18,7 @@
   "technical_pain_category",
   "economic_buyer_name",
   "decision_timeline",
+  "notes",
   "column_break_ijan",
   "status",
   "deal_owner",
@@ -511,7 +512,7 @@
   {
    "fieldname": "economic_buyer_name",
    "fieldtype": "Data",
-   "label": "Economic Buyer Name"
+   "label": "Decision Maker"
   },
   {
    "fieldname": "custom_formulation_required",
@@ -622,7 +623,7 @@
   {
    "fieldname": "product_type",
    "fieldtype": "Link",
-   "label": "Product Type",
+   "label": "Product Category",
    "options": "CRM Product"
   },
   {
@@ -684,12 +685,17 @@
    "fieldtype": "Table MultiSelect",
    "label": "Technical Pain Point",
    "options": "Technical Pain Category Multi Select"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-03-16 16:19:02.186652",
+ "modified": "2026-03-17 14:52:59.629876",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Deal",

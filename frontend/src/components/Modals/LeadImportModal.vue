@@ -42,7 +42,7 @@
               <Checkbox
                 :modelValue="selectedFields.includes(field.fieldname)"
                 :disabled="field.reqd"
-                @update:modelValue="toggleField(field)"
+                class="pointer-events-none"
               />
               <div class="flex flex-col truncate">
                 <span class="text-sm truncate" :class="field.reqd ? 'font-bold' : ''">
