@@ -130,7 +130,6 @@
    "fieldtype": "Data",
    "label": "Email",
    "options": "Email",
-   "reqd": 1,
    "search_index": 1
   },
   {
@@ -142,8 +141,7 @@
    "fieldname": "mobile_no",
    "fieldtype": "Data",
    "label": "Mobile No",
-   "options": "Phone",
-   "reqd": 1
+   "options": "Phone"
   },
   {
    "fieldname": "phone",
@@ -180,15 +178,13 @@
    "fieldname": "source",
    "fieldtype": "Link",
    "label": "Source",
-   "options": "CRM Lead Source",
-   "reqd": 1
+   "options": "CRM Lead Source"
   },
   {
    "fieldname": "industry",
    "fieldtype": "Link",
    "label": "Industry",
-   "options": "CRM Industry",
-   "reqd": 1
+   "options": "CRM Industry"
   },
   {
    "fieldname": "line_of_business",
@@ -231,8 +227,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Company Type",
-   "options": "Pvt Ltd\nPublic Ltd\nPartnership\nProprietorship\nLLP",
-   "reqd": 1
+   "options": "Pvt Ltd\nPublic Ltd\nPartnership\nProprietorship\nLLP"
   },
   {
    "collapsible": 1,
@@ -488,7 +483,7 @@
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-03-15 11:28:30.236758",
+ "modified": "2026-03-17 08:53:50.368394",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Lead",
