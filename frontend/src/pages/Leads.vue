@@ -10,17 +10,17 @@
       />
       <Button
         variant="ghost"
-        :label="__('Bulk Import')"
         @click="showImportModal = true"
       >
         <template #prefix><FeatherIcon name="download" class="h-4" /></template>
+        <span class="hidden sm:block ml-2">{{ __('Bulk Import') }}</span>
       </Button>
       <Button
         variant="solid"
-        :label="__('Create')"
         @click="showLeadModal = true"
       >
         <template #prefix><FeatherIcon name="plus" class="h-4" /></template>
+        <span class="hidden sm:block ml-2">{{ __('Create') }}</span>
       </Button>
     </template>
   </LayoutHeader>

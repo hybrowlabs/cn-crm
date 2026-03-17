@@ -17,12 +17,12 @@
             :class="currentStep >= index ? 'text-blue-600' : 'text-gray-400'"
           >
             <div
-              class="flex items-center justify-center w-6 h-6 rounded-full border text-xs font-bold"
+              class="flex items-center justify-center w-6 h-6 rounded-full border text-xs font-bold shrink-0"
               :class="currentStep >= index ? 'border-blue-600 bg-blue-50' : 'border-gray-300'"
             >
               {{ index + 1 }}
             </div>
-            <span class="text-sm font-medium">{{ step }}</span>
+            <span class="text-sm font-medium hidden sm:block whitespace-nowrap">{{ step }}</span>
             <div v-if="index < steps.length - 1" class="w-8 h-px bg-gray-300 mx-2"></div>
           </div>
         </div>
@@ -32,7 +32,7 @@
           <div class="text-base font-medium text-ink-gray-9">
             {{ __('Select fields you want to import') }}
           </div>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-3 overflow-y-auto max-h-[300px] p-1">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 overflow-y-auto max-h-[300px] p-1">
             <div
               v-for="field in importableFields.data"
               :key="field.fieldname"
@@ -75,8 +75,9 @@
             <div class="text-sm text-blue-800">
               {{ __('Download the template based on your selected fields, fill in the data, and then upload it back.') }}
             </div>
-            <div class="flex gap-3">
+            <div class="flex flex-col sm:flex-row gap-3">
               <Button
+                class="w-full sm:w-auto"
                 :label="__('Download CSV Template')"
                 @click="downloadTemplate('csv')"
                 :loading="downloading"
@@ -84,6 +85,7 @@
                 <template #prefix><FeatherIcon name="download" class="h-4 w-4" /></template>
               </Button>
               <Button
+                class="w-full sm:w-auto"
                 :label="__('Download Excel Template')"
                 @click="downloadTemplate('excel')"
                 :loading="downloading"
@@ -180,24 +182,27 @@
           <Button
             v-if="currentStep === 0"
             variant="solid"
-            :label="__('Next: Template & Upload')"
             :disabled="selectedFields.length === 0"
             @click="currentStep = 1"
-          />
+          >
+            {{ __('Next') }}<span class="hidden sm:inline">: {{ __('Template & Upload') }}</span>
+          </Button>
           <Button
             v-if="currentStep === 1"
             variant="solid"
-            :label="__('Next: Review')"
             :disabled="!file || !!fileError"
             @click="prepareReview"
-          />
+          >
+            {{ __('Next') }}<span class="hidden sm:inline">: {{ __('Review') }}</span>
+          </Button>
           <Button
             v-if="currentStep === 2 && !importResult"
             variant="solid"
-            :label="__('Import Now')"
             :loading="importing"
             @click="performImport"
-          />
+          >
+            {{ __('Import Now') }}
+          </Button>
         </div>
       </div>
     </template>
