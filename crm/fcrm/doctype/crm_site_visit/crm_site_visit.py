@@ -51,11 +51,11 @@ class CRMSiteVisit(Document):
         if self.reference_type == "CRM Deal":
             # Validate that Deal has a Lead
             deal_lead = frappe.db.get_value("CRM Deal", self.reference_name, "lead")
-            if not deal_lead:
-                frappe.throw(
-                    _("Deal {0} must have a Lead reference").format(frappe.bold(self.reference_name)),
-                    frappe.ValidationError
-                )
+            # if not deal_lead:
+            #     frappe.throw(
+            #         _("Deal {0} must have a Lead reference").format(frappe.bold(self.reference_name)),
+            #         frappe.ValidationError
+            #     )
 
     def populate_reference_details(self):
         """Auto-populate reference details server-side"""
