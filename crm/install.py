@@ -514,14 +514,8 @@ def add_default_spanco_views():
 			"filters": '{"status": ["in", ["Trial"]]}',
 			"route_name": "Deals",
 		},
-		"pricing": {
-			"label": "Pricing Discussion Stage",
-			"dt": "CRM Deal",
-			"filters": '{"status": ["in", ["Proposal/Quotation"]]}',
-			"route_name": "Deals",
-		},
 		"proposal": {
-			"label": "Proposal Stage",
+			"label": "Proposal/Quotation Stage",
 			"dt": "CRM Deal",
 			"filters": '{"status": ["in", ["Proposal/Quotation"]]}',
 			"route_name": "Deals",

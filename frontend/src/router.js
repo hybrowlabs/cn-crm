@@ -149,6 +149,11 @@ const routes = [
     name: 'Customers',
     component: () => import('@/pages/Customers.vue'),
   },
+  {
+    path: '/email-templates',
+    name: 'Email Templates',
+    component: () => import('@/pages/EmailTemplates.vue'),
+  },
 ]
 
 const handleMobileView = (componentName) => {
