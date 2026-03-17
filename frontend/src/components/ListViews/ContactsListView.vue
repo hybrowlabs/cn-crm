@@ -50,7 +50,7 @@
         <template #prefix>
           <div v-if="column.key === 'full_name'">
             <Avatar
-              v-if="item.label"
+              v-if="item?.label"
               class="flex items-center"
               :image="item.image"
               :label="item.image_label"
@@ -59,7 +59,7 @@
           </div>
           <div v-else-if="column.key === 'company_name'">
             <Avatar
-              v-if="item.label"
+              v-if="item?.label"
               class="flex items-center"
               :image="item.logo"
               :label="item.label"
@@ -85,8 +85,8 @@
                 })
             "
           >
-            <Tooltip :text="item.label">
-              <div>{{ item.timeAgo }}</div>
+            <Tooltip :text="item?.label">
+              <div>{{ item?.timeAgo }}</div>
             </Tooltip>
           </div>
           <div v-else-if="column.type === 'Check'">

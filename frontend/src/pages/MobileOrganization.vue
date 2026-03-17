@@ -9,20 +9,20 @@
         </template>
       </Breadcrumbs>
       <Button
-        v-if="tabs[tabIndex].name === 'Deals'"
+        v-if="tabs[tabIndex].name === 'Opportunities'"
         variant="solid"
-        :label="__('Create Opportunity')"
         @click="showDealModal = true"
       >
         <template #prefix><FeatherIcon name="plus" class="h-4" /></template>
+        <span class="hidden sm:block ml-2">{{ __('Create Opportunity') }}</span>
       </Button>
       <Button
         v-if="tabs[tabIndex].name === 'Contacts'"
         variant="solid"
-        :label="__('Create Contact')"
         @click="showContactModal = true"
       >
         <template #prefix><FeatherIcon name="plus" class="h-4" /></template>
+        <span class="hidden sm:block ml-2">{{ __('Create Contact') }}</span>
       </Button>
     </header>
   </LayoutHeader>
@@ -137,7 +137,7 @@
         </div>
         <DealsListView
           class="mt-4"
-          v-if="tab.label === 'Deals' && rows.length"
+          v-if="tab.name === 'Opportunities' && rows.length"
           :rows="rows"
           :columns="columns"
           :options="{ selectable: false, showTooltip: false }"
@@ -212,6 +212,8 @@ import {
 } from 'frappe-ui'
 import { h, computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+
+const __ = window.__ || ((s) => s)
 
 const props = defineProps({
   organizationId: {
@@ -371,8 +373,8 @@ const tabs = [
     icon: DetailsIcon,
   },
   {
-    name: 'Deals',
-    label: __('Deals'),
+    name: 'Opportunities',
+    label: __('Opportunities'),
     icon: h(DealsIcon, { class: 'h-4 w-4' }),
     count: computed(() => deals.data?.length),
   },

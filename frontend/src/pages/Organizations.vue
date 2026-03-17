@@ -10,10 +10,10 @@
       />
       <Button
         variant="solid"
-        :label="__('Create')"
         @click="showOrganizationModal = true"
       >
         <template #prefix><FeatherIcon name="plus" class="h-4" /></template>
+        <span class="hidden sm:block ml-2">{{ __('Create') }}</span>
       </Button>
     </template>
   </LayoutHeader>

@@ -9,20 +9,20 @@
     </template>
     <template #right-header>
       <Button
-        v-if="tabs[tabIndex].label === 'Deals'"
+        v-if="tabs[tabIndex].label === 'Opportunities'"
         variant="solid"
-        :label="__('Create Opportunity')"
         @click="showDealModal = true"
       >
         <template #prefix><FeatherIcon name="plus" class="h-4" /></template>
+        <span class="hidden sm:block ml-2">{{ __('Create Opportunity') }}</span>
       </Button>
       <Button
         v-if="tabs[tabIndex].label === 'Contacts'"
         variant="solid"
-        :label="__('Create Contact')"
         @click="showContactModal = true"
       >
         <template #prefix><FeatherIcon name="plus" class="h-4" /></template>
+        <span class="hidden sm:block ml-2">{{ __('Create Contact') }}</span>
       </Button>
     </template>
   </LayoutHeader>
@@ -153,7 +153,7 @@
       <template #tab-panel="{ tab }">
         <DealsListView
           class="mt-4"
-          v-if="tab.label === 'Deals' && rows.length"
+          v-if="tab.label === 'Opportunities' && rows.length"
           :rows="rows"
           :columns="columns"
           :options="{ selectable: false, showTooltip: false }"
@@ -244,6 +244,8 @@ import {
 import { h, computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import DeleteLinkedDocModal from '@/components/DeleteLinkedDocModal.vue'
+
+const __ = window.__ || ((s) => s)
 
 const props = defineProps({
   organizationId: {
@@ -400,7 +402,7 @@ function getParsedSections(_sections) {
 const tabIndex = ref(0)
 const tabs = [
   {
-    label: 'Deals',
+    label: 'Opportunities',
     icon: h(DealsIcon, { class: 'h-4 w-4' }),
     count: computed(() => deals.data?.length),
   },
