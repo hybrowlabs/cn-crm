@@ -66,8 +66,8 @@ def get_standard_dropdown_items():
 
 
 def after_migrate():
-	sync_table("dropdown_items", "standard_dropdown_items")
 	add_default_spanco_views()
+	sync_table("dropdown_items", "standard_dropdown_items")
 	ensure_lmotpo_widgets()
 
 
