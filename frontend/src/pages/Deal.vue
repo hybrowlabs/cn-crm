@@ -479,8 +479,7 @@ const { updateOnboardingStep, isOnboardingStepsCompleted } =
 
 const route = useRoute()
 const router = useRouter()
-
-
+const __ = window.__ || ((s, ...args) => s)
 
 const props = defineProps({
   dealId: {
@@ -735,7 +734,7 @@ const title = computed(() => {
 usePageMeta(() => {
   return {
     title: title.value,
-    icon: brand.favicon
+    icon: brand?.favicon
   }
 })
 
@@ -800,7 +799,7 @@ const tabs = computed(() => {
   ]
   return tabOptions.filter((tab) => (tab.condition ? tab.condition() : true))
 })
-const { tabIndex } = useActiveTabManager(tabs, 'lastDealTab')
+const { tabIndex, changeTabTo } = useActiveTabManager(tabs, 'lastDealTab')
 
 const sections = createResource({
   url: 'crm.fcrm.doctype.crm_fields_layout.crm_fields_layout.get_sidepanel_sections',
@@ -986,7 +985,13 @@ const statusValidation = reactive({
 
 function getMissingFields(targetStatus) {
   const mandatoryFields = getFieldsForValidation('CRM Deal', targetStatus)
-  return mandatoryFields.filter((f) => !document.doc?.[f.fieldname])
+  return mandatoryFields.filter((f) => {
+    const value = document.doc?.[f.fieldname]
+    if (Array.isArray(value)) {
+      return value.length === 0
+    }
+    return !value
+  })
 }
 
 async function proceedWithStatusChange() {

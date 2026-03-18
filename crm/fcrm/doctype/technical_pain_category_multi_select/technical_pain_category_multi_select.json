@@ -13,7 +13,7 @@
             "fieldname": "technical_pain_category",
             "fieldtype": "Link",
             "label": "Technical Pain Category",
-            "options": "Technical Pain Category Multi Select"
+            "options": "CRM Technical Pain Category"
         }
     ],
     "grid_page_length": 50,
