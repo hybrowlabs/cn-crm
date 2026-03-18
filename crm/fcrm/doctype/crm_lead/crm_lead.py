@@ -28,6 +28,7 @@ class CRMLead(Document):
 		# Note: auto_fetch_gstin_details() removed - GST Portal API now called only during deal conversion
 		self.validate_territory_access()
 		self.auto_set_territory_if_empty()
+		self.assign_lead_to_territory_manager_on_save()
 		if not self.is_new() and self.has_value_changed("lead_owner") and self.lead_owner:
 			self.share_with_agent(self.lead_owner)
 			self.assign_agent(self.lead_owner)
@@ -95,6 +96,7 @@ class CRMLead(Document):
 	def after_insert(self):
 		if self.lead_owner:
 			self.assign_agent(self.lead_owner)
+		self.assign_lead_to_territory_manager()
 
 	def before_save(self):
 		self.apply_sla()
@@ -253,6 +255,39 @@ class CRMLead(Document):
 				indicator="orange",
 				alert=True
 			)
+
+	def assign_lead_to_territory_manager_on_save(self):
+		if not self.territory or self.is_new():
+			return
+
+		# Only run if territory has changed
+		doc_before_save = self.get_doc_before_save()
+		if doc_before_save and doc_before_save.territory == self.territory:
+			return
+
+		self.assign_lead_to_territory_manager()
+
+	def assign_lead_to_territory_manager(self):
+		if not self.territory:
+			return
+
+		# 1. Get Territory Manager from Territory
+		territory_manager = frappe.db.get_value("Territory", self.territory, "territory_manager")
+		if not territory_manager:
+			return
+
+		# 2. Get Employee from Sales Person
+		employee = frappe.db.get_value("Sales Person", territory_manager, "employee")
+		if not employee:
+			return
+
+		# 3. Get User ID from Employee
+		user_id = frappe.db.get_value("Employee", employee, "user_id")
+		if not user_id:
+			return
+
+		# 4. Assign Lead to that User
+		self.assign_agent(user_id)
 
 	def assign_agent(self, agent):
 		if not agent:

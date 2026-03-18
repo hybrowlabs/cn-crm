@@ -276,6 +276,10 @@ def bulk_import_leads(data):
 			# Filter row to include only valid fields
 			filtered_row = {k: v for k, v in row.items() if k in valid_fields and v is not None and v != ""}
 			
+			# Skip empty rows
+			if not filtered_row:
+				continue
+
 			# Set lead_owner if not provided
 			if not filtered_row.get("lead_owner"):
 				filtered_row["lead_owner"] = frappe.session.user
