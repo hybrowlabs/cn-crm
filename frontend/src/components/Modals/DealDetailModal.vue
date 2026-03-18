@@ -100,9 +100,9 @@ const fields = [
   },
   {
     fieldname: 'first_order_volume',
-    label: 'First Order Volume',
+    label: 'First Order Volume (Indicative)',
     fieldtype: 'Float',
-    reqd: 1,
+    reqd: 0,
     visible: true,
   },
   {
@@ -122,7 +122,7 @@ const fields = [
   },
   {
     fieldname: 'economic_buyer_name',
-    label: 'Decision Maker',
+    label: 'Decision Maker Name',
     fieldtype: 'Data',
     reqd: 1,
     visible: true,
