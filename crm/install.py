@@ -499,7 +499,7 @@ def add_default_scripts():
 
 
 def add_default_spanco_views():
-	"""Ensure LMOTPO pipeline views exist (legacy SPANCO renamed) and wire FCRM Settings."""
+	"""Ensure LMOTPO pipeline views exist and wire them to FCRM Settings."""
 
 	lmotpo_views = {
 		"lead": {
@@ -509,25 +509,13 @@ def add_default_spanco_views():
 			"route_name": "Leads",
 		},
 		"meetings": {
-			"label": "Contacted Lead",
-			"dt": "CRM Lead",
-			"filters": '{"status": ["in", ["Contacted", "Nurture", "Qualified"]]}',
-			"route_name": "Leads",
-		},
-		"Unqualified opportunities": {
-			"label": "Unqualified Opportunities Stage",
-			"dt": "CRM Deal",
-			"filters": '{"status": ["in", ["Unqualified"]]}',
-			"route_name": "Deals",
-		},
-		"Meeting Stage": {
-			"label": "Meeting Stage",
+			"label": "Meetings Stage",
 			"dt": "CRM Deal",
 			"filters": '{"status": ["in", ["Meeting"]]}',
 			"route_name": "Deals",
 		},
 		"Qualified opportunities": {
-			"label": "Qualified Opportunities Stage",
+			"label": "Opportunities Stage",
 			"dt": "CRM Deal",
 			"filters": '{"status": ["in", ["Qualified"]]}',
 			"route_name": "Deals",
@@ -539,9 +527,15 @@ def add_default_spanco_views():
 			"route_name": "Deals",
 		},
 		"proposal": {
-			"label": "Proposal/Quotation Stage",
+			"label": "Proposal Stage",
 			"dt": "CRM Deal",
 			"filters": '{"status": ["in", ["Proposal/Quotation"]]}',
+			"route_name": "Deals",
+		},
+		"pricing": {
+			"label": "Pricing Discussion Stage",
+			"dt": "CRM Deal",
+			"filters": '{"status": ["in", ["Meeting"]]}', # Default to meeting if no specific pricing status
 			"route_name": "Deals",
 		},
 		"orderbooking": {
@@ -552,13 +546,14 @@ def add_default_spanco_views():
 		},
 	}
 
-	# Map old labels to new labels (handles both legacy SPANCO and Configure-prefixed labels)
+	# Map old labels to new labels (handles legacy SPANCO and Configure-prefixed labels)
 	rename_map = [
 		(["Suspects", "Configure Lead Stage"], "Lead Stage", "lead"),
-		(["Prospects", "Configure Meetings Stage"], "Meetings Stage", "meetings"),
-		(["Analysis", "Configure Opportunities Stage"], "Opportunities Stage", "opportunities"),
+		(["Prospects", "Configure Meetings Stage", "Contacted Lead"], "Meetings Stage", "meetings"),
+		(["Analysis", "Configure Opportunities Stage", "Unqualified Opportunities Stage", "Qualified Opportunities Stage"], "Opportunities Stage", "opportunities"),
 		(["Commitment", "Configure Trial Stage"], "Trial Stage", "trial"),
 		(["Configure Pricing Discussion Stage"], "Pricing Discussion Stage", "pricing"),
+		(["Proposal/Quotation Stage"], "Proposal Stage", "proposal"),
 		(["Order", "Configure Order Booking Stage"], "Order Booking Stage", "orderbooking"),
 	]
 
@@ -614,19 +609,18 @@ def add_default_spanco_views():
 	# Update FCRM Settings with the view references
 	fcrm_settings = frappe.get_single("FCRM Settings")
 
-	if view_ids.get("lead"):
-		fcrm_settings.suspects = view_ids["lead"]
-	if view_ids.get("meetings"):
-		fcrm_settings.prospects = view_ids["meetings"]
-	if view_ids.get("opportunities"):
-		fcrm_settings.analysis = view_ids["opportunities"]
-	if view_ids.get("trial"):
-		fcrm_settings.negotiation = view_ids["trial"]
-	if view_ids.get("proposal"):
-		fcrm_settings.proposal = view_ids["proposal"]
-	if view_ids.get("pricing"):
-		fcrm_settings.closed = view_ids["pricing"]
-	if view_ids.get("orderbooking"):
-		fcrm_settings.order = view_ids["orderbooking"]
+	# Ensure we only link if the view actually exists
+	def set_view_link(settings_field, view_key):
+		view_name = view_ids.get(view_key)
+		if view_name and frappe.db.exists("CRM View Settings", view_name):
+			setattr(fcrm_settings, settings_field, view_name)
+
+	set_view_link("suspects", "lead")
+	set_view_link("prospects", "meetings")
+	set_view_link("analysis", "opportunities")
+	set_view_link("negotiation", "trial")
+	set_view_link("proposal", "proposal")
+	set_view_link("closed", "pricing")
+	set_view_link("order", "orderbooking")
 
 	fcrm_settings.save()
