@@ -759,6 +759,13 @@ const tabs = computed(() => {
       name: 'Data',
       label: ['Trial', 'Proposal/Quotation', 'Won'].includes(deal.data?.status) ? __('Trial Data') : __('Data'),
       icon: DetailsIcon,
+      condition: () => deal.data?.status !== 'Meeting',
+    },
+    {
+      name: 'Meeting Data',
+      label: __('Meeting Data'),
+      icon: DetailsIcon,
+      condition: () => deal.data?.status === 'Meeting',
     },
     {
       name: 'Quotations',
@@ -1006,15 +1013,11 @@ async function proceedWithStatusChange() {
 }
 
 async function triggerStatusChange(value) {
-  const mandatoryFields = getFieldsForValidation('CRM Deal', value)
-
   if (value === 'Won' && !document.doc.product_type && document.doc.trial_product) {
     document.doc.product_type = document.doc.trial_product
   }
 
-
-
-  const missingFields = mandatoryFields.filter((f) => !document.doc?.[f.fieldname])
+  const missingFields = getMissingFields(value)
 
   if (missingFields.length) {
     statusValidation.fields = missingFields

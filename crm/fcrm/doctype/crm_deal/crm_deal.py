@@ -69,6 +69,25 @@ class CRMDeal(Document):
 		if self.organization:
 			frappe.db.set_value("CRM Organization", self.organization, "is_deal_created", 1)
 
+	def on_update(self):
+		self.create_task_on_next_action_date()
+
+	def create_task_on_next_action_date(self):
+		if self.status == "Meeting" and self.next_action_date:
+			doc_before_save = self.get_doc_before_save()
+			if not doc_before_save or doc_before_save.next_action_date != self.next_action_date:
+				user = frappe.session.user
+
+				frappe.get_doc({
+					"doctype": "CRM Task",
+					"title": f"Follow up with {self.organization}",
+					"reference_doctype": "CRM Deal",
+					"reference_docname": self.name,
+					"assigned_to": user,
+					"due_date": self.next_action_date,
+					"status": "Todo",
+				}).insert(ignore_permissions=True)
+
 	def before_save(self):
 		self.apply_sla()
 

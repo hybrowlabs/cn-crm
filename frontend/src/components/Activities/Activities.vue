@@ -383,7 +383,7 @@
       <DataFields
         :doctype="doctype"
         :docname="doc.data.name"
-        layoutType="Side Data Bar"
+        layoutType="Meeting Data"
         @beforeSave="(data) => emit('beforeSave', data)"
         @afterSave="(data) => emit('afterSave', data)" 
       />

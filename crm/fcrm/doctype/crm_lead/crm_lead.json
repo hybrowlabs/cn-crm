@@ -335,7 +335,8 @@
    "fieldname": "territory",
    "fieldtype": "Link",
    "label": "Territory",
-   "options": "Territory"
+   "options": "Territory",
+   "reqd": 1
   },
   {
    "fieldname": "log_tab",
@@ -480,7 +481,7 @@
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-03-17 10:44:54.371162",
+ "modified": "2026-03-18 10:12:16.382425",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Lead",

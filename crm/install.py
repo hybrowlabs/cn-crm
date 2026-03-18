@@ -168,7 +168,7 @@ def add_default_fields_layout(force=False):
 	quick_entry_layouts = {
 		"CRM Lead-Quick Entry": {
 			"doctype": "CRM Lead",
-			"layout": '[{"name":"first_tab","sections":[{"name":"person_section","columns":[{"name":"column_5jrk","fields":["salutation","email"]},{"name":"column_5CPV","fields":["first_name","mobile_no"]},{"name":"column_gXOy","fields":["last_name","designation"]}]},{"name":"organization_section","columns":[{"name":"column_GHfX","fields":["organization","engagement_type"]},{"name":"column_hXjS","fields":["website","annual_revenue","product_interested"]},{"name":"column_RDNA","fields":["source","industry","applicationusage"]}]},{"name":"lead_section","columns":[{"name":"column_EO1H","fields":["status"]},{"name":"column_RWBe","fields":["lead_owner"]}]}]}]',
+			"layout": '[{"name":"first_tab","sections":[{"name":"person_section","columns":[{"name":"column_5jrk","fields":["salutation","mobile_no"]},{"name":"column_5CPV","fields":["first_name","email"]},{"name":"column_gXOy","fields":["last_name","designation"]}]},{"name":"organization_section","columns":[{"name":"column_GHfX","fields":["organization","industry","company_type"]},{"name":"column_hXjS","fields":["website","annual_revenue","product_interested"]},{"name":"column_RDNA","fields":["source","sub_source","applicationusage"]}]},{"name":"lead_section","columns":[{"name":"column_EO1H","fields":["lead_owner"]},{"name":"column_RWBe","fields":["territory"]}]}]}]',
 		},
 		"CRM Deal-Quick Entry": {
 			"doctype": "CRM Deal",
@@ -226,7 +226,7 @@ def add_default_fields_layout(force=False):
 		},
 		"CRM Deal-Data Fields": {
 			"doctype": "CRM Deal",
-			"layout": '[{"name":"first_tab","sections":[{"label":"Details","name":"details_section","opened":true,"columns":[{"name":"column_z9XL","fields":["organization","next_step","first_order_volume","decision_criteria"]},{"name":"column_gM4w","fields":["close_date","deal_owner","expected_monthly_volume","economic_buyer_name","custom_formulation_required"]},{"name":"column_gWmE","fields":["probability","product_alloy_type","primary_pain_category","decision_timeline"]}]}]}]',
+			"layout": '[{"name":"first_tab","sections":[{"label":"Details","name":"details_section","opened":true,"columns":[{"name":"column_z9XL","fields":["organization","source"]},{"name":"column_gM4w","fields":["deal_owner","sub_sorce"]},{"name":"column_gWmE","fields":["probability"]}]}]}]',
 		},
 	}
 
@@ -311,6 +311,30 @@ def add_default_fields_layout(force=False):
 		doc.type = "Trial Data"
 		doc.dt = trial_data_layouts[layout]["doctype"]
 		doc.layout = trial_data_layouts[layout]["layout"]
+		doc.insert()
+
+	meeting_data_layouts = {
+		"CRM Lead-Meeting Data": {
+			"doctype": "CRM Lead",
+			"layout": '[{"name":"meeting_tab","sections":[{"label":"Meeting Details","name":"meeting_details_section","opened":true,"columns":[{"name":"column_meeting_1","fields":["meeting_type","product_category","volume_rangekg","decision_process","primary_pain_category","technical_pain_category","pain_description","next_action_date","customer_role_type","current_supplier"]}]}]}]',
+		},
+		"CRM Deal-Meeting Data": {
+			"doctype": "CRM Deal",
+			"layout": '[{"name": "meeting_tab", "sections": [{"label": "Meeting Details", "name": "meeting_details_section", "opened": true, "columns": [{"name": "column_meeting_1", "fields": ["meeting_type", "next_action_date", "decision_process", "pain_description", "commercial_pain_category", "technical_pain_point"]}]}]}]',
+		},
+	}
+
+	for layout in meeting_data_layouts:
+		if frappe.db.exists("CRM Fields Layout", layout):
+			if force:
+				frappe.delete_doc("CRM Fields Layout", layout)
+			else:
+				continue
+
+		doc = frappe.new_doc("CRM Fields Layout")
+		doc.type = "Meeting Data"
+		doc.dt = meeting_data_layouts[layout]["doctype"]
+		doc.layout = meeting_data_layouts[layout]["layout"]
 		doc.insert()
 
 
