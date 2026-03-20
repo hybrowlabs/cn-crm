@@ -34,7 +34,8 @@ app_include_js = [
 	"/assets/crm/js/pending_tasks_widget.js",
 	"/assets/crm/js/am_dashboard_widget.js",
 	"/assets/crm/js/sm_pipeline_dashboard_widget.js",
-	"/assets/crm/js/sm_efficiency_dashboard_widget.js"
+	"/assets/crm/js/sm_efficiency_dashboard_widget.js",
+	"/assets/crm/js/tech_team_requests_widget.js"
 ]
 
 
@@ -102,6 +103,12 @@ fixtures = [
 		"dt": "CRM Form Script",
 		"filters": [
 			["name", "in", ["Fetch Details from GSTIN - CRM Lead"]]
+		]
+	},
+	{
+		"dt": "Custom Field",
+		"filters": [
+			["name", "in", ["Territory-custom_technical_team_map","Territory-custom_technical_manager"]]
 		]
 	}
 ]

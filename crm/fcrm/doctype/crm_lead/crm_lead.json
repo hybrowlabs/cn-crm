@@ -15,7 +15,6 @@
   "company_type",
   "lead_owner",
   "industry",
-  "meeting_type",
   "decision_process",
   "next_action_date",
   "column_break_hshw",
@@ -406,12 +405,6 @@
    "label": "Application/usage"
   },
   {
-   "fieldname": "meeting_type",
-   "fieldtype": "Link",
-   "label": "Meeting Type",
-   "options": "CRM Meeting Type"
-  },
-  {
    "fieldname": "product_discussed",
    "fieldtype": "Table MultiSelect",
    "label": "Product Discussed",
@@ -445,8 +438,9 @@
   },
   {
    "fieldname": "decision_process",
-   "fieldtype": "Data",
-   "label": "Decision Process"
+   "fieldtype": "Table MultiSelect",
+   "label": "Decision Process",
+   "options": "Decision MultieSelect"
   },
   {
    "fieldname": "current_supplier",
@@ -481,7 +475,7 @@
  "image_field": "image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-03-18 10:12:16.382425",
+ "modified": "2026-03-20 15:36:20.872475",
  "modified_by": "Administrator",
  "module": "FCRM",
  "name": "CRM Lead",

@@ -186,7 +186,8 @@
                 "/assets/crm/js/am_dashboard_widget.js",
                 "/assets/crm/js/combined_dashboard_widget.js",
                 "/assets/crm/js/pending_tasks_widget.js",
-                "/assets/crm/js/sm_pipeline_dashboard_widget.js"
+                "/assets/crm/js/sm_pipeline_dashboard_widget.js",
+                "/assets/crm/js/tech_team_requests_widget.js"
               ];
               // Use sequential for widgets too just in case there are cross-dependencies
               return widgets.reduce((p, src) => p.then(() => loadScript(src)), Promise.resolve());

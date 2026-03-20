@@ -272,11 +272,11 @@ def add_default_fields_layout(force=False):
 	side_data_bar_layouts = {
 		"CRM Lead-Side Data Bar": {
 			"doctype": "CRM Lead",
-			"layout": '[{"label": "Meeting Details", "opened": true, "columns": [{"fields": ["meeting_type", "meeting_outcomes", "next_action_date"]}]}, {"label": "Outcome Analysis", "opened": true, "columns": [{"fields": ["decision_process", "pain_description", "primary_pain_category"]}]}, {"label": "Product Context", "opened": true, "columns": [{"fields": ["product_category","product_discussed", "product_interested", "volume_rangekg"]}]}]',
+			"layout": '[{"label": "Meeting Details", "opened": true, "columns": [{"fields": [ "meeting_outcomes", "next_action_date"]}]}, {"label": "Outcome Analysis", "opened": true, "columns": [{"fields": ["decision_process", "pain_description", "primary_pain_category"]}]}, {"label": "Product Context", "opened": true, "columns": [{"fields": ["product_category","product_discussed", "product_interested", "volume_rangekg"]}]}]',
 		},
 		"CRM Deal-Side Data Bar": {
 			"doctype": "CRM Deal",
-			"layout": '[{"label": "Proposal Details", "opened": true, "columns": [{"fields": ["final_volume_kg", "final_price__kg", "commercial_acceptance", "proposal_acknowledged"]}]}, {"label": "Process Status", "opened": true, "columns": [{"fields": ["approval_authority", "paper_process_status", "order_date", "product_type"]}]}]',
+			"layout": '[{"label": "Proposal Details", "opened": true, "columns": [{"fields": ["final_volume_kg", "final_price__kg", "commercial_acceptance", "proposal_acknowledged"]}]}, {"label": "Process Status", "opened": true, "columns": [{"fields": ["approval_authority", "paper_process_status", "order_date", "product_alloy_type"]}]}]',
 		}
 	}
 
@@ -316,11 +316,11 @@ def add_default_fields_layout(force=False):
 	meeting_data_layouts = {
 		"CRM Lead-Meeting Data": {
 			"doctype": "CRM Lead",
-			"layout": '[{"name":"meeting_tab","sections":[{"label":"Meeting Details","name":"meeting_details_section","opened":true,"columns":[{"name":"column_meeting_1","fields":["meeting_type","product_category","volume_rangekg","decision_process","primary_pain_category","technical_pain_category","pain_description","next_action_date","customer_role_type","current_supplier"]}]}]}]',
+			"layout": '[{"name":"meeting_tab","sections":[{"label":"Meeting Details","name":"meeting_details_section","opened":true,"columns":[{"name":"column_meeting_1","fields":["product_category","volume_rangekg","decision_process","primary_pain_category","technical_pain_category","pain_description","next_action_date","customer_role_type","current_supplier"]}]}]}]',
 		},
 		"CRM Deal-Meeting Data": {
 			"doctype": "CRM Deal",
-			"layout": '[{"name": "meeting_tab", "sections": [{"label": "Meeting Details", "name": "meeting_details_section", "opened": true, "columns": [{"name": "column_meeting_1", "fields": ["meeting_type", "next_action_date", "decision_process", "pain_description", "commercial_pain_category", "technical_pain_point"]}]}]}]',
+			"layout": '[{"name": "meeting_tab", "sections": [{"label": "Meeting Details", "name": "meeting_details_section", "opened": true, "columns": [{"name": "column_meeting_1", "fields": [ "next_action_date", "decision_process", "pain_description", "commercial_pain_category", "technical_pain_point"]}]}]}]',
 		},
 	}
 
@@ -340,7 +340,7 @@ def add_default_fields_layout(force=False):
 	qualified_data_layouts = {
 		"CRM Deal-Qualified Data": {
 			"doctype": "CRM Deal",
-			"layout": '[{"name": "first_tab", "sections": [{"label": "Qualified Details", "name": "qualified_details_section", "opened": true, "columns": [{"name": "column_qualified_1", "fields": ["primary_pain_category", "technical_pain_category", "first_order_volume", "product_type", "expected_monthly_volume"]}, {"name": "column_qualified_2", "fields": ["decision_criteria", "economic_buyer_name", "decision_timeline", "notes"]}]}]}]',
+			"layout": '[{"name": "first_tab", "sections": [{"label": "Qualified Details", "name": "qualified_details_section", "opened": true, "columns": [{"name": "column_qualified_1", "fields": ["primary_pain_category", "technical_pain_category", "first_order_volume", "product_alloy_type", "expected_monthly_volume"]}, {"name": "column_qualified_2", "fields": ["decision_criteria", "economic_buyer_name", "decision_timeline", "notes"]}]}]}]',
 		}
 	}
 

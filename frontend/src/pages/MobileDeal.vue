@@ -54,8 +54,9 @@
     />
     <div class="flex items-center gap-2 overflow-x-auto pb-1">
       <Button
-        v-if="document.doc?.status === 'Trial' && !document.doc?.is_approved_by_tech_team"
+        v-if="['Qualified'].includes(document.doc?.status) && !document.doc?.is_approved_by_tech_team"
         variant="solid"
+        theme="green"
         :label="__('Send Trial')"
         @click="sendTrialRequest"
       >
@@ -872,8 +873,8 @@ async function proceedWithStatusChange() {
 async function triggerStatusChange(value) {
   const mandatoryFields = getFieldsForValidation('CRM Deal', value)
 
-  if (value === 'Won' && !document.doc.product_type && document.doc.trial_product) {
-    document.doc.product_type = document.doc.trial_product
+  if (value === 'Won' && !document.doc.product_alloy_type && document.doc.trial_product) {
+    document.doc.product_alloy_type = document.doc.trial_product
   }
 
 

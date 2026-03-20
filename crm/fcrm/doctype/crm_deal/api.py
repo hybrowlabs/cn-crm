@@ -121,10 +121,66 @@ def get_deal_visits(name):
 @frappe.whitelist()
 def send_trial_request(name):
 	"""
-	Sets is_approved_by_tech_team to 1 for the specified deal.
+	Sets is_approved_by_tech_team to 1 for the specified deal,
+	creates a Technical Team Request, and auto-assigns it.
 	"""
 	deal = frappe.get_doc("CRM Deal", name)
 	deal.check_permission("write")
+
+	# Create Technical Team Request
+	ttr = frappe.get_doc({
+		"doctype": "Technical Team Request",
+		"deal": deal.name,
+		"product_category": deal.product_alloy_type,
+		"commercial_pain_category": deal.primary_pain_category,
+		"technical_pain_category": deal.technical_pain_category,
+		"notes_by_sales_team": deal.notes,
+	})
+	ttr.insert(ignore_permissions=True)
+
+	# Assignment Logic
+	assignee = None
+	if deal.territory:
+		territory = frappe.get_doc("Territory", deal.territory)
+
+		# Filter technical team map for matching product category
+		tech_team_entries = [
+			entry for entry in (territory.custom_technical_team_map or [])
+			if entry.product_category == deal.product_alloy_type
+		]
+
+		if len(tech_team_entries) == 1:
+			assignee = tech_team_entries[0].technical_team_name
+		else:
+			# If more than one or none, fall back to technical manager
+			assignee = territory.custom_technical_manager
+
+	if assignee:
+		# Get User ID from Sales Person via Employee link
+		from frappe.desk.form.assign_to import add
+		
+		# Sales Person -> Employee -> User ID
+		employee = frappe.db.get_value("Sales Person", assignee, "employee")
+		user_id = None
+		if employee:
+			user_id = frappe.db.get_value("Employee", employee, "user_id")
+		
+		# If not found via employee, try direct check if Sales Person has user_id (not standard but possible)
+		if not user_id:
+			try:
+				user_id = frappe.db.get_value("Sales Person", assignee, "user_id")
+			except Exception:
+				user_id = None
+
+		if user_id:
+			add({
+				"assign_to": [user_id],
+				"doctype": "Technical Team Request",
+				"name": ttr.name,
+				"description": f"Technical Team Request for Deal {deal.name}",
+			})
+
 	deal.is_approved_by_tech_team = 1
 	deal.save()
 	return True
+

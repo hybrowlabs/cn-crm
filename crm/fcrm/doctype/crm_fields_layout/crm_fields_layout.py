@@ -38,7 +38,7 @@ def get_fields_layout(doctype: str, type: str, parent_doctype: str | None = None
 				"label": "Process Status",
 				"opened": True,
 				"columns": [
-					{"fields": ["approval_authority", "paper_process_status", "order_date", "product_type"]}
+					{"fields": ["approval_authority", "paper_process_status", "order_date", "product_alloy_type"]}
 				]
 			}
 		]

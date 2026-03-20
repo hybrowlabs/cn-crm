@@ -21,7 +21,7 @@ def run():
                                 "primary_pain_category",
                                 "technical_pain_category",
                                 "first_order_volume",
-                                "product_type",
+                                "product_alloy_type",
                                 "expected_monthly_volume"
                             ]
                         },

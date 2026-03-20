@@ -215,6 +215,11 @@ const links = [
     to: 'Account Manager Dashboard',
   },
   {
+    label: 'Technical Team Dashboard',
+    icon: DashboardIcon,
+    to: 'Technical Team Dashboard',
+  },
+  {
     label: 'Dashboard Builder',
     icon: DashboardIcon,
     to: 'Dashboard Builder',

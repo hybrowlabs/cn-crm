@@ -29,6 +29,11 @@ const routes = [
     component: () => import('@/pages/AccountManagerDashboard.vue'),
   },
   {
+    path: '/tech-team-dashboard',
+    name: 'Technical Team Dashboard',
+    component: () => import('@/pages/TechTeamDashboard.vue'),
+  },
+  {
     path: '/calendar',
     name: 'Calendar',
     component: () => import('@/pages/Calendar.vue'),
