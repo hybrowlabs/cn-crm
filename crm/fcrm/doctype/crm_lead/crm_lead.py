@@ -444,6 +444,7 @@ class CRMLead(Document):
 		lead_deal_map = {
 			"lead_owner": "deal_owner",
 			"gst_number": "organization_gstin",
+			"sub_source": "sub_sorce"
 		}
 
 		restricted_fieldtypes = [

@@ -78,10 +78,11 @@
           :filters="existingOrganizationChecked && existingOrganization ? { company_name: existingOrganization } : null"
           @change="(data) => (existingContact = data)"
         />
-        <div v-else class="mt-2.5 text-base">
-          {{ __("New contact will be created based on the person's details") }}
-        </div>
+      <div v-else class="mt-2.5 text-base">
+        {{ __("New contact will be created based on the person's details") }}
       </div>
+    </div>
+
 
       <div v-if="dealTabs.data?.length" class="h-px w-full border-t my-6" />
 
@@ -160,6 +161,14 @@ watch(() => props.lead, (lead) => {
     if (lead.lead_owner) {
       deal.doc.deal_owner = lead.lead_owner
     }
+    // Pre-populate sub source
+    if (lead.sub_source) {
+      deal.doc.sub_sorce = lead.sub_source
+    }
+    // Pre-populate product category (product_alloy_type)
+    if (lead.product_category && lead.product_category.length > 0) {
+      deal.doc.product_alloy_type = lead.product_category[0].product_category
+    }
   }
 }, { immediate: true })
 
@@ -177,6 +186,10 @@ watch(() => show.value, (isOpen) => {
     // Pre-populate deal owner from lead owner
     if (props.lead.lead_owner) {
       deal.doc.deal_owner = props.lead.lead_owner
+    }
+    // Pre-populate product category (product_alloy_type) when modal opens
+    if (props.lead.product_category && props.lead.product_category.length > 0) {
+      deal.doc.product_alloy_type = props.lead.product_category[0].product_category
     }
   }
 })

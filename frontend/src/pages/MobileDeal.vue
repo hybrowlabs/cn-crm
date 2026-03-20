@@ -648,7 +648,7 @@ const tabs = computed(() => {
     },
     {
       name: 'Data',
-      label: __('Data'),
+      label: deal.data?.status === 'Qualified' ? __('Qualified Data') : ['Trial', 'Proposal/Quotation', 'Won'].includes(deal.data?.status) ? __('Trial Data') : __('Data'),
       icon: DetailsIcon,
     },
     {

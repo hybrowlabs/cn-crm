@@ -337,6 +337,26 @@ def add_default_fields_layout(force=False):
 		doc.layout = meeting_data_layouts[layout]["layout"]
 		doc.insert()
 
+	qualified_data_layouts = {
+		"CRM Deal-Qualified Data": {
+			"doctype": "CRM Deal",
+			"layout": '[{"name": "first_tab", "sections": [{"label": "Qualified Details", "name": "qualified_details_section", "opened": true, "columns": [{"name": "column_qualified_1", "fields": ["primary_pain_category", "technical_pain_category", "first_order_volume", "product_type", "expected_monthly_volume"]}, {"name": "column_qualified_2", "fields": ["decision_criteria", "economic_buyer_name", "decision_timeline", "notes"]}]}]}]',
+		}
+	}
+
+	for layout in qualified_data_layouts:
+		if frappe.db.exists("CRM Fields Layout", layout):
+			if force:
+				frappe.delete_doc("CRM Fields Layout", layout)
+			else:
+				continue
+
+		doc = frappe.new_doc("CRM Fields Layout")
+		doc.type = "Qualified Data"
+		doc.dt = qualified_data_layouts[layout]["doctype"]
+		doc.layout = qualified_data_layouts[layout]["layout"]
+		doc.insert()
+
 
 def add_property_setter():
 	if not frappe.db.exists("Property Setter", {"name": "Contact-main-search_fields"}):
@@ -514,8 +534,8 @@ def add_default_spanco_views():
 			"filters": '{"status": ["in", ["Meeting"]]}',
 			"route_name": "Deals",
 		},
-		"Qualified opportunities": {
-			"label": "Opportunities Stage",
+		"opportunities": {
+			"label": "Qualified Opportunities Stage",
 			"dt": "CRM Deal",
 			"filters": '{"status": ["in", ["Qualified"]]}',
 			"route_name": "Deals",
@@ -533,7 +553,7 @@ def add_default_spanco_views():
 			"route_name": "Deals",
 		},
 		"pricing": {
-			"label": "Pricing Discussion Stage",
+			"label": "Meeting Stage",
 			"dt": "CRM Deal",
 			"filters": '{"status": ["in", ["Meeting"]]}', # Default to meeting if no specific pricing status
 			"route_name": "Deals",
